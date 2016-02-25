@@ -3,6 +3,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE CPP #-}
+
 module Facebook.Object.Marketing.Types where
 
 import Facebook.Records hiding (get)
@@ -13,7 +15,6 @@ import Facebook.Monad
 import Facebook.Graph
 import Facebook.Base (FacebookException(..))
 import qualified Data.Aeson as A
-import Data.Time.Clock
 import Data.Time.Format
 import Data.Aeson hiding (Value)
 import Control.Applicative
@@ -37,7 +38,15 @@ import GHC.Generics
 import Data.Aeson
 import Data.Aeson.Types
 import Control.Applicative
+
+#if MIN_VERSION_time(1,5,0)
 import System.Locale hiding (defaultTimeLocale, rfc822DateFormat)
+import Data.Time.Clock
+#else
+import System.Locale
+import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)
+#endif
+
 import Control.Monad
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
@@ -207,11 +216,11 @@ instance FromJSON IgId
 instance ToJSON ObjectStorySpecADT where
 	toJSON (ObjectStorySpecADT ld (FBPageId pi) Nothing) =
 	  object [ "link_data" .= ld,
-	           "page_id" .= pi] 
+	           "page_id" .= pi]
 	toJSON (ObjectStorySpecADT ld (FBPageId pi) (Just (IgId ig))) =
 	  object [ "link_data" .= ld,
-	           "page_id" .= pi, 
-	           "instagram_actor_id" .= ig] 
+	           "page_id" .= pi,
+	           "instagram_actor_id" .= ig]
 instance FromJSON ObjectStorySpecADT where
 	parseJSON (Object v) =
 	 ObjectStorySpecADT <$> v .: "link_data"
@@ -317,7 +326,7 @@ instance FromJSON Success
 data SuccessId = SuccessId {
 	   id_ :: Text
 	} deriving (Show, Generic)
-instance FromJSON SuccessId where 
+instance FromJSON SuccessId where
 	parseJSON (Object v) =
 			SuccessId <$> v .: "id"
 
