@@ -71,7 +71,7 @@ main = do
     --        (Id ::: Name ::: Nil) tok
     --liftIO $ print $ (id $ head adaccids)
     --liftIO $ print $ length images
-    let rec = (Filename, Filename_ "/home/alex/code/fb/bridge.jpg") :*: Nil
+    let rec = (Filename, Filename_ "/home/alex/code/beautilytics/fb/bridge.jpg") :*: Nil
     adImg' <- setAdImage (id $ head adaccids) rec tok
     let adImg = either (error . show) P.id adImg'
     liftIO $ print adImg
@@ -110,8 +110,13 @@ main = do
     let cta_value = CallToActionValue fbUrl "FIXME"
     let call_to_action = Just $ CallToActionADT LEARN_MORE cta_value
     let msg = "Planning your holiday travel? Discover the best destinations, hotels, and more!"
-    let link = AdCreativeLinkData "This is a caption" (Hash_ imgHash) fbUrl msg
-                    (Just ("This is a description" :: T.Text)) call_to_action
+    -- regular ad
+    --let link = AdCreativeLinkData "This is a caption" (Hash_ imgHash) fbUrl msg
+    --                (Just ("This is a description" :: T.Text)) call_to_action
+    -- carousel ad
+    let carousel_child = CarouselChild "Child name" (Hash_ imgHash) fbUrl (Just "this is a carousel child description")
+    let link = CreativeCarouselData "This is a carousel caption" msg (replicate 4 carousel_child) "http://example.com" -- <-- cannot be fbUrl
+   -- Left (FacebookException {..., fbeErrorUserTitle = Just "Objective of campaign requires creative with external link or call to action", fbeErrorUserMsg = Just "For this campaign objective, a creative is required to have either external link or Call to Action.", ...})
     let oss = ObjectStorySpecADT link (FBPageId pageId) $ Just $ IgId igId
     let adcreative = (Name, Name_ "Test AdCreative")
                     :*: (ObjectStorySpec, ObjectStorySpec_ oss) :*: Nil
@@ -127,12 +132,12 @@ main = do
     let adId = either (error "haha") P.id adId'
 
     -- in order to run an ad, we have to set the status of the campaign, adset, and ad to ACTIVE
-    aaa <- updAdCampaign campaign ((AdC.Status, AdC.Status_ ACTIVE_) :*: Nil) tok
-    liftIO $ print aaa
-    bbb <- updAdSet adsetRet ((AdS.Status, AdS.Status_ ACTIVE_) :*: (DailyBudget, DailyBudget_ 510) :*: Nil) tok
-    liftIO $ print bbb
-    ccc <- updAd adId ((Ad.Status, Ad.Status_ ACTIVE_) :*: Nil) tok
-    liftIO $ print ccc
+    --aaa <- updAdCampaign campaign ((AdC.Status, AdC.Status_ ACTIVE_) :*: Nil) tok
+    --liftIO $ print aaa
+    --bbb <- updAdSet adsetRet ((AdS.Status, AdS.Status_ ACTIVE_) :*: (DailyBudget, DailyBudget_ 510) :*: Nil) tok
+    --liftIO $ print bbb
+    --ccc <- updAd adId ((Ad.Status, Ad.Status_ ACTIVE_) :*: Nil) tok
+    --liftIO $ print ccc
     --let delId = (Id, Id_ $ campaignId ret) :*: Nil
     --delCampaign <- delAdCampaign ret delId tok -- (id $ head adaccids) delId tok
     --liftIO $ print delCampaign
