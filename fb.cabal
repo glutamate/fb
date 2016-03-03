@@ -139,6 +139,7 @@ library
 executable facebook-marketing-test
   main-is:             MarketingTests.hs
   default-language:    Haskell2010
+  buildable: False
   build-depends:     base >=4.6 && <5
                      , fb
                      , http-conduit ==2.1.*
@@ -155,6 +156,7 @@ test-suite runtests
   ghc-options:    -Wall -fno-warn-orphans
   hs-source-dirs: tests
   main-is:        Main.hs
+  buildable: False
   build-depends:
       -- Library dependencies used on the tests.  No need to
       -- specify versions since they'll use the same as above.
