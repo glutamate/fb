@@ -105,7 +105,8 @@ asJsonHelper response = do
 #endif
   case A.fromJSON val of
     A.Success r -> return r
-    A.Error str ->
+    A.Error str -> do
+        liftIO $ print val
         E.throw $ FbLibraryException $ T.concat
              [ "Facebook.Base.asJson: could not parse "
              , " Facebook's response as a JSON value ("
