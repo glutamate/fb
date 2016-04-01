@@ -41,7 +41,7 @@ main = do
   tokenBody <- getEnv "FB_ACCESS_TOKEN"
   fbUid <- getEnv "FB_USER_ID"
   pageId <- liftM T.pack $ getEnv "FB_PAGE_ID"
-  igId <- liftM T.pack $ getEnv "IG_ID"
+  --igId <- liftM T.pack $ getEnv "IG_ID"
   --pageId <- liftM (read :: String -> Int) $ getEnv "FB_PAGE_ID"
   --igId <- liftM (read :: String -> Int) $ getEnv "IG_ID"
   fbUrl <- liftM T.pack $ getEnv "FB_URL"
@@ -53,8 +53,11 @@ main = do
       tok = UserAccessToken fbuser (T.pack tokenBody) now
   runResourceT $ runFacebookT creds man $ do
     u <- getUser "me" [] (Just tok)
-    liftIO $ print u
+    --liftIO $ print u
     Pager adaccids _ _ <- getAdAccountId $ Just tok
+    Pager (igId':_) _ _ <- getIgId tok $ FBPageId pageId
+    let igId = unId_ $ id igId'
+    liftIO $ print igId
     liftIO $ print adaccids
     adAcc <- getAdAccount (id $ head adaccids)
                 (Balance ::: AmountSpent ::: Age ::: Nil)

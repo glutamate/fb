@@ -284,7 +284,9 @@ genMode ent@(Entity nameEnt) mode unfiltered = -- source code for one entity(/mo
     in doc <> toBS <> isInstances <> retDef <> m <>
         if nameEnt == "AdAccount" && mode == Reading
             then adAccIdDetails <> genGetId
-            else ""
+            else if nameEnt == "AdCreative" && mode == Reading
+                  then igIdDetails <> genFBPageIdToIgId
+                  else ""
 
 myConcat :: V.Vector Text -> Text
 myConcat = V.foldl' append ""
@@ -510,6 +512,18 @@ genGetId =
               \ Maybe UserAccessToken -- ^ User access token.\n\t\
             \-> FacebookT anyAuth m (Pager AdAccountIdDetails)\n\
     \getAdAccountId token = getObject \"/v2.5/me/adaccounts\" [] token\n"
+
+
+igIdDetails :: Text
+igIdDetails = "type IgIdDetails = Id :*: Nil"
+
+genFBPageIdToIgId :: Text
+genFBPageIdToIgId =
+    "\ngetIgId :: (R.MonadResource m, MonadBaseControl IO m) =>\n\t\
+              \ UserAccessToken -- ^ User access token.\n\t\
+            \-> FBPageId \n\t\
+            \-> FacebookT anyAuth m (Pager IgIdDetails)\n\
+    \getIgId token (FBPageId pageId) = getObject (\"/v2.5/\" <> pageId <> \"/instagram_accounts\") [(\"fields\", textListToBS $ fieldNameList $ Id ::: Nil)] $ Just token\n"
 
 genFctName :: Entity -> InteractionMode -> Text
 genFctName _ Types = ""
