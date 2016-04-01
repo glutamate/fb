@@ -28,7 +28,7 @@ imports =
                 "import Facebook.Graph",
                 "import Facebook.Base (FacebookException(..))",
                 "import qualified Data.Aeson as A",
-                "import Data.Time.Clock",
+                --"import Data.Time.Clock",
                 "import Data.Time.Format",
                 "import Data.Aeson hiding (Value)",
                 "import Control.Applicative",
@@ -45,9 +45,16 @@ imports =
                 "import qualified Data.ByteString.Builder as BSB",
                 "import qualified Data.ByteString.Lazy as BSL",
                 "import qualified Control.Monad.Trans.Resource as R",
-                "import Control.Monad.Trans.Control (MonadBaseControl)"]
+                "import Control.Monad.Trans.Control (MonadBaseControl)",
+                "#if MIN_VERSION_time(1,5,0)\n\
+                                \import System.Locale hiding (defaultTimeLocale, rfc822DateFormat)\n\
+                                \import Data.Time.Clock\n\
+                \#else\n\
+                                \import System.Locale\n\
+                                \import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)\n\
+                \#endif"]
 langExts = V.fromList ["DeriveDataTypeable", "DeriveGeneric", "FlexibleContexts", "OverloadedStrings",
-                       "ConstraintKinds"]
+                       "ConstraintKinds", "CPP"]
 
 -- What to add after /id to the URL
 entityUrlPostfixMap =
@@ -512,7 +519,6 @@ genGetId =
               \ Maybe UserAccessToken -- ^ User access token.\n\t\
             \-> FacebookT anyAuth m (Pager AdAccountIdDetails)\n\
     \getAdAccountId token = getObject \"/v2.5/me/adaccounts\" [] token\n"
-
 
 igIdDetails :: Text
 igIdDetails = "type IgIdDetails = Id :*: Nil"

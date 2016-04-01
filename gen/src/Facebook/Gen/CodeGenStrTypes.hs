@@ -12,7 +12,6 @@ oldTypesImport =
     \import Data.Aeson\n\
     \import Data.Aeson.Types\n\
     \import Control.Applicative\n\
-    \import System.Locale hiding (defaultTimeLocale, rfc822DateFormat)\n\
     \import Control.Monad\n\
     \import qualified Data.ByteString as BS\n\
     \import qualified Data.ByteString.Lazy as BSL\n\

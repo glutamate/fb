@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE CPP #-}
 module Facebook.Object.Marketing.AdCreative where
 
 import Facebook.Records hiding (get)
@@ -13,7 +14,6 @@ import Facebook.Monad
 import Facebook.Graph
 import Facebook.Base (FacebookException(..))
 import qualified Data.Aeson as A
-import Data.Time.Clock
 import Data.Time.Format
 import Data.Aeson hiding (Value)
 import Control.Applicative
@@ -31,6 +31,13 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import qualified Control.Monad.Trans.Resource as R
 import Control.Monad.Trans.Control (MonadBaseControl)
+#if MIN_VERSION_time(1,5,0)
+import System.Locale hiding (defaultTimeLocale, rfc822DateFormat)
+import Data.Time.Clock
+#else
+import System.Locale
+import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)
+#endif
 import Facebook.Object.Marketing.Types
 
 data ActionSpec = ActionSpec
@@ -596,6 +603,12 @@ getAdCreative :: (R.MonadResource m, MonadBaseControl IO m, AdCreativeGet fl r) 
 	-> FacebookT anyAuth m (Pager (AdCreativeGetRet r))
 getAdCreative (Id_ id) fl mtoken = getObject ("/v2.5/" <> id <> "/adcreatives") [("fields", textListToBS $ fieldNameList $ Id ::: fl)] $ Just mtoken
 
+type IgIdDetails = Id :*: Nil
+getIgId :: (R.MonadResource m, MonadBaseControl IO m) =>
+	 UserAccessToken -- ^ User access token.
+	-> FBPageId 
+	-> FacebookT anyAuth m (Pager IgIdDetails)
+getIgId token (FBPageId pageId) = getObject ("/v2.5/" <> pageId <> "/instagram_accounts") [("fields", textListToBS $ fieldNameList $ Id ::: Nil)] $ Just token
 
 -- Entity:AdCreative, mode:Creating
 class IsAdCreativeSetField r
