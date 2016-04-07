@@ -50,6 +50,7 @@ library
     Facebook
     Facebook.Base
     Facebook.Records
+    Facebook.Object.Marketing.Tests
     Facebook.Object.Marketing.Ad
     Facebook.Object.Marketing.AdUser
     Facebook.Object.Marketing.AdAccount
@@ -106,7 +107,7 @@ library
     --, thyme
     , time                 >= 1.2     && < 1.6
     , old-locale
-    , cereal               >= 0.3     && < 0.5
+    , cereal               >= 0.3
     , crypto-api           >= 0.11    && < 0.14
     , cryptohash           >= 0.7
     , cryptohash-cryptoapi == 0.1.*
@@ -170,6 +171,7 @@ test-suite runtests
     , QuickCheck
     , hspec >= 1.9 && < 1.12
     , fb
+    , mtl
   extensions:
     TypeFamilies
     ScopedTypeVariables
