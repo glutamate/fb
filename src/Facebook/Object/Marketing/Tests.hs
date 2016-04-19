@@ -55,7 +55,7 @@ testAdCreation fbUserId fbToken fbPageId igTargetId creds = do
     let campaign = ret
     let location = TargetLocation ["US", "GB"]
     let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
-    let target = TargetingSpecs location (Just demo) $ Just [InstagramStream]
+    let target = TargetingSpecs location (Just demo) (Just [InstagramStream]) Nothing
     let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "Test AdSet API")
                 :*: (CampaignId, CampaignId_ $ campaignId ret) :*: (Targeting, Targeting_ target)
                 :*: (OptimizationGoal, OptimizationGoal_ REACH)

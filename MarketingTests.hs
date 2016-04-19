@@ -10,7 +10,8 @@ import Facebook.Records
 import           Control.Monad.Trans.Resource
 import           Control.Monad
 import Data.Time
-import Control.Monad.Trans
+--import Control.Monad.Trans
+import Control.Monad.IO.Class
 import Facebook.Object.Marketing.AdAccount
 import Facebook.Object.Marketing.Types
 import Facebook.Object.Marketing.AdCampaign
@@ -23,6 +24,7 @@ import Facebook.Object.Marketing.TargetingSpecs
 import Facebook.Object.Marketing.TargetingSpecs.Location
 import Facebook.Object.Marketing.TargetingSpecs.Demographies
 import Facebook.Object.Marketing.TargetingSpecs.Placement
+import qualified Facebook.Object.Marketing.TargetingSpecs.Interests as Int
 import Facebook.Object.Marketing.AdSet
 import Facebook.Object.Marketing.Ad
 import qualified Facebook.Object.Marketing.Ad as Ad
@@ -45,6 +47,7 @@ main = do
   --pageId <- liftM (read :: String -> Int) $ getEnv "FB_PAGE_ID"
   --igId <- liftM (read :: String -> Int) $ getEnv "IG_ID"
   fbUrl <- liftM T.pack $ getEnv "FB_URL"
+  let fbUrl = "http://me.example.com"
   man <- newManager conduitManagerSettings
   now <- getCurrentTime
   let creds = Credentials "bdpromo" (T.pack appId) (T.pack appSecret)
@@ -56,8 +59,12 @@ main = do
     --liftIO $ print u
     Pager adaccids _ _ <- getAdAccountId $ Just tok
     Pager (igId':_) _ _ <- getIgId tok $ FBPageId pageId
+    qs <- Int.queryInterest "travel" tok
+    let ids = map (Int.Interest <$> Int.id_) $ Int.data_ qs
+    liftIO $ print ids
     let igId = unId_ $ id igId'
     liftIO $ print igId
+    liftIO $ print "AdAccount Ids"
     liftIO $ print adaccids
     adAcc <- getAdAccount (id $ head adaccids)
                 (Balance ::: AmountSpent ::: Age ::: Nil)
@@ -78,15 +85,15 @@ main = do
     adImg' <- setAdImage (id $ head adaccids) rec tok
     let adImg = either (error . show) P.id adImg'
     liftIO $ print adImg
-    --Pager images' _ _ <- getAdImage (id $ head adaccids)
-    --    (Id ::: Nil) tok
-    --liftIO $ print $ length images'
+    Pager images' _ _ <- getAdImage (id $ head adaccids)
+        (Id ::: Nil) tok
+    liftIO $ print $ length images'
     --delRet <- delAdImage (id $ head adaccids) ((Hash, Hash_ "5f73a7d1df0252ac7f012224dde315d0") :*: Nil) tok
     --liftIO $ print delRet
-    --Pager images'' _ _ <- getAdImage (id $ head adaccids)
-    --    (Id ::: Nil) tok
-    --liftIO $ print $ length images''
-    let campaign = (Name, Name_ "Test Campaign API") :*: (Objective, Objective_ OBJ_LINK_CLICKS)
+    Pager images'' _ _ <- getAdImage (id $ head adaccids)
+        Nil tok
+    liftIO $ print images''
+    let campaign = (Name, Name_ "Test Campaign API with BD FB PAGE ID + Interests") :*: (Objective, Objective_ OBJ_LINK_CLICKS)
                    :*: (AdC.Status, AdC.Status_ PAUSED_) :*: (BuyingType, BuyingType_ AUCTION) :*: Nil
     ret' <- setAdCampaign (id $ head adaccids) campaign tok
     liftIO $ print ret'
@@ -94,7 +101,7 @@ main = do
     let campaign = ret
     let location = TargetLocation ["US", "GB"]
     let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
-    let target = TargetingSpecs location (Just demo) $ Just [InstagramStream]
+    let target = TargetingSpecs location (Just demo) (Just [InstagramStream]) $ Just ids
     let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "Test AdSet API")
                 :*: (CampaignId, CampaignId_ $ campaignId ret) :*: (Targeting, Targeting_ target)
                 :*: (OptimizationGoal, OptimizationGoal_ REACH)
@@ -135,13 +142,13 @@ main = do
     let adId = either (error "haha") P.id adId'
 
     -- in order to run an ad, we have to set the status of the campaign, adset, and ad to ACTIVE
-    --aaa <- updAdCampaign campaign ((AdC.Status, AdC.Status_ ACTIVE_) :*: Nil) tok
+    --updAdCampaign campaign ((AdC.Status, AdC.Status_ DELETED_) :*: Nil) tok
     --liftIO $ print aaa
     --bbb <- updAdSet adsetRet ((AdS.Status, AdS.Status_ ACTIVE_) :*: (DailyBudget, DailyBudget_ 510) :*: Nil) tok
     --liftIO $ print bbb
     --ccc <- updAd adId ((Ad.Status, Ad.Status_ ACTIVE_) :*: Nil) tok
     --liftIO $ print ccc
-    --let delId = (Id, Id_ $ campaignId ret) :*: Nil
+    --let delId = (Id, Id_ $ campaignId ret) :*: (DeleteStrategy, DeleteStrategy_ Nil
     --delCampaign <- delAdCampaign ret delId tok -- (id $ head adaccids) delId tok
     --liftIO $ print delCampaign
     return ()
