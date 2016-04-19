@@ -30,7 +30,7 @@ data QueryResult = QueryResult {
   , path :: [T.Text]
   , description :: Maybe T.Text
   , cat :: Maybe T.Text
-  , topic :: T.Text
+  , topic :: Maybe T.Text
 } deriving (Show, Generic)
 
 data QueryResults = QueryResults {
@@ -39,18 +39,21 @@ data QueryResults = QueryResults {
 
 instance FromJSON QueryResults where
   parseJSON  = genericParseJSON defaultOptions {fieldLabelModifier = take $ length ("data" :: String)}
+instance ToJSON QueryResults where
+  toJSON (QueryResults res) = toJSON res
+
 instance ToJSON QueryResult
 instance FromJSON QueryResult where
-    parseJSON (Object v) = do
-        id <- v .: "id"
-        name <- v .: "name"
-        audience <- v .: "audience_size"
-        path <- v .: "path"
-        desc <- v .:? "description"
-        cat <- v .:? "disambiguation_category"
-        topic <- v .: "topic"
-        return $ QueryResult id name audience path desc cat topic
-    parseJSON x = fail $ show x
+  parseJSON (Object v) = do
+    id <- v .: "id"
+    name <- v .: "name"
+    audience <- v .: "audience_size"
+    path <- v .: "path"
+    desc <- v .:? "description"
+    cat <- v .:? "disambiguation_category"
+    topic <- v .:? "topic"
+    return $ QueryResult id name audience path desc cat topic
+  parseJSON x = fail $ show x
 
 queryInterest :: (R.MonadResource m, MonadBaseControl IO m)
   => T.Text -> UserAccessToken -> FacebookT Auth m QueryResults
