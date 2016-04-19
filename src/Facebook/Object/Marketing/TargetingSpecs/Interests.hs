@@ -17,14 +17,14 @@ import qualified Control.Monad.Trans.Resource as R
 import Control.Monad.Trans.Control (MonadBaseControl)
 
 data Interest = Interest {
-  id :: Int
+  id :: T.Text
 } deriving (Show, Generic, Eq)
 
 instance ToJSON Interest
 instance FromJSON Interest
 
 data QueryResult = QueryResult {
-    id_ :: Int
+    id_ :: T.Text
   , name :: T.Text
   , audience_size :: Int
   , path :: [T.Text]
@@ -42,7 +42,7 @@ instance FromJSON QueryResults where
 instance ToJSON QueryResult
 instance FromJSON QueryResult where
     parseJSON (Object v) = do
-        id <- liftA read $ v .: "id"
+        id <- v .: "id"
         name <- v .: "name"
         audience <- v .: "audience_size"
         path <- v .: "path"
