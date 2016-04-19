@@ -114,32 +114,32 @@ main = do
     --Pager adCr _ _ <- getAdCreative (id $ head adaccids) (Name ::: ObjectStoryId ::: Nil) $ Just tok
     --liftIO $ print adCr
     --let pageId = unObjectStoryId_ $ object_story_id $ head adCr
-    --Pager adSets _ _ <- getAdSet (id $ head adaccids) (Name ::: BillingEvent ::: OptimizationGoal ::: Targeting ::: Nil) tok
-    --liftIO $ print adSets
-    let imgHash = AdI.hash $ AdI.images adImg Map.! "bridge.jpg"
-    let cta_value = CallToActionValue fbUrl "FIXME"
-    let call_to_action = Just $ CallToActionADT LEARN_MORE cta_value
-    let msg = "Planning your holiday travel? Discover the best destinations, hotels, and more!"
-    -- regular ad
-    --let link = AdCreativeLinkData "This is a caption" (Hash_ imgHash) fbUrl msg
-    --                (Just ("This is a description" :: T.Text)) call_to_action
-    -- carousel ad
-    let carousel_child = CarouselChild "Child name" (Hash_ imgHash) fbUrl (Just "this is a carousel child description")
-    let link = CreativeCarouselData "This is a carousel caption" msg (replicate 4 carousel_child) "http://example.com" -- <-- cannot be fbUrl
-   -- Left (FacebookException {..., fbeErrorUserTitle = Just "Objective of campaign requires creative with external link or call to action", fbeErrorUserMsg = Just "For this campaign objective, a creative is required to have either external link or Call to Action.", ...})
-    let oss = ObjectStorySpecADT link (FBPageId pageId) $ Just $ IgId igId
-    let adcreative = (Name, Name_ "Test AdCreative")
-                    :*: (ObjectStorySpec, ObjectStorySpec_ oss) :*: Nil
-    creativeRet' <- setAdCreative (id $ head adaccids) adcreative tok
-    liftIO $ print creativeRet'
-    let !creativeRet = either (error . show) P.id creativeRet'
-    let ad = (Creative, Creative_ $ creativeToCreative creativeRet) :*: (AdsetId, AdsetId_ $ adsetIdToInt adsetRet)
-            :*: (Name, Name_ "Another Test Ad! API") :*: (Ad.Status, Ad.Status_ PAUSED_) :*: Nil
-    Pager ads _ _ <- getAd (id $ head adaccids) (Name ::: BidType ::: Nil) tok
-    liftIO $ print ads
-    adId' <- setAd (id $ head adaccids) ad tok
-    liftIO $ print adId'
-    let adId = either (error "haha") P.id adId'
+    Pager adSets _ _ <- getAdSet (id $ head adaccids) (Name ::: BillingEvent ::: OptimizationGoal ::: Targeting ::: Nil) tok
+    liftIO $ print adSets
+    --let imgHash = AdI.hash $ AdI.images adImg Map.! "bridge.jpg"
+    --let cta_value = CallToActionValue fbUrl "FIXME"
+    --let call_to_action = Just $ CallToActionADT LEARN_MORE cta_value
+    --let msg = "Planning your holiday travel? Discover the best destinations, hotels, and more!"
+    ---- regular ad
+    ----let link = AdCreativeLinkData "This is a caption" (Hash_ imgHash) fbUrl msg
+    ----                (Just ("This is a description" :: T.Text)) call_to_action
+    ---- carousel ad
+    --let carousel_child = CarouselChild "Child name" (Hash_ imgHash) fbUrl (Just "this is a carousel child description")
+    --let link = CreativeCarouselData "This is a carousel caption" msg (replicate 4 carousel_child) "http://example.com" -- <-- cannot be fbUrl
+   ---- Left (FacebookException {..., fbeErrorUserTitle = Just "Objective of campaign requires creative with external link or call to action", fbeErrorUserMsg = Just "For this campaign objective, a creative is required to have either external link or Call to Action.", ...})
+    --let oss = ObjectStorySpecADT link (FBPageId pageId) $ Just $ IgId igId
+    --let adcreative = (Name, Name_ "Test AdCreative")
+    --                :*: (ObjectStorySpec, ObjectStorySpec_ oss) :*: Nil
+    --creativeRet' <- setAdCreative (id $ head adaccids) adcreative tok
+    --liftIO $ print creativeRet'
+    --let !creativeRet = either (error . show) P.id creativeRet'
+    --let ad = (Creative, Creative_ $ creativeToCreative creativeRet) :*: (AdsetId, AdsetId_ $ adsetIdToInt adsetRet)
+    --        :*: (Name, Name_ "Another Test Ad! API") :*: (Ad.Status, Ad.Status_ PAUSED_) :*: Nil
+    --Pager ads _ _ <- getAd (id $ head adaccids) (Name ::: BidType ::: Nil) tok
+    --liftIO $ print ads
+    --adId' <- setAd (id $ head adaccids) ad tok
+    --liftIO $ print adId'
+    --let adId = either (error "haha") P.id adId'
 
     -- in order to run an ad, we have to set the status of the campaign, adset, and ad to ACTIVE
     --updAdCampaign campaign ((AdC.Status, AdC.Status_ DELETED_) :*: Nil) tok
