@@ -72,9 +72,11 @@ main = do
     Pager adSets _ _ <- getAdSet (id $ head adCamps) (ConfiguredStatus ::: EffectiveStatus ::: DailyBudget ::: Nil) tok
     liftIO $ print adSets
     let (Id_ idText) = id $ head adSets
+    --Pager insights _ _ <- In.getInsights (FB.Id idText) [] tok
+    --liftIO $ print (insights:: [WithJSON In.Insights])
     let adSetId = (id $ head adSets)
-    Pager insights _ _ <- In.getInsights adSetId (In.Age ::: In.Gender ::: Nil) tok
-    --Pager insights _ _ <- In.getInsights adSetId (In.Country ::: Nil) tok
+    Pager insights _ _ <- In.getInsightsBreak adSetId (In.Age ::: In.Gender ::: Nil) tok
+    --Pager insights _ _ <- In.getInsightsBreak adSetId (In.Country ::: Nil) tok
     liftIO $ print idText
     liftIO $ print insights
     --Pager images _ _ <- getAdImage (id $ head adaccids)

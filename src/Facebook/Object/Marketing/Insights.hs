@@ -22,7 +22,7 @@ import qualified Control.Monad.Trans.Resource as R
 import qualified Data.Aeson as A
 import qualified Data.Text as T
 
-import Facebook.Types hiding (Id)
+import Facebook.Types
 import Facebook.Monad
 import Facebook.Graph
 import Facebook.Pager
@@ -112,14 +112,54 @@ instance IsInsightField Gender
 instance IsInsightField Country
 instance IsInsightField Nil
 
-type Insights fl r = (A.FromJSON r, IsInsightField r, FieldListToRec fl r)
+type InsightsConst fl r = (A.FromJSON r, IsInsightField r, FieldListToRec fl r)
 type InsightsRet r = DateStart :*: DateStop :*: Impressions :*: r
 -- see restrictions on breakdown factor combination: https://developers.facebook.com/docs/marketing-api/insights/breakdowns/v2.5
-getInsights :: (R.MonadResource m, MonadBaseControl IO m, Insights fl r)  =>
+getInsightsBreak :: (R.MonadResource m, MonadBaseControl IO m, InsightsConst fl r)  =>
                      Id_
                   -> fl
                   -> UserAccessToken
                   -> FacebookT Auth m (Pager (InsightsRet r))
-getInsights (Id_ id_) fl tok =
+getInsightsBreak (Id_ id_) fl tok =
   getObject ("/v2.5/" <> id_ <> "/insights")
     [("fields", "impressions"), ("breakdowns", textListToBS $ fieldNameList fl)] (Just tok)
+
+
+data Action a = Action { action_action_type :: Text,
+                         action_value :: a }
+                deriving (Eq, Show, Typeable, Generic)
+
+instance A.FromJSON a => A.FromJSON (Action a) where
+  parseJSON = parseJSONWithPrefix "action_"
+
+instance A.ToJSON a => A.ToJSON (Action a) where
+  toJSON = toJSONWithPrefix "action_"
+
+
+data Insights = Insights
+  { ins_actions :: [Action Int],
+    ins_unique_actions :: [Action Double],
+    ins_cost_per_action_type :: [Action Double],
+    ins_cost_per_unique_action_type :: [Action Double],
+    ins_call_to_action_clicks :: Int,
+    ins_unique_clicks :: Int,
+    ins_cpm :: Double,
+    ins_ctr :: Double,
+    ins_cpp :: Double,
+    ins_unique_ctr :: Double,
+    ins_unique_impressions:: Int,
+    ins_reach :: Int,
+    ins_spend:: Double } deriving (Eq, Show, Typeable, Generic)
+
+instance A.FromJSON Insights where
+  parseJSON = parseJSONWithPrefix "ins_"
+
+instance A.ToJSON Insights where
+  toJSON = toJSONWithPrefix "ins_"
+
+getInsights :: (R.MonadResource m, MonadBaseControl IO m)  =>
+                     Id
+                  -> [Argument]
+                  -> UserAccessToken
+                  -> FacebookT Auth m (Pager (WithJSON Insights))
+getInsights (Id id_) query tok = getObject ("/v2.5/" <> id_ <> "/insights") query (Just tok)
