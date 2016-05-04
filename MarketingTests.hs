@@ -30,7 +30,7 @@ import Facebook.Object.Marketing.Ad
 import qualified Facebook.Object.Marketing.Ad as Ad
 import Facebook.Object.Marketing.AdImage
 import Facebook.Object.Marketing.Utility hiding (toBS)
-import Facebook.Object.Marketing.Insights
+import qualified Facebook.Object.Marketing.Insights as In
 import Prelude hiding (id)
 import qualified Data.Map.Strict as Map
 import Data.Aeson
@@ -43,9 +43,6 @@ main = do
   tokenBody <- getEnv "FB_ACCESS_TOKEN"
   fbUid <- getEnv "FB_USER_ID"
   pageId <- liftM T.pack $ getEnv "FB_PAGE_ID"
-  --igId <- liftM T.pack $ getEnv "IG_ID"
-  --pageId <- liftM (read :: String -> Int) $ getEnv "FB_PAGE_ID"
-  --igId <- liftM (read :: String -> Int) $ getEnv "IG_ID"
   fbUrl <- liftM T.pack $ getEnv "FB_URL"
   let fbUrl = "http://me.example.com"
   man <- newManager conduitManagerSettings
@@ -69,53 +66,56 @@ main = do
     adAcc <- getAdAccount (id $ head adaccids)
                 (Balance ::: AmountSpent ::: Age ::: Nil)
                 (Just tok)
-    liftIO $ print adAcc
-    --Pager adCamps _ _ <- getAdCampaign (id $ head adaccids) (Name ::: Nil) tok
+    --liftIO $ print adAcc
+    Pager adCamps _ _ <- getAdCampaign (id $ head adaccids) (Name ::: Nil) tok
     --liftIO $ print adCamps
-    --Pager adSets _ _ <- getAdSet (id $ head adCamps) (ConfiguredStatus ::: EffectiveStatus ::: DailyBudget ::: Nil) tok
-    --liftIO $ print adSets
-    --let (Id_ idText) = id $ head adSets
-    --Pager insights _ _ <- getInsights (FB.Id idText) [] tok
-    --liftIO $ print (insights:: [WithJSON Insights])
+    Pager adSets _ _ <- getAdSet (id $ head adCamps) (ConfiguredStatus ::: EffectiveStatus ::: DailyBudget ::: Nil) tok
+    liftIO $ print adSets
+    let (Id_ idText) = id $ head adSets
+    let adSetId = (id $ head adSets)
+    Pager insights _ _ <- In.getInsights adSetId (In.Age ::: In.Gender ::: Nil) tok
+    --Pager insights _ _ <- In.getInsights adSetId (In.Country ::: Nil) tok
+    liftIO $ print idText
+    liftIO $ print insights
     --Pager images _ _ <- getAdImage (id $ head adaccids)
     --        (Id ::: Name ::: Nil) tok
     --liftIO $ print $ (id $ head adaccids)
     --liftIO $ print $ length images
-    let rec = (Filename, Filename_ "/home/alex/code/beautilytics/fb/bridge.jpg") :*: Nil
-    adImg' <- setAdImage (id $ head adaccids) rec tok
-    let adImg = either (error . show) P.id adImg'
-    liftIO $ print adImg
-    Pager images' _ _ <- getAdImage (id $ head adaccids)
-        (Id ::: Nil) tok
-    liftIO $ print $ length images'
-    --delRet <- delAdImage (id $ head adaccids) ((Hash, Hash_ "5f73a7d1df0252ac7f012224dde315d0") :*: Nil) tok
-    --liftIO $ print delRet
-    Pager images'' _ _ <- getAdImage (id $ head adaccids)
-        Nil tok
-    liftIO $ print images''
-    let campaign = (Name, Name_ "Test Campaign API with BD FB PAGE ID + Interests") :*: (Objective, Objective_ OBJ_LINK_CLICKS)
-                   :*: (AdC.Status, AdC.Status_ PAUSED_) :*: (BuyingType, BuyingType_ AUCTION) :*: Nil
-    ret' <- setAdCampaign (id $ head adaccids) campaign tok
-    liftIO $ print ret'
-    let ret = either (error . show) P.id ret'
-    let campaign = ret
-    let location = TargetLocation ["US", "GB"]
-    let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
-    let target = TargetingSpecs location (Just demo) (Just [InstagramStream]) $ Just ids
-    let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "Test AdSet API")
-                :*: (CampaignId, CampaignId_ $ campaignId ret) :*: (Targeting, Targeting_ target)
-                :*: (OptimizationGoal, OptimizationGoal_ REACH)
-                :*: (BillingEvent, BillingEvent_ IMPRESSIONS_) :*: (DailyBudget, DailyBudget_ 500) :*: Nil
-    adsetRet' <- setAdSet (id $ head adaccids) adset tok
-    liftIO $ print adsetRet'
-    let adsetRet = either (error . show) P.id adsetRet'
-    --bla <- delAdSet adsetRet Nil tok
-    --liftIO $ print bla
-    --Pager adCr _ _ <- getAdCreative (id $ head adaccids) (Name ::: ObjectStoryId ::: Nil) $ Just tok
-    --liftIO $ print adCr
-    --let pageId = unObjectStoryId_ $ object_story_id $ head adCr
-    Pager adSets _ _ <- getAdSet (id $ head adaccids) (Name ::: BillingEvent ::: OptimizationGoal ::: Targeting ::: Nil) tok
-    liftIO $ print adSets
+    --let rec = (Filename, Filename_ "/home/alex/code/beautilytics/fb/bridge.jpg") :*: Nil
+    --adImg' <- setAdImage (id $ head adaccids) rec tok
+    --let adImg = either (error . show) P.id adImg'
+    --liftIO $ print adImg
+    --Pager images' _ _ <- getAdImage (id $ head adaccids)
+    --    (Id ::: Nil) tok
+    --liftIO $ print $ length images'
+    ----delRet <- delAdImage (id $ head adaccids) ((Hash, Hash_ "5f73a7d1df0252ac7f012224dde315d0") :*: Nil) tok
+    ----liftIO $ print delRet
+    --Pager images'' _ _ <- getAdImage (id $ head adaccids)
+    --    Nil tok
+    --liftIO $ print images''
+    --let campaign = (Name, Name_ "Test Campaign API with BD FB PAGE ID + Interests") :*: (Objective, Objective_ OBJ_LINK_CLICKS)
+    --               :*: (AdC.Status, AdC.Status_ PAUSED_) :*: (BuyingType, BuyingType_ AUCTION) :*: Nil
+    --ret' <- setAdCampaign (id $ head adaccids) campaign tok
+    --liftIO $ print ret'
+    --let ret = either (error . show) P.id ret'
+    --let campaign = ret
+    --let location = TargetLocation ["US", "GB"]
+    --let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
+    --let target = TargetingSpecs location (Just demo) (Just [InstagramStream]) $ Just ids
+    --let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "Test AdSet API")
+    --            :*: (CampaignId, CampaignId_ $ campaignId ret) :*: (Targeting, Targeting_ target)
+    --            :*: (OptimizationGoal, OptimizationGoal_ REACH)
+    --            :*: (BillingEvent, BillingEvent_ IMPRESSIONS_) :*: (DailyBudget, DailyBudget_ 500) :*: Nil
+    --adsetRet' <- setAdSet (id $ head adaccids) adset tok
+    --liftIO $ print adsetRet'
+    --let adsetRet = either (error . show) P.id adsetRet'
+    ----bla <- delAdSet adsetRet Nil tok
+    ----liftIO $ print bla
+    ----Pager adCr _ _ <- getAdCreative (id $ head adaccids) (Name ::: ObjectStoryId ::: Nil) $ Just tok
+    ----liftIO $ print adCr
+    ----let pageId = unObjectStoryId_ $ object_story_id $ head adCr
+    --Pager adSets _ _ <- getAdSet (id $ head adaccids) (Name ::: BillingEvent ::: OptimizationGoal ::: Targeting ::: Nil) tok
+    --liftIO $ print adSets
     --let imgHash = AdI.hash $ AdI.images adImg Map.! "bridge.jpg"
     --let cta_value = CallToActionValue fbUrl "FIXME"
     --let call_to_action = Just $ CallToActionADT LEARN_MORE cta_value

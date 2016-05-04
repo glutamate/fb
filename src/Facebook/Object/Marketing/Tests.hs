@@ -29,7 +29,7 @@ import Facebook.Object.Marketing.Ad
 import qualified Facebook.Object.Marketing.Ad as Ad
 import Facebook.Object.Marketing.AdImage
 import Facebook.Object.Marketing.Utility hiding (toBS)
-import Facebook.Object.Marketing.Insights
+--import Facebook.Object.Marketing.Insights
 import Prelude hiding (id)
 import qualified Data.Map.Strict as Map
 import Data.Aeson
