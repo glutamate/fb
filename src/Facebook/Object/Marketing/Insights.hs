@@ -105,6 +105,26 @@ instance A.FromJSON Impressions_ where
 unImpressions_ :: Impressions_ -> Integer
 unImpressions_ (Impressions_ x) = x
 
+data TotalActions = TotalActions
+newtype TotalActions_ = TotalActions_ Integer deriving (Show, Generic)
+instance Field TotalActions where
+  type FieldValue TotalActions = TotalActions_
+  fieldName _ = "total_actions"
+  fieldLabel = TotalActions
+instance A.FromJSON TotalActions_
+unTotalActions_ :: TotalActions_ -> Integer
+unTotalActions_ (TotalActions_ x) = x
+
+data Clicks = Clicks
+newtype Clicks_ = Clicks_ Integer deriving (Show, Generic)
+instance Field Clicks where
+  type FieldValue Clicks = Clicks_
+  fieldName _ = "clicks"
+  fieldLabel = Clicks
+instance A.FromJSON Clicks_
+unClicks_ :: Clicks_ -> Integer
+unClicks_ (Clicks_ x) = x
+
 class IsInsightField r
 instance (IsInsightField h, IsInsightField t) => IsInsightField (h :*: t)
 instance IsInsightField Age
@@ -113,7 +133,7 @@ instance IsInsightField Country
 instance IsInsightField Nil
 
 type InsightsConst fl r = (A.FromJSON r, IsInsightField r, FieldListToRec fl r)
-type InsightsRet r = DateStart :*: DateStop :*: Impressions :*: r
+type InsightsRet r = DateStart :*: DateStop :*: Impressions :*: TotalActions :*: Clicks :*: r
 -- see restrictions on breakdown factor combination: https://developers.facebook.com/docs/marketing-api/insights/breakdowns/v2.5
 getInsightsBreak :: (R.MonadResource m, MonadBaseControl IO m, InsightsConst fl r)  =>
                      Id_
@@ -122,7 +142,7 @@ getInsightsBreak :: (R.MonadResource m, MonadBaseControl IO m, InsightsConst fl 
                   -> FacebookT Auth m (Pager (InsightsRet r))
 getInsightsBreak (Id_ id_) fl tok =
   getObject ("/v2.5/" <> id_ <> "/insights")
-    [("fields", "impressions"), ("breakdowns", textListToBS $ fieldNameList fl)] (Just tok)
+    [("fields", "impressions,total_actions,clicks"), ("breakdowns", textListToBS $ fieldNameList fl)] (Just tok)
 
 
 data Action a = Action { action_action_type :: Text,
