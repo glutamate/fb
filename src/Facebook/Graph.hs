@@ -4,6 +4,7 @@ module Facebook.Graph
     , getObjectRec
     , postObject
     , postForm
+    , postFormVideo
     , deleteForm
     , deleteObject
     , searchObjects
@@ -85,6 +86,13 @@ postForm :: (R.MonadResource m, MonadBaseControl IO m, A.FromJSON a) =>
            -> FacebookT Auth m (Either FacebookException a)
 postForm = methodForm HT.methodPost
 
+postFormVideo :: (R.MonadResource m, MonadBaseControl IO m, A.FromJSON a) =>
+              Text                -- ^ Path (should begin with a slash @\/@)
+           -> [Part]          -- ^ Arguments to be passed to Facebook
+           -> AccessToken anyKind -- ^ Access token
+           -> FacebookT Auth m (Either FacebookException a)
+postFormVideo = methodFormVideo HT.methodPost
+
 -- | Make a raw @DELETE@ request to Facebook's Graph API.
 deleteForm :: (R.MonadResource m, MonadBaseControl IO m, A.FromJSON a) =>
                 Text                -- ^ Path (should begin with a slash @\/@)
@@ -114,6 +122,26 @@ methodForm :: (R.MonadResource m, MonadBaseControl IO m, A.FromJSON a) =>
            -> FacebookT Auth m (Either FacebookException a)
 methodForm method path parts token = runResourceInFb $ do
     req <- fbreq path (Just token) []
+    req' <- formDataBody parts req
+    asJson =<< fbhttp req' { H.method = method}
+    --req'' <- fbhttp req' { H.method = method}
+    --val <- E.try $ asJson req''
+    --case val :: Either E.SomeException a of
+    --    Right json -> return $ Right json
+    --    Left _ -> do
+    --        val' <- E.try $ asJson req''
+    --        case val' :: Either E.SomeException FacebookException of
+    --            Right fbe -> return $ Left fbe
+    --            Left err -> error $ show err -- FIXME
+
+methodFormVideo :: (R.MonadResource m, MonadBaseControl IO m, A.FromJSON a) =>
+              HT.Method
+           -> Text                -- ^ Path (should begin with a slash @\/@)
+           -> [Part]          -- ^ Arguments to be passed to Facebook
+           -> AccessToken anyKind -- ^ Access token
+           -> FacebookT Auth m (Either FacebookException a)
+methodFormVideo  method path parts token = runResourceInFb $ do
+    req <- fbreqVideo path (Just token) []
     req' <- formDataBody parts req
     asJson =<< fbhttp req' { H.method = method}
     --req'' <- fbhttp req' { H.method = method}

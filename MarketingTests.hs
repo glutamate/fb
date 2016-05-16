@@ -19,6 +19,7 @@ import Facebook.Object.Marketing.AdCreative
 import qualified Facebook.Object.Marketing.AdCampaign as AdC
 import qualified Facebook.Object.Marketing.AdSet as AdS
 import qualified Facebook.Object.Marketing.AdImage as AdI
+import qualified Facebook.Object.Marketing.AdVideo as AdV
 --import Facebook.Object.Marketing.AdLabel
 import Facebook.Object.Marketing.TargetingSpecs
 import Facebook.Object.Marketing.TargetingSpecs.Location
@@ -55,6 +56,7 @@ main = do
     u <- getUser "me" [] (Just tok)
     --liftIO $ print u
     Pager adaccids _ _ <- getAdAccountId $ Just tok
+    AdV.uploadVideo (id $ head adaccids) "/path/to/video.mp4" "video title" tok
     Pager (igId':_) _ _ <- getIgId tok $ FBPageId pageId
     qs <- Int.queryInterest "travel" tok
     let ids = map (Int.Interest <$> Int.id_) $ Int.data_ qs

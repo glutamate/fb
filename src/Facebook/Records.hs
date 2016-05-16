@@ -65,10 +65,10 @@ instance (ToForm a, Field f, ToBS (FieldValue f)) => ToForm (f :*: a) where
     let paramName = fieldToByteString f
         fName = fieldName f
         val' = toBS val
-        part = if isPrefixOf "file" fName -- dirty hack...
-                then partFile fName $ B8.unpack val'
-                else partBS fName val'
-    in part : toForm rest
+        part "filename" = partFile fName $ B8.unpack val'
+        part "video_file_chunk" = partFile fName $ B8.unpack val'
+        part _  = partBS fName val'
+    in part fName : toForm rest
 
 instance FromJSON Nil where
   parseJSON _ = return Nil

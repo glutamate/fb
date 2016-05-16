@@ -59,6 +59,7 @@ library
     Facebook.Object.Marketing.AdAccountGroup
     Facebook.Object.Marketing.AdSet
     Facebook.Object.Marketing.AdImage
+    Facebook.Object.Marketing.AdVideo
     Facebook.Object.Marketing.ImageCrop
     Facebook.Object.Marketing.Insights
     Facebook.Object.Marketing.Utility
@@ -114,6 +115,7 @@ library
     , cryptohash-cryptoapi == 0.1.*
     , monad-logger         >= 0.3
     , vector
+    , directory
   if flag(conduit11)
     build-depends:
         conduit              >= 1.1   && < 1.3

@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveDataTypeable, FlexibleContexts, OverloadedStrings, CPP #-}
 module Facebook.Base
     ( fbreq
+    , fbreqVideo
     , ToSimpleQuery(..)
     , asJson
     , asJsonHelper
@@ -68,6 +69,26 @@ fbreq path mtoken query =
              , H.responseTimeout = Just 120000000 -- 2 minutes
              }
 
+fbreqVideo :: Monad m =>
+         Text                        -- ^ Path.
+      -> Maybe (AccessToken anyKind) -- ^ Access token.
+      -> HT.SimpleQuery              -- ^ Parameters.
+      -> FacebookT anyAuth m H.Request
+fbreqVideo  path mtoken query =
+    withTier $ \tier ->
+      let host = case tier of
+                   Production -> "graph-video.facebook.com"
+                   Beta ->  "graph-video.beta.facebook.com"
+      in def { H.secure        = True
+             , H.host          = host
+             , H.port          = 443
+             , H.path          = TE.encodeUtf8 path
+             , H.redirectCount = 3
+             , H.queryString   =
+                 HT.renderSimpleQuery False $
+                 maybe id tsq mtoken query
+             , H.responseTimeout = Just 120000000 -- 2 minutes
+             }
 
 -- | Internal class for types that may be passed on queries to
 -- Facebook's API.
