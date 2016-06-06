@@ -144,15 +144,15 @@ instance IsInsightField Nil
 
 type InsightsConst fl r = (A.FromJSON r, IsInsightField r, FieldListToRec fl r)
 type InsightsRet r = DateStart :*: DateStop :*: Impressions :*: TotalActions :*: Clicks :*: Spend :*: r
--- see restrictions on breakdown factor combination: https://developers.facebook.com/docs/marketing-api/insights/breakdowns/v2.5
+-- see restrictions on breakdown factor combination: https://developers.facebook.com/docs/marketing-api/insights/breakdowns/v2.6
 getInsightsBreak :: (R.MonadResource m, MonadBaseControl IO m, InsightsConst fl r)  =>
                      Id_
                   -> fl
                   -> UserAccessToken
                   -> FacebookT Auth m (Pager (InsightsRet r))
 getInsightsBreak (Id_ id_) fl tok =
-  getObject ("/v2.5/" <> id_ <> "/insights")
-    [("fields", "impressions,total_actions,clicks,spend"), ("breakdowns", textListToBS $ fieldNameList fl)] (Just tok)
+  getObject ("/v2.6/" <> id_ <> "/insights")
+    [("fields", "impressions,total_actions,clicks,spend"), ("date_preset", "lifetime"), ("breakdowns", textListToBS $ fieldNameList fl)] (Just tok)
 
 
 data Action a = Action { action_action_type :: Text,
@@ -192,4 +192,8 @@ getInsights :: (R.MonadResource m, MonadBaseControl IO m)  =>
                   -> [Argument]
                   -> UserAccessToken
                   -> FacebookT Auth m (Pager (WithJSON Insights))
-getInsights (Id id_) query tok = getObject ("/v2.5/" <> id_ <> "/insights") query (Just tok)
+getInsights (Id id_) query tok = do -- NOTE: in v2.5 of the API, this fields were returned by default
+  -- quickly reproduce v2.5 behaviour. I'm sure there are better ways
+  let q = ("date_preset", "lifetime") :
+          ("fields", "actions, unique_actions, cost_per_action_type, cost_per_unique_action_type, call_to_action_clicks, unique_clicks, cpm, ctr, cpp, unique_ctr, unique_impressions, reach, spend") : query
+  getObject ("/v2.6/" <> id_ <> "/insights") q (Just tok)

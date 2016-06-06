@@ -58,5 +58,5 @@ instance FromJSON QueryResult where
 queryInterest :: (R.MonadResource m, MonadBaseControl IO m)
   => T.Text -> UserAccessToken -> FacebookT Auth m QueryResults
 queryInterest query tok =
-  getObject "/v2.5/search" [("type", "adinterest"), ("q", T.encodeUtf8 query)] $ Just tok
+  getObject "/v2.6/search" [("type", "adinterest"), ("q", T.encodeUtf8 query)] $ Just tok
 
