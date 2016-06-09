@@ -84,7 +84,7 @@ instance ToBS Filesize_ where
 
 data UploadStartResp = UploadStartResp {
     uploadSessionId :: Int
-  , videoId :: Int
+  , videoId :: Integer
   , startOffset :: Int
   , endOffset :: Int
 } deriving Show
@@ -148,12 +148,13 @@ instance FromJSON UploadTransferResp where
     end <- liftA read $ v .: "end_offset"
     return $ UploadTransferResp start end
 
+type VideoId = Integer
 uploadVideo :: (R.MonadResource m, MonadBaseControl IO m) =>
 	Id_    -- ^ Ad Account Id
 	-> FilePath    -- ^ Arguments to be passed to Facebook.
   ->  T.Text
 	->  UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m (Either FacebookException Success)
+	-> FacebookT Auth m (Either FacebookException VideoId)
 uploadVideo (Id_ id) fp videoTitle mtoken = do
   bs <- liftIO $ BS.readFile fp
   ret <- sendVideoStart id mtoken bs
@@ -163,7 +164,11 @@ uploadVideo (Id_ id) fp videoTitle mtoken = do
       ret <- sendVideoChunks id mtoken bs $ startResp2ChunkResp resp
       case ret of
         Left fbExp -> return $ Left fbExp
-        Right _ -> sendVideoFinish id mtoken videoTitle resp
+        Right _ -> do
+          ret <- sendVideoFinish id mtoken videoTitle resp
+          case ret of
+            Left fbExp -> return $ Left fbExp
+            Right _ -> return $ Right $ videoId resp
 
 startResp2ChunkResp (UploadStartResp sess _ start end) =
   (sess, UploadTransferResp start end)
