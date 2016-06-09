@@ -518,7 +518,7 @@ genGetId =
     "\ngetAdAccountId :: (R.MonadResource m, MonadBaseControl IO m) =>\n\t\
               \ Maybe UserAccessToken -- ^ User access token.\n\t\
             \-> FacebookT anyAuth m (Pager AdAccountIdDetails)\n\
-    \getAdAccountId token = getObject \"/v2.5/me/adaccounts\" [] token\n"
+    \getAdAccountId token = getObject \"/v2.6/me/adaccounts\" [] token\n"
 
 igIdDetails :: Text
 igIdDetails = "type IgIdDetails = Id :*: Nil"
@@ -529,7 +529,7 @@ genFBPageIdToIgId =
               \ UserAccessToken -- ^ User access token.\n\t\
             \-> FBPageId \n\t\
             \-> FacebookT anyAuth m (Pager IgIdDetails)\n\
-    \getIgId token (FBPageId pageId) = getObject (\"/v2.5/\" <> pageId <> \"/instagram_accounts\") [(\"fields\", textListToBS $ fieldNameList $ Id ::: Nil)] $ Just token\n"
+    \getIgId token (FBPageId pageId) = getObject (\"/v2.6/\" <> pageId <> \"/instagram_accounts\") [(\"fields\", textListToBS $ fieldNameList $ Id ::: Nil)] $ Just token\n"
 
 genFctName :: Entity -> InteractionMode -> Text
 genFctName _ Types = ""
@@ -604,7 +604,7 @@ genFct ent mode defFields =
         idUrl = if Set.member (ent, mode) entityModeIdNotInURL
                     then ""
                     else " <> id"
-    in fctName <> " (" <> idConstr <> " id) " <> argName <> " mtoken = " <> httpMethod <> " (\"/v2.5/\"" <> idUrl <> " <> \"" <> url
+    in fctName <> " (" <> idConstr <> " id) " <> argName <> " mtoken = " <> httpMethod <> " (\"/v2.6/\"" <> idUrl <> " <> \"" <> url
        <> "\") " <> args defFields <> maybeToken <> "mtoken\n\n"
 
 modeToArgs Types _ = ""

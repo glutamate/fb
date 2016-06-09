@@ -217,7 +217,7 @@ getAdImage :: (R.MonadResource m, MonadBaseControl IO m, AdImageGet fl r) =>
 	-> fl     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT anyAuth m (Pager (AdImageGetRet r))
-getAdImage (Id_ id) fl mtoken = getObject ("/v2.5/" <> id <> "/adimages") [("fields", textListToBS $ fieldNameList $ Hash ::: fl)] $ Just mtoken
+getAdImage (Id_ id) fl mtoken = getObject ("/v2.6/" <> id <> "/adimages") [("fields", textListToBS $ fieldNameList $ Hash ::: fl)] $ Just mtoken
 
 
 -- Entity:AdImage, mode:Creating
@@ -243,7 +243,7 @@ setAdImage :: (R.MonadResource m, MonadBaseControl IO m, AdImageSet r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Either FacebookException SetImgs)
-setAdImage (Id_ id) r mtoken = postForm ("/v2.5/" <> id <> "/adimages") (toForm r) mtoken
+setAdImage (Id_ id) r mtoken = postForm ("/v2.6/" <> id <> "/adimages") (toForm r) mtoken
 
 
 -- Entity:AdImage, mode:Deleting
@@ -258,5 +258,5 @@ delAdImage :: (R.MonadResource m, MonadBaseControl IO m, AdImageDel r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Either FacebookException Success)
-delAdImage (Id_ id) r mtoken = deleteForm ("/v2.5/" <> id <> "") (toForm r) mtoken
+delAdImage (Id_ id) r mtoken = deleteForm ("/v2.6/" <> id <> "") (toForm r) mtoken
 

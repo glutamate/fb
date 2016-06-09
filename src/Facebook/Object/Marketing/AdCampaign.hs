@@ -155,7 +155,7 @@ getAdCampaign :: (R.MonadResource m, MonadBaseControl IO m, AdCampaignGet fl r) 
 	-> fl     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT anyAuth m (Pager (AdCampaignGetRet r))
-getAdCampaign (Id_ id) fl mtoken = getObject ("/v2.5/" <> id <> "/campaigns") [("fields", textListToBS $ fieldNameList $ Id ::: fl)] $ Just mtoken
+getAdCampaign (Id_ id) fl mtoken = getObject ("/v2.6/" <> id <> "/campaigns") [("fields", textListToBS $ fieldNameList $ Id ::: fl)] $ Just mtoken
 
 
 -- Entity:AdCampaign, mode:Creating
@@ -188,7 +188,7 @@ setAdCampaign :: (R.MonadResource m, MonadBaseControl IO m, AdCampaignSet r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Either FacebookException CreateCampaignId)
-setAdCampaign (Id_ id) r mtoken = postForm ("/v2.5/" <> id <> "/campaigns") (toForm r) mtoken
+setAdCampaign (Id_ id) r mtoken = postForm ("/v2.6/" <> id <> "/campaigns") (toForm r) mtoken
 
 
 -- Entity:AdCampaign, mode:Updating
@@ -207,7 +207,7 @@ updAdCampaign :: (R.MonadResource m, MonadBaseControl IO m, AdCampaignUpd r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Either FacebookException Success)
-updAdCampaign (CreateCampaignId id) r mtoken = postForm ("/v2.5/" <> id <> "") (toForm r) mtoken
+updAdCampaign (CreateCampaignId id) r mtoken = postForm ("/v2.6/" <> id <> "") (toForm r) mtoken
 
 
 -- Entity:AdCampaign, mode:Deleting
@@ -225,5 +225,5 @@ delAdCampaign :: (R.MonadResource m, MonadBaseControl IO m, AdCampaignDel r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Either FacebookException Success)
-delAdCampaign (CreateCampaignId id) r mtoken = deleteForm ("/v2.5/" <> id <> "") (toForm r) mtoken
+delAdCampaign (CreateCampaignId id) r mtoken = deleteForm ("/v2.6/" <> id <> "") (toForm r) mtoken
 
