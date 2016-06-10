@@ -45,8 +45,9 @@ newTypes =
     \instance ToBS EffectiveStatusADT\n"
     <> execOption <> optGoal <> bidType <> callToActionType
     <> runStatus <> objective <> buyingType <> deleteStrategy
-    <> billingEvent <> objectStorySpec <> adCreativeLinkData <> carouselChildren
-    <> creativeADT <> callToAction <> genericRetType <> genericIdRetType
+    <> billingEvent <> objectStorySpec <> adCreativeLinkData
+    <> adCreativeVideoData <> carouselChildren <> creativeADT
+    <> callToAction <> genericRetType <> genericIdRetType
 
 creativeADT =
     "data AdCreativeADT = AdCreativeADT {\n\
@@ -63,6 +64,10 @@ objectStorySpec =
     "data ObjectStorySpecADT = ObjectStorySpecADT {\n\
     \\t\tlinkData  :: AdCreativeLinkData,\n\
     \\t\tstoryPageId  :: FBPageId,\n\
+    \\t\tigId  :: Maybe IgId}\n\
+    \\t| ObjectStorySpecVideoLink {\n\
+    \\t\tvideoData  :: AdCreativeVideoData,\n\
+    \\t\tvStoryPageId  :: FBPageId,\n\
     \\t\tigId  :: Maybe IgId\n\
     \\t} deriving (Show, Generic)\n"
     <>
@@ -78,11 +83,26 @@ objectStorySpec =
     \\ttoJSON (ObjectStorySpecADT ld (FBPageId pi) (Just (IgId ig))) =\n\
     \\t  object [ \"link_data\" .= ld,\n\
     \\t           \"page_id\" .= pi, \n\
-    \\t           \"instagram_actor_id\" .= ig] \n"
+    \\t           \"instagram_actor_id\" .= ig] \n\
+    \\ttoJSON (ObjectStorySpecVideoLink vidData (FBPageId pi) (Just (IgId ig))) =\n\
+    \\t  object [ \"video_data\" .= vidData,\n\
+    \\t           \"page_id\" .= pi,\n\
+    \\t           \"instagram_actor_id\" .= ig]\n"
     <>
     "instance FromJSON ObjectStorySpecADT where\n\
-    \\tparseJSON (Object v) =\n\
+    \\tparseJSON (Object v) = do\n\
+    \\t typ <- v .:? \"link_data\" :: Parser (Maybe AdCreativeLinkData)\n\
+    \\t case typ of\n\
+    \\t\t Nothing -> parseObjectStorySpecADT v\n\
+    \\t\t Just _  -> parseObjectStorySpecVideoLink v\n"
+    <>
+    "parseObjectStorySpecADT v =\
     \\t ObjectStorySpecADT <$> v .: \"link_data\"\n\
+    \\t                    <*> v .: \"page_id\"\n\
+    \\t                    <*> v .:? \"instagram_actor_id\"\n"
+    <>
+    "parseObjectStorySpecVideoLink v =\
+    \\t ObjectStorySpecVideoLink <$> v .: \"video_data\"\n\
     \\t                    <*> v .: \"page_id\"\n\
     \\t                    <*> v .:? \"instagram_actor_id\"\n"
     <>
@@ -137,6 +157,28 @@ carouselChildren =
     <>
     "instance ToBS CarouselChild where\n\
     \\ttoBS a = toBS $ toJSON a\n" -- FIXME Maybe this should be the default implementation?
+
+adCreativeVideoData =
+    "data AdCreativeVideoData = AdCreativeVideoData {\n\
+    \\t\tvid_call_to_action :: CallToActionADT,\n\
+    \\t\tdesc ::  Text,\n\
+    \\t\tthumb_url ::  Text,\n\
+    \\t\tvideo_id :: Integer} -- FIXME: newtype wrapper\n\
+    \\tderiving (Show, Generic)\n"
+    <>
+    "instance ToJSON AdCreativeVideoData where\n\
+    \\ttoJSON (AdCreativeVideoData cta d thumbUrl vId) =\n\
+    \\t  object [ \"call_to_action\" .= cta,\n\
+    \\t           \"description\" .= d,\n\
+    \\t           \"image_url\" .= thumbUrl,\n\
+    \\t           \"video_id\" .= vId]\n"
+    <>
+    "instance FromJSON AdCreativeVideoData where\n\
+    \\tparseJSON (Object v) =\n\
+    \\t  AdCreativeVideoData <$> v .: \"call_to_action\"\n\
+    \\t                      <*> v .: \"description\"\n\
+    \\t                      <*> v .: \"image_url\"\n\
+    \\t                      <*> v .: \"video_id\"\n"
 
 adCreativeLinkData =
     "data AdCreativeLinkData = AdCreativeLinkData {\n\

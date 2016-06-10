@@ -204,6 +204,10 @@ instance FromJSON BillingEventADT where
 data ObjectStorySpecADT = ObjectStorySpecADT {
 		linkData  :: AdCreativeLinkData,
 		storyPageId  :: FBPageId,
+		igId  :: Maybe IgId}
+	| ObjectStorySpecVideoLink {
+		videoData  :: AdCreativeVideoData,
+		vStoryPageId  :: FBPageId,
 		igId  :: Maybe IgId
 	} deriving (Show, Generic)
 newtype FBPageId = FBPageId Text deriving (Show, Generic)
@@ -218,9 +222,20 @@ instance ToJSON ObjectStorySpecADT where
 	  object [ "link_data" .= ld,
 	           "page_id" .= pi, 
 	           "instagram_actor_id" .= ig] 
+	toJSON (ObjectStorySpecVideoLink vidData (FBPageId pi) (Just (IgId ig))) =
+	  object [ "video_data" .= vidData,
+	           "page_id" .= pi,
+	           "instagram_actor_id" .= ig]
 instance FromJSON ObjectStorySpecADT where
-	parseJSON (Object v) =
-	 ObjectStorySpecADT <$> v .: "link_data"
+	parseJSON (Object v) = do
+	 typ <- v .:? "link_data" :: Parser (Maybe AdCreativeLinkData)
+	 case typ of
+		 Nothing -> parseObjectStorySpecADT v
+		 Just _  -> parseObjectStorySpecVideoLink v
+parseObjectStorySpecADT v =	 ObjectStorySpecADT <$> v .: "link_data"
+	                    <*> v .: "page_id"
+	                    <*> v .:? "instagram_actor_id"
+parseObjectStorySpecVideoLink v =	 ObjectStorySpecVideoLink <$> v .: "video_data"
 	                    <*> v .: "page_id"
 	                    <*> v .:? "instagram_actor_id"
 instance ToBS ObjectStorySpecADT where
@@ -271,6 +286,24 @@ parseCreativeCarouselData v =
 	                      <*> v .: "link"
 instance ToBS AdCreativeLinkData where
 	toBS a = toBS $ toJSON a
+data AdCreativeVideoData = AdCreativeVideoData {
+		vid_call_to_action :: CallToActionADT,
+		desc ::  Text,
+		thumb_url ::  Text,
+		video_id :: Integer} -- FIXME: newtype wrapper
+	deriving (Show, Generic)
+instance ToJSON AdCreativeVideoData where
+	toJSON (AdCreativeVideoData cta d thumbUrl vId) =
+	  object [ "call_to_action" .= cta,
+	           "description" .= d,
+	           "image_url" .= thumbUrl,
+	           "video_id" .= vId]
+instance FromJSON AdCreativeVideoData where
+	parseJSON (Object v) =
+	  AdCreativeVideoData <$> v .: "call_to_action"
+	                      <*> v .: "description"
+	                      <*> v .: "image_url"
+	                      <*> v .: "video_id"
 type CarouselChildren = [CarouselChild]
 data CarouselChild = CarouselChild {
 		name_car_child :: Text,

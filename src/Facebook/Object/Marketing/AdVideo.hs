@@ -4,6 +4,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Facebook.Object.Marketing.AdVideo where
 
 import Facebook.Records hiding (get)
@@ -42,6 +43,7 @@ import Control.Monad.IO.Class
 import qualified Data.Text as T
 import System.IO
 import System.Directory (removeFile)
+import Control.Concurrent (threadDelay)
 
 data UploadPhaseADT = Start | Transfer | Finish deriving (Show, Generic)
 instance FromJSON UploadPhaseADT
@@ -222,3 +224,70 @@ sendVideoStart id mtoken bs = do
                   (Filesize, Filesize_ $ BS.length bs) :*:
                   Nil
   postFormVideo ("/v2.6/" <> id <> "/advideos") r mtoken
+
+data Thumbnail = Thumbnail {
+    height :: Int
+  , id :: T.Text
+  , is_preferred :: Bool
+  , scale :: Int
+  , uri :: T.Text
+  , width :: Int
+} deriving (Show, Generic)
+instance FromJSON Thumbnail
+
+data Thumbnails = Thumbnails {
+    thumbnails :: [Thumbnail]
+  , vidId :: T.Text
+  , updated_time :: UTCTime
+} deriving (Show, Generic)
+instance FromJSON Thumbnails where
+  parseJSON (Object v) =
+    Thumbnails <$> v .: "thumbnails"
+               <*> v .: "id"
+               <*> v .: "updated_time"
+
+getPrefThumbnail:: (R.MonadResource m, MonadBaseControl IO m) =>
+	VideoId --
+	-> UserAccessToken -- ^ Optional user access token.
+	-> FacebookT Auth m Thumbnail
+getPrefThumbnail vId tok = do
+  Pager thumbs _ _ <- getThumbnails vId tok
+  return $ head $ filter is_preferred thumbs
+
+getThumbnails:: (R.MonadResource m, MonadBaseControl IO m) =>
+	VideoId --
+	-> UserAccessToken -- ^ Optional user access token.
+	-> FacebookT Auth m (Pager Thumbnail)
+getThumbnails vId tok = getObject ("/v2.6/" <> (T.pack $ show vId) <> "/thumbnails") [] $ Just tok
+
+data Video = Video { -- more fields if needed: https://developers.facebook.com/docs/graph-api/reference/video
+    status :: VideoStatus
+} deriving (Show, Generic)
+instance FromJSON Video
+
+data VideoStatus = VideoStatus {
+    video_status :: T.Text
+} deriving (Show, Generic)
+instance FromJSON VideoStatus
+
+isVideoReady :: (R.MonadResource m, MonadBaseControl IO m) =>
+	VideoId --
+	-> UserAccessToken -- ^ Optional user access token.
+	-> FacebookT Auth m Bool
+isVideoReady vId tok = do
+  vid <- getObject ("/v2.6/" <> (T.pack $ show vId)) [("fields", "status")] (Just tok)
+  liftIO $ print $ status vid
+  return $ "ready" == video_status (status vid)
+
+waitForVideo :: (R.MonadResource m, MonadBaseControl IO m) =>
+	VideoId --
+	-> UserAccessToken -- ^ Optional user access token.
+	-> FacebookT Auth m ()
+waitForVideo vId tok = do -- FIXME: Add timeout
+  st <- isVideoReady vId tok
+  if st
+    then return ()
+    else do
+      liftIO $ print "Waiting for 15 sec"
+      liftIO $ threadDelay $ 15 * 1000000
+      waitForVideo vId tok

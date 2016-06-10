@@ -67,7 +67,8 @@ typesMap =
                 , ("map<string, int32>", "Map.Map Text Int")
                 , ("map<string, unsigned int32>", "Map.Map Text Int")
                 , ("dictionary", "A.Value") -- ???
-                , ("Object", "A.Value")] -- ???
+                , ("Object", "A.Value") -- ???
+                , ("videoId", "VideoId")]
 type ModeFieldInfoMap = Map.Map InteractionMode (Vector FieldInfo)
 type EntityModeMap = Map.Map Entity ModeFieldInfoMap
 newtype Env = Env EntityModeMap deriving Show
