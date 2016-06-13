@@ -273,21 +273,27 @@ instance FromJSON VideoStatus
 isVideoReady :: (R.MonadResource m, MonadBaseControl IO m) =>
 	VideoId --
 	-> UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m Bool
+	-> FacebookT Auth m (Either () Bool)
 isVideoReady vId tok = do
   vid <- getObject ("/v2.6/" <> (T.pack $ show vId)) [("fields", "status")] (Just tok)
   liftIO $ print $ status vid
-  return $ "ready" == video_status (status vid)
+  let st = video_status (status vid)
+  if st == "ready"
+    then return $ Right True
+    else if st == "processing"
+          then return $ Right False
+          else return $ Left () -- "error" case
 
 waitForVideo :: (R.MonadResource m, MonadBaseControl IO m) =>
 	VideoId --
 	-> UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m ()
+	-> FacebookT Auth m Bool
 waitForVideo vId tok = do -- FIXME: Add timeout
   st <- isVideoReady vId tok
-  if st
-    then return ()
-    else do
+  case st of
+    Left _ -> return False -- "error"
+    Right True -> return True -- "ready"
+    Right False -> do -- "processing"
       liftIO $ print "Waiting for 15 sec"
       liftIO $ threadDelay $ 15 * 1000000
       waitForVideo vId tok
