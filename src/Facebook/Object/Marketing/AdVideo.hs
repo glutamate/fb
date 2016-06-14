@@ -254,7 +254,10 @@ getPrefThumbnail:: (R.MonadResource m, MonadBaseControl IO m) =>
 	-> FacebookT Auth m Thumbnail
 getPrefThumbnail vId tok = do
   Pager thumbs _ _ <- getThumbnails vId tok
-  return $ head $ filter is_preferred thumbs
+  let filtered = filter is_preferred thumbs
+  if length filtered >= 1
+    then return $ head filtered
+    else return $ head thumbs
 
 getThumbnails:: (R.MonadResource m, MonadBaseControl IO m) =>
 	VideoId --
