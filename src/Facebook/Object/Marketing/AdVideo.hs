@@ -15,7 +15,8 @@ import Facebook.Monad
 import Facebook.Graph
 import Facebook.Base (FacebookException(..))
 import Data.Time.Format
-import Data.Aeson
+import Data.Aeson hiding (Error)
+import Data.Aeson.Types hiding (Error)
 import Control.Applicative
 import Data.Text (Text)
 import Data.Text.Read (decimal)
@@ -44,6 +45,7 @@ import qualified Data.Text as T
 import System.IO
 import System.Directory (removeFile)
 import Control.Concurrent (threadDelay)
+import Data.Char (toLower)
 
 data UploadPhaseADT = Start | Transfer | Finish deriving (Show, Generic)
 instance FromJSON UploadPhaseADT
@@ -265,24 +267,24 @@ data Video = Video { -- more fields if needed: https://developers.facebook.com/d
 } deriving (Show, Generic)
 instance FromJSON Video
 
+data VideoStatusADT = Ready | Processing | Error deriving (Show, Generic, Eq)
+instance ToJSON VideoStatusADT
+instance FromJSON VideoStatusADT where
+  parseJSON = genericParseJSON defaultOptions { constructorTagModifier = map toLower }
+
 data VideoStatus = VideoStatus {
-    video_status :: T.Text
+    video_status :: VideoStatusADT
 } deriving (Show, Generic)
 instance FromJSON VideoStatus
 
 isVideoReady :: (R.MonadResource m, MonadBaseControl IO m) =>
 	VideoId --
 	-> UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m (Either () Bool)
+	-> FacebookT Auth m VideoStatusADT
 isVideoReady vId tok = do
   vid <- getObject ("/v2.6/" <> (T.pack $ show vId)) [("fields", "status")] (Just tok)
   liftIO $ print $ status vid
-  let st = video_status (status vid)
-  if st == "ready"
-    then return $ Right True
-    else if st == "processing"
-          then return $ Right False
-          else return $ Left () -- "error" case
+  return $ video_status (status vid)
 
 waitForVideo :: (R.MonadResource m, MonadBaseControl IO m) =>
 	VideoId --
@@ -291,9 +293,9 @@ waitForVideo :: (R.MonadResource m, MonadBaseControl IO m) =>
 waitForVideo vId tok = do -- FIXME: Add timeout
   st <- isVideoReady vId tok
   case st of
-    Left _ -> return False -- "error"
-    Right True -> return True -- "ready"
-    Right False -> do -- "processing"
+    Error -> return False
+    Ready -> return True
+    Processing -> do
       liftIO $ print "Waiting for 15 sec"
       liftIO $ threadDelay $ 15 * 1000000
       waitForVideo vId tok
