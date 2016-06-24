@@ -237,17 +237,6 @@ data Thumbnail = Thumbnail {
 } deriving (Show, Generic)
 instance FromJSON Thumbnail
 
-data Thumbnails = Thumbnails {
-    thumbnails :: [Thumbnail]
-  , vidId :: T.Text
-  , updated_time :: UTCTime
-} deriving (Show, Generic)
-instance FromJSON Thumbnails where
-  parseJSON (Object v) =
-    Thumbnails <$> v .: "thumbnails"
-               <*> v .: "id"
-               <*> v .: "updated_time"
-
 getPrefThumbnail:: (R.MonadResource m, MonadBaseControl IO m) =>
 	VideoId --
 	-> UserAccessToken -- ^ Optional user access token.
