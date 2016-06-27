@@ -345,6 +345,7 @@ genDefFields fis =
 genRetConstraintName :: InteractionMode -> Entity -> Text
 genRetConstraintName Reading ent =
   genClassName ent Reading <> "Ret"
+genRetConstraintName _ _ = ""
 
 genRetConstraint :: InteractionMode -> Entity -> V.Vector FieldInfo -> Text
 genRetConstraint Reading ent fis =
@@ -527,43 +528,38 @@ genFctName (Entity ent) Updating = "upd" <> ent
 genFctName (Entity ent) Creating = "set" <> ent
 
 getFctType :: Entity -> InteractionMode -> Text
-getFctType ent mode@Reading =
-  let retType = genRetConstraintName mode ent
+getFctType ent mode =
+  let retType = if mode == Reading
+                  then "(" <> genRetConstraintName mode ent <> " r)"
+                  else case Map.lookup (ent, mode) entityModeRetType of
+                          Nothing -> "r"
+                          Just ret -> ret
       pager' = if Set.member (ent, mode) entityModePagerSet
-                  then "(Pager (" <> retType <> " r))"
-                  else "(" <> retType <> " r)"
+                  then "(Pager " <> retType <> ")"
+                  else retType
       maybeToken = if Set.member (ent, mode) isTokenNecessarySet
                       then ""
                       else "Maybe"
       fctName = genFctName ent mode
       className = genClassName ent mode
+      auth = if mode == Reading
+              then "anyAuth"
+              else "Auth"
+      argName = if mode == Reading -- Reading uses extensible records
+                  then "fl"
+                  else "r"
+      param = if mode == Reading
+                  then " fl r"
+                  else " r"
+      idConstr = case Map.lookup (ent, mode) idTypeMap of
+                  Just x -> x
+                  Nothing -> "Id_"
   in
-  fctName <> " :: (R.MonadResource m, MonadBaseControl IO m, " <> className <> " fl r) =>\n\t\
-               \Id_    -- ^ Ad Account Id\n\t\
-            \-> fl     -- ^ Arguments to be passed to Facebook.\n\t\
-            \-> " <> maybeToken <> " UserAccessToken -- ^ Optional user access token.\n\t\
-            \-> FacebookT anyAuth m " <> pager'
-getFctType ent mode =
-    let retType = case Map.lookup (ent, mode) entityModeRetType of
-                    Nothing -> "r"
-                    Just ret -> ret
-        pager' = if Set.member (ent, mode) entityModePagerSet
-                    then "(Pager " <> retType <> ")"
-                    else retType
-        maybeToken = if Set.member (ent, mode) isTokenNecessarySet
-                        then ""
-                        else "Maybe"
-        fctName = genFctName ent mode
-        className = genClassName ent mode
-        idConstr = case Map.lookup (ent, mode) idTypeMap of
-                    Just x -> x
-                    Nothing -> "Id_"
-    in
-    fctName <> " :: (R.MonadResource m, MonadBaseControl IO m, " <> className <> " r) =>\n\t"
-            <> idConstr <> "    -- ^ Ad Account Id\n\t\
-            \-> r" <> "     -- ^ Arguments to be passed to Facebook.\n\t\
-            \-> " <> maybeToken <> " UserAccessToken -- ^ Optional user access token.\n\t\
-            \-> FacebookT Auth m " <> pager'
+  fctName <> " :: (R.MonadResource m, MonadBaseControl IO m, " <> className <> param <> ") =>\n\t"
+          <> idConstr <> "    -- ^ Ad Account Id\n\t\
+          \-> " <> argName <> "     -- ^ Arguments to be passed to Facebook.\n\t\
+          \-> " <> maybeToken <> " UserAccessToken -- ^ Optional user access token.\n\t\
+          \-> FacebookT " <> auth <> " m " <> pager'
 
 genFct :: Entity -> InteractionMode -> Text -> Text
 genFct ent mode defFields =
