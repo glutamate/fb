@@ -28,7 +28,6 @@ imports =
                 "import Facebook.Graph",
                 "import Facebook.Base (FacebookException(..))",
                 "import qualified Data.Aeson as A",
-                --"import Data.Time.Clock",
                 "import Data.Time.Format",
                 "import Data.Aeson hiding (Value)",
                 "import Control.Applicative",
@@ -266,13 +265,10 @@ genEntity ent@(Entity nameEnt) map types =
                     then types
                     else V.filter (\fi -> not $ V.elem fi types) x
         filtered = filter fis
-        --dataDecl = V.foldl' append "" $ V.map dataAndFieldInstance $ removeDups filtered
         dataDecl = dataAndFieldInstances $ removeNameTypeDups filtered
         getter = myConcat $ V.map getterFct $ removeNameDups filtered
         getterFct fi = getterField fi
         bsInstances = genToBsInstances $ removeNameDups filtered
-            -- genToBsInstances $ collectFieldInfosMode $ Map.delete Reading map -- collect all fields that need to be transmitted to FB
-        -- gen all data fields + instances for records here TODO
     in (path, top <> dataDecl <> bsInstances <> getter <> Prelude.foldl append "" (
             Map.elems $ Map.mapWithKey (\mode fis -> genMode ent mode fis) map))
 
@@ -282,13 +278,9 @@ genMode ent@(Entity nameEnt) mode unfiltered = -- source code for one entity(/mo
     let -- source = V.foldl' append "" $ V.map dataAndFieldInstance fis -- TODO filter out globally defined ones
         doc = "\n-- Entity:" <> nameEnt <> ", mode:" <> T.pack (show mode)
         retDef = getRetDef ent mode
-        toBS = ""
-                --if mode /= Reading
-                --then genToBsInstances unfiltered
-                --else ""
         m = genFcts mode ent unfiltered
         isInstances = genClassWitnesses ent mode unfiltered
-    in doc <> toBS <> isInstances <> retDef <> m <>
+    in doc <> isInstances <> retDef <> m <>
         if nameEnt == "AdAccount" && mode == Reading
             then adAccIdDetails <> genGetId
             else if nameEnt == "AdCreative" && mode == Reading
@@ -319,7 +311,6 @@ genClassWitnesses ent mode fis =
         isOfInstances = myConcat $ V.map (\fi -> instanceFct fi) fis
         nilIsOfInstance = isFieldClassInstanceText (entityToIsField ent mode) "Nil" -- ugly hack
         instanceFct field = isFieldClassInstance ent mode field
-        --constr = genConstraint mode fis entity
     in isOfClass <> nilIsOfInstance <> isOfInstances
 
 genReqFields :: Vector FieldInfo -> Vector Text
@@ -387,13 +378,6 @@ genConstraintLabel mode fis ent@(Entity entity) =
     in "\ntype " <> genClassName ent mode <> arg <> " = (" <> reqsHas
        <> "A.FromJSON r, " <> entityToIsField ent mode <> " r, " <> constr
 
--- "acc_id" and Text turn into:
---
--- data AccId = AccId
--- instance Field AccId where
---  type FieldValue AccId = Text
---  fieldName _ = "acc_id"
---  fieldLabel  = AccId
 dataAndFieldInstances :: V.Vector FieldInfo -> Text
 dataAndFieldInstances fis =
     let dups = findDups fis
@@ -438,6 +422,13 @@ typesToJsonInstances (nt, "AdCreativeADT", "Text") =
         "instance A.ToJSON " <> nt <> "\n"
 typesToJsonInstances x = error $ show x
 
+-- "acc_id" and Text turn into:
+--
+-- data AccId = AccId
+-- instance Field AccId where
+--  type FieldValue AccId = Text
+--  fieldName _ = "acc_id"
+--  fieldLabel  = AccId
 dataAndFieldInstance :: FieldInfo -> Text
 dataAndFieldInstance fi =
     let adtName = fieldToAdt fi
@@ -447,7 +438,6 @@ dataAndFieldInstance fi =
     in "\ndata "  <> adtName <> " = " <> adtName <> "\n"
         <> "newtype " <> nt <> " = " <> nt <> " "
         <> fieldTypeParan fieldType <> " deriving " <> derivings fieldType <> "\n"
-        -- <> newtypeInstances newtypeName
         <> "instance Field " <> adtName <> " where\n\t"
         <> "type FieldValue " <> adtName <> " = " <> nt <> "\n\t"
         <> "fieldName _ = \"" <> fieldName <> "\"\n\t"
@@ -475,8 +465,6 @@ newtypeInstances fi =
     let nt = newtypeName fi
     in "instance A.FromJSON " <> nt <> "\n"
         <> "instance A.ToJSON " <> nt <> "\n"
-    -- <> "instance ToBS " <> nt <> " where\n\t"
-    -- <> "toBS (" <> nt <> " a) = toBS a\n"
 
 entityToIsField :: Entity -> InteractionMode -> Text
 entityToIsField (Entity entity) mode = "Is" <> entity <> modeStr mode <> "Field"

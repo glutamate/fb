@@ -76,7 +76,7 @@ newtype Env = Env EntityModeMap deriving Show
 envsToMaps :: Vector Env -> Vector EntityModeMap
 envsToMaps = coerce
 
-buildEnv :: Vector (Vector CsvLine) -> Either Text Env
+buildEnv :: Vector (Vector CsvLine) -> Env
 buildEnv csvs = do
     --let csvs' = join csvs :: Vector CsvLine
     let ignore = V.fromList $ ["rf_spec", "account_groups", "agency_client_declaration", "funding_source_details",
@@ -94,14 +94,10 @@ buildEnv csvs = do
                               ++ ["custom_event_type"]
                               ++ ["type", "dynamic_ad_voice", "annotations", "info_fields"]
                               ++ ["account"]
-    --let csvs' = V.filter (\(CsvLine ent mode _) ->
-    --               mode == Reading || ent == Entity "Ad Image" || ent == Entity "AdCreative") (join csvs :: Vector CsvLine)
     let csvs'' = V.filter (\(CsvLine _ _ (FieldInfo name _ _ _ _)) -> not $ V.elem name ignore) (join csvs :: Vector CsvLine)
     let envs = V.map buildEnvCsv csvs''
     let merged = merge envs
-    let uni = unify merged
-    Right uni
-    --Right $ trace (show uni) uni
+    unify merged
 
 merge :: V.Vector Env -> Env -- Types Env and unified env
 -- this should be easier...
