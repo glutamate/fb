@@ -527,6 +527,10 @@ genFctName (Entity ent) Deleting = "del" <> ent
 genFctName (Entity ent) Updating = "upd" <> ent
 genFctName (Entity ent) Creating = "set" <> ent
 
+getArgName :: InteractionMode -> Text
+getArgName Reading = "fl"
+getArgName _ = "r"
+
 getFctType :: Entity -> InteractionMode -> Text
 getFctType ent mode =
   let retType = if mode == Reading
@@ -545,17 +549,15 @@ getFctType ent mode =
       auth = if mode == Reading
               then "anyAuth"
               else "Auth"
-      argName = if mode == Reading -- Reading uses extensible records
-                  then "fl"
+      argName = getArgName mode
+      param = if mode == Reading  -- Reading uses extensible records
+                  then "fl r"
                   else "r"
-      param = if mode == Reading
-                  then " fl r"
-                  else " r"
       idConstr = case Map.lookup (ent, mode) idTypeMap of
                   Just x -> x
                   Nothing -> "Id_"
   in
-  fctName <> " :: (R.MonadResource m, MonadBaseControl IO m, " <> className <> param <> ") =>\n\t"
+  fctName <> " :: (R.MonadResource m, MonadBaseControl IO m, " <> className <> " " <> param <> ") =>\n\t"
           <> idConstr <> "    -- ^ Ad Account Id\n\t\
           \-> " <> argName <> "     -- ^ Arguments to be passed to Facebook.\n\t\
           \-> " <> maybeToken <> " UserAccessToken -- ^ Optional user access token.\n\t\
@@ -570,9 +572,7 @@ genFct ent mode defFields =
                         else ""
         httpMethod = modeToMethod mode
         args = modeToArgs mode
-        argName = if mode == Reading
-                    then "fl"
-                    else "r"
+        argName = getArgName mode
         idConstr = case Map.lookup (ent, mode) idTypeMap of
                     Just x -> x
                     Nothing -> "Id_"
