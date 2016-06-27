@@ -555,24 +555,15 @@ getFctType ent mode =
                         else "Maybe"
         fctName = genFctName ent mode
         className = genClassName ent mode
-        auth = if mode == Reading
-                then "anyAuth"
-                else "Auth"
-        argName = if mode == Reading
-                    then "fl"
-                    else "r"
-        param = if mode == Reading
-                    then " fl r"
-                    else " r"
         idConstr = case Map.lookup (ent, mode) idTypeMap of
                     Just x -> x
                     Nothing -> "Id_"
     in
-    fctName <> " :: (R.MonadResource m, MonadBaseControl IO m, " <> className <> param <> ") =>\n\t"
+    fctName <> " :: (R.MonadResource m, MonadBaseControl IO m, " <> className <> " r) =>\n\t"
             <> idConstr <> "    -- ^ Ad Account Id\n\t\
-            \-> " <> argName <> "     -- ^ Arguments to be passed to Facebook.\n\t\
+            \-> r" <> "     -- ^ Arguments to be passed to Facebook.\n\t\
             \-> " <> maybeToken <> " UserAccessToken -- ^ Optional user access token.\n\t\
-            \-> FacebookT " <> auth <> " m " <> pager'
+            \-> FacebookT Auth m " <> pager'
 
 genFct :: Entity -> InteractionMode -> Text -> Text
 genFct ent mode defFields =
