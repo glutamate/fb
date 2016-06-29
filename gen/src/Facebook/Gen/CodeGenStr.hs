@@ -247,9 +247,9 @@ genCode (Env env) types =
 
 genTypes :: EntityModeMap -> (FilePath, Text)
 genTypes entMap =
-    let typesCode = genEntity typesEnt Map.empty V.empty
-        typesEnt = Prelude.head $ Map.keys entMap
-    in typesCode
+  let typesEnt = Prelude.head $ Map.keys entMap
+      typesCode = genEntity typesEnt Map.empty V.empty
+  in typesCode
 
 genEntity :: Entity -> ModeFieldInfoMap -> V.Vector FieldInfo -> (FilePath, Text)
 genEntity ent@(Entity nameEnt) map types =
@@ -257,9 +257,9 @@ genEntity ent@(Entity nameEnt) map types =
         path = T.unpack $ modNameToPath modName <> ".hs"
         head = header modName
         top = genLangExts <> head <> genImports ent <>
-                if nameEnt /= "Types"
-                    then typesImport <> "\n" -- FIXME
-                    else toBsInstances
+                if nameEnt == "Types"
+                    then toBsInstances
+                    else typesImport <> "\n"
         fis = collectFieldInfosMode map
         filter x = if nameEnt == "Types"
                     then types
@@ -275,13 +275,12 @@ genEntity ent@(Entity nameEnt) map types =
 genMode :: Entity -> InteractionMode -> V.Vector FieldInfo -> Text
 genMode _ Types _ = T.empty -- Types.hs doesn't include any functions (except record getters)
 genMode ent@(Entity nameEnt) mode unfiltered = -- source code for one entity(/mode ?)
-    let -- source = V.foldl' append "" $ V.map dataAndFieldInstance fis -- TODO filter out globally defined ones
-        doc = "\n-- Entity:" <> nameEnt <> ", mode:" <> T.pack (show mode)
+    let doc = "\n-- Entity:" <> nameEnt <> ", mode:" <> T.pack (show mode)
         retDef = getRetDef ent mode
         m = genFcts mode ent unfiltered
         isInstances = genClassWitnesses ent mode unfiltered
     in doc <> isInstances <> retDef <> m <>
-        if nameEnt == "AdAccount" && mode == Reading
+        if nameEnt == "AdAccount" && mode == Reading -- special cases
             then adAccIdDetails <> genGetId
             else if nameEnt == "AdCreative" && mode == Reading
                   then igIdDetails <> genFBPageIdToIgId
