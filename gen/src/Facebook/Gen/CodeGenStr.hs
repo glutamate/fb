@@ -326,12 +326,12 @@ genFcts :: InteractionMode -> Entity -> V.Vector FieldInfo -> Text
 genFcts mode@Reading ent fis =
   let constr = genConstraint mode V.empty ent
       retConstr = genRetConstraint mode ent fis <> " -- Default fields"
-      fctType = getFctType ent mode
+      fctType = genFctType ent mode
       fct = genFct ent mode $ genDefFields fis
   in constr <> "\n" <> retConstr <> "\n" <> fctType <> "\n" <> fct
 genFcts mode ent fis =
     let constr = genConstraint mode fis ent
-        fctType = getFctType ent mode
+        fctType = genFctType ent mode
         fct = genFct ent mode "" -- quick and dirty
     in constr <> "\n" <> fctType <> "\n" <> fct
 
@@ -530,8 +530,8 @@ getArgName :: InteractionMode -> Text
 getArgName Reading = "fl"
 getArgName _ = "r"
 
-getFctType :: Entity -> InteractionMode -> Text
-getFctType ent mode =
+genFctType :: Entity -> InteractionMode -> Text
+genFctType ent mode =
   let retType = if mode == Reading
                   then "(" <> genRetConstraintName mode ent <> " r)"
                   else case Map.lookup (ent, mode) entityModeRetType of
@@ -593,6 +593,7 @@ modeToMethod Creating = "postForm"
 modeToMethod Updating = "postForm"
 modeToMethod Deleting = "deleteForm"
 
+-- turns foo_bar into FooBar
 fieldToAdt :: FieldInfo -> Text
 fieldToAdt (FieldInfo str _ _ _ _)
     | T.null $ dropUnderscore str = str
