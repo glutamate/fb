@@ -158,7 +158,7 @@ getAdSet :: (R.MonadResource m, MonadBaseControl IO m, AdSetGet fl r) =>
 	-> fl     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT anyAuth m (Pager (AdSetGetRet r))
-getAdSet (Id_ id) fl mtoken = getObject ("/v2.6/" <> id <> "/adsets") [("fields", textListToBS $ fieldNameList $ Id ::: fl)] $ Just mtoken
+getAdSet (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "/adsets") [("fields", textListToBS $ fieldNameList $ Id ::: fl)] $ Just mtoken
 
 
 -- Entity:AdSet, mode:Creating
@@ -215,7 +215,7 @@ setAdSet :: (R.MonadResource m, MonadBaseControl IO m, AdSetSet r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Either FacebookException CreateAdSetId)
-setAdSet (Id_ id) r mtoken = postForm ("/v2.6/" <> id <> "/adsets") (toForm r) mtoken
+setAdSet (Id_ id) r mtoken = postForm ("/v2.7/" <> id <> "/adsets") (toForm r) mtoken
 
 
 -- Entity:AdSet, mode:Updating
@@ -260,7 +260,7 @@ updAdSet :: (R.MonadResource m, MonadBaseControl IO m, AdSetUpd r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Either FacebookException Success)
-updAdSet (CreateAdSetId id) r mtoken = postForm ("/v2.6/" <> id <> "") (toForm r) mtoken
+updAdSet (CreateAdSetId id) r mtoken = postForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 
 
 -- Entity:AdSet, mode:Deleting
@@ -276,5 +276,5 @@ delAdSet :: (R.MonadResource m, MonadBaseControl IO m, AdSetDel r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Either FacebookException r)
-delAdSet (CreateAdSetId id) r mtoken = deleteForm ("/v2.6/" <> id <> "") (toForm r) mtoken
+delAdSet (CreateAdSetId id) r mtoken = deleteForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 

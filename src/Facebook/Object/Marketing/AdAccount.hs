@@ -693,14 +693,14 @@ getAdAccount :: (R.MonadResource m, MonadBaseControl IO m, AdAccountGet fl r) =>
 	-> fl     -- ^ Arguments to be passed to Facebook.
 	-> Maybe UserAccessToken -- ^ Optional user access token.
 	-> FacebookT anyAuth m (AdAccountGetRet r)
-getAdAccount (Id_ id) fl mtoken = getObject ("/v2.6/" <> id <> "") [("fields", textListToBS $ fieldNameList $ Id ::: AccountId ::: fl)] mtoken
+getAdAccount (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "") [("fields", textListToBS $ fieldNameList $ Id ::: AccountId ::: fl)] mtoken
 
 type AdAccountIdDetails = Id :*: AccountId :*: Nil
 
 getAdAccountId :: (R.MonadResource m, MonadBaseControl IO m) =>
 	 Maybe UserAccessToken -- ^ User access token.
 	-> FacebookT anyAuth m (Pager AdAccountIdDetails)
-getAdAccountId token = getObject "/v2.6/me/adaccounts" [] token
+getAdAccountId token = getObject "/v2.7/me/adaccounts" [] token
 
 -- Entity:AdAccount, mode:Creating
 class IsAdAccountSetField r
@@ -725,7 +725,7 @@ setAdAccount :: (R.MonadResource m, MonadBaseControl IO m, AdAccountSet r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Either FacebookException r)
-setAdAccount (Id_ id) r mtoken = postForm ("/v2.6/" <> id <> "") (toForm r) mtoken
+setAdAccount (Id_ id) r mtoken = postForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 
 
 -- Entity:AdAccount, mode:Updating
@@ -749,7 +749,7 @@ updAdAccount :: (R.MonadResource m, MonadBaseControl IO m, AdAccountUpd r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Either FacebookException r)
-updAdAccount (Id_ id) r mtoken = postForm ("/v2.6/" <> id <> "") (toForm r) mtoken
+updAdAccount (Id_ id) r mtoken = postForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 
 
 -- Entity:AdAccount, mode:Deleting
@@ -766,5 +766,5 @@ delAdAccount :: (R.MonadResource m, MonadBaseControl IO m, AdAccountDel r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Either FacebookException r)
-delAdAccount (Id_ id) r mtoken = deleteForm ("/v2.6/" <> id <> "") (toForm r) mtoken
+delAdAccount (Id_ id) r mtoken = deleteForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 
