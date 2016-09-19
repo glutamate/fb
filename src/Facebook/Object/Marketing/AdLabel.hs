@@ -56,7 +56,7 @@ getAdLabel :: (R.MonadResource m, MonadBaseControl IO m, AdLabelGet fl r) =>
 	-> fl     -- ^ Arguments to be passed to Facebook.
 	-> Maybe UserAccessToken -- ^ Optional user access token.
 	-> FacebookT anyAuth m (AdLabelGetRet r)
-getAdLabel (Id_ id) fl mtoken = getObject ("/v2.6/" <> id <> "") [("fields", textListToBS $ fieldNameList $ Name ::: Id ::: fl)] mtoken
+getAdLabel (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "") [("fields", textListToBS $ fieldNameList $ Name ::: Id ::: fl)] mtoken
 
 
 -- Entity:AdLabel, mode:Creating
@@ -72,7 +72,7 @@ setAdLabel :: (R.MonadResource m, MonadBaseControl IO m, AdLabelSet r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	-> Maybe UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m r
-setAdLabel (Id_ id) r mtoken = postForm ("/v2.6/" <> id <> "") (toForm r) mtoken
+setAdLabel (Id_ id) r mtoken = postForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 
 
 -- Entity:AdLabel, mode:Updating
@@ -95,7 +95,7 @@ updAdLabel :: (R.MonadResource m, MonadBaseControl IO m, AdLabelUpd r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	-> Maybe UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m r
-updAdLabel (Id_ id) r mtoken = postForm ("/v2.6/" <> id <> "") (toForm r) mtoken
+updAdLabel (Id_ id) r mtoken = postForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 
 
 -- Entity:AdLabel, mode:Deleting
@@ -117,5 +117,5 @@ delAdLabel :: (R.MonadResource m, MonadBaseControl IO m, AdLabelDel r) =>
 	-> r     -- ^ Arguments to be passed to Facebook.
 	-> Maybe UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m r
-delAdLabel (Id_ id) r mtoken = deleteForm ("/v2.6/" <> id <> "") (toForm r) mtoken
+delAdLabel (Id_ id) r mtoken = deleteForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 
