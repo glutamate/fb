@@ -52,6 +52,7 @@ library
     Facebook.Records
     Facebook.Object.Marketing.Tests
     Facebook.Object.Marketing.Ad
+    Facebook.Object.Marketing.AdPreview
     Facebook.Object.Marketing.AdUser
     Facebook.Object.Marketing.AdAccount
     Facebook.Object.Marketing.AdCampaign
