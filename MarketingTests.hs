@@ -3,6 +3,7 @@
 import System.Environment
 import Network.HTTP.Conduit
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import qualified Data.Text.Encoding as TE
 import Facebook hiding (Id, Male, Female)
 import qualified Facebook as FB
@@ -18,6 +19,7 @@ import Facebook.Object.Marketing.AdCampaign
 import Facebook.Object.Marketing.AdCreative
 import qualified Facebook.Object.Marketing.AdCampaign as AdC
 import qualified Facebook.Object.Marketing.AdSet as AdS
+import qualified Facebook.Object.Marketing.AdPreview as AdPreview
 import qualified Facebook.Object.Marketing.AdImage as AdI
 import qualified Facebook.Object.Marketing.AdVideo as AdV
 --import Facebook.Object.Marketing.AdLabel
@@ -157,16 +159,19 @@ main = do
     let adcreative = (Name, Name_ "Test Video AdCreative")
                     :*: (ObjectStorySpec, ObjectStorySpec_ oss) :*: Nil
     creativeRet' <- setAdCreative acc adcreative tok
-    liftIO $ print creativeRet'
+    liftIO $ print ("creativeRet'", creativeRet')
     let !creativeRet = either (error . show) P.id creativeRet'
     let ad = (Creative, Creative_ $ creativeToCreative creativeRet) :*: (AdsetId, AdsetId_ $ adsetIdToInt adsetRet)
             :*: (Name, Name_ "Another Test Ad Video API") :*: (Ad.Status, Ad.Status_ PAUSED_) :*: Nil
     Pager ads _ _ <- getAd acc (Name ::: BidType ::: Nil) tok
-    liftIO $ print ads
+    liftIO $ print ("ads", ads)
     adId' <- setAd acc ad tok
-    liftIO $ print adId'
+    liftIO $ print ("adId'", adId')
     let adId = either (error "haha") P.id adId'
-    liftIO $ print adId
+    liftIO $ print ("adId", adId)
+    Pager (AdPreview.PreviewResponse preview:_) _ _ <- AdPreview.getAdPreview acc  oss InstagramStream tok
+    liftIO $ T.putStrLn preview
+
 
     -------- in order to run an ad, we have to set the status of the campaign, adset, and ad to ACTIVE
     --------updAdCampaign campaign ((AdC.Status, AdC.Status_ DELETED_) :*: Nil) tok

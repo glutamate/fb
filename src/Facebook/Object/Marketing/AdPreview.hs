@@ -39,12 +39,25 @@ import System.Locale
 import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)
 #endif
 import Facebook.Object.Marketing.Types
+import Facebook.Object.Marketing.TargetingSpecs.Placement (PlacementOption (..))
 
 getAdPreview :: (R.MonadResource m, MonadBaseControl IO m) =>
 	Id_    -- ^ Ad Account Id
         -> ObjectStorySpecADT
+        -> PlacementOption
 	-> UserAccessToken -- ^ Optional user access token.
-	-> FacebookT anyAuth m (Pager A.Value)
-getAdPreview (Id_ id) oss mtoken =
-  let creative = [("object_story_spec"::String, oss)]
-  in getObject ("/v2.7/" <> id <> "/generatepreviews") [("creative", BSL.toStrict $ encode $ toJSON creative)] $ Just mtoken
+	-> FacebookT anyAuth m (Pager PreviewResponse)
+getAdPreview (Id_ id) oss place mtoken =
+  let creative = Map.fromList [("object_story_spec"::String, oss)]
+      adformat = case place of
+                   InstagramStream -> "INSTAGRAM_STANDARD"
+                   RightColumn -> "RIGHT_COLUMN_STANDARD"
+                   Desktopfeed -> "DESKTOP_FEED_STANDARD"
+                   MobileFeed -> "MOBILE_FEED_STANDARD"
+                   MobileExternal -> "AUDIENCE_NETWORK_OUTSTREAM_VIDEO"
+      arg = [("creative", BSL.toStrict $ encode $ toJSON creative), ("ad_format", adformat)]
+  in getObject ("/v2.7/" <> id <> "/generatepreviews") arg $ Just mtoken
+
+data PreviewResponse = PreviewResponse { body :: Text } deriving (Show, Generic)
+
+instance FromJSON PreviewResponse
