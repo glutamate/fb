@@ -130,7 +130,7 @@ asJsonHelper response = do
         liftIO $ print val
         E.throw $ FbLibraryException $ T.concat
              [ "Facebook.Base.asJson: could not parse "
-             , " Facebook's response as a JSON value ("
+             , "Facebook's response as a JSON value ("
              , T.pack str, ")" ]
 
 
