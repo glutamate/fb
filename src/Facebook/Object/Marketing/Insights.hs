@@ -111,7 +111,10 @@ instance Field TotalActions where
   type FieldValue TotalActions = TotalActions_
   fieldName _ = "total_actions"
   fieldLabel = TotalActions
-instance A.FromJSON TotalActions_
+instance A.FromJSON TotalActions_ where
+  parseJSON (A.String num) = do
+    let int = read $ T.unpack num
+    pure $ TotalActions_ int
 unTotalActions_ :: TotalActions_ -> Integer
 unTotalActions_ (TotalActions_ x) = x
 
@@ -121,7 +124,10 @@ instance Field Clicks where
   type FieldValue Clicks = Clicks_
   fieldName _ = "clicks"
   fieldLabel = Clicks
-instance A.FromJSON Clicks_
+instance A.FromJSON Clicks_ where
+  parseJSON (A.String num) = do
+    let int = read $ T.unpack num
+    pure $ Clicks_ int
 unClicks_ :: Clicks_ -> Integer
 unClicks_ (Clicks_ x) = x
 
