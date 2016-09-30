@@ -9,29 +9,6 @@ import GHC.Generics (Generic)
 import Data.Char
 import Control.Applicative (pure)
 
--- | Placement
---   See https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#location
--- In API v2.7, this form of placement became read only; it is scheduled to disappear
--- entirely in API v2.8
-
-data PlacementOption = Desktopfeed
-                     | RightColumn
-                     | MobileFeed
-                     | MobileExternal
-                     | Home
-                     | InstagramStream
-                     deriving (Show, Eq, Generic)
-instance ToJSON PlacementOption where
-    toJSON = genericToJSON defaultOptions {constructorTagModifier = map toLower}
-
-instance FromJSON PlacementOption where
-    parseJSON (String "desktopfeed") = pure Desktopfeed
-    parseJSON (String "rightcolumn") = pure RightColumn
-    parseJSON (String "mobilefeed") = pure MobileFeed
-    parseJSON (String "mobileexternal") = pure MobileExternal
-    parseJSON (String "home") = pure Home
-    parseJSON (String "instagramstream") = pure InstagramStream
-
 -- API v2.7 introduced the following placement options:
 
 data DevicePlatform = Mobile | Desktop

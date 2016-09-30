@@ -21,7 +21,6 @@ data TargetingSpecs = TargetingSpecs
    geo_locations :: TargetLocation
   , demo :: Maybe Demography
   --, mobile_targeting :: Maybe MobileTargeting -- ^ Please note that the fields of this record will be at the top level
-  , page_types :: Maybe [PlacementOption]
   , device_platforms :: Maybe [DevicePlatform]
   , publisher_platforms :: Maybe [PublisherPlatform]
   , facebook_positions :: Maybe [FacebookPosition]
@@ -29,14 +28,11 @@ data TargetingSpecs = TargetingSpecs
   } deriving (Show, Eq, Generic)
 
 instance ToJSON TargetingSpecs where
-    toJSON (TargetingSpecs loc demo pt dp pp fp ints) =
+    toJSON (TargetingSpecs loc demo dp pp fp ints) =
         let locJson = object ["geo_locations" .= toJSON loc]
             demoJson = case demo of
                         Nothing ->  Null
                         Just dem -> demoToJSON dem
-            pagesJson = case pt of
-                          Nothing -> Null
-                          Just x -> object ["page_types" .= toJSON x]
             intsJson = case ints of
                           Nothing -> Null
                           Just ints' -> object ["interests" .= toJSON ints']
@@ -49,7 +45,7 @@ instance ToJSON TargetingSpecs where
             posJson = case fp of
                           Nothing -> Null
                           Just x -> object ["facebook_positions" .= toJSON x]
-        in foldl merge Null [locJson, demoJson, pagesJson, intsJson, deviceJson, pubsJson, posJson]
+        in foldl merge Null [locJson, demoJson, intsJson, deviceJson, pubsJson, posJson]
 
 merge :: Value -> Value -> Value
 merge Null v = v
