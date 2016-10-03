@@ -21,12 +21,13 @@ instance FromJSON DevicePlatform where
     parseJSON (String "mobile") = pure Mobile
     parseJSON (String "desktop") = pure Desktop
 
--- TODO: AudienceNetwork should be JSONified as audience_network
 data PublisherPlatform = Facebook | Instagram | AudienceNetwork
   deriving (Show, Eq, Generic)
 
 instance ToJSON PublisherPlatform where
-    toJSON = genericToJSON defaultOptions {constructorTagModifier = map toLower}
+    toJSON Facebook = String "facebook"
+    toJSON Instagram = String "instagram"
+    toJSON AudienceNetwork = String "audience_network"
 
 instance FromJSON PublisherPlatform where
     parseJSON (String "facebook") = pure Facebook
