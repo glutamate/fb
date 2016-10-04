@@ -9,26 +9,48 @@ import GHC.Generics (Generic)
 import Data.Char
 import Control.Applicative (pure)
 
--- | Placement
---   See https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#location
+-- API v2.7 introduced the following placement options:
 
-data PlacementOption = Desktopfeed
-                     | RightColumn
-                     | MobileFeed
-                     | MobileExternal
-                     | Home
-                     | InstagramStream
-                     deriving (Show, Eq, Generic)
-instance ToJSON PlacementOption where
+data DevicePlatform = Mobile | Desktop
+  deriving (Show, Eq, Generic)
+
+instance ToJSON DevicePlatform where
     toJSON = genericToJSON defaultOptions {constructorTagModifier = map toLower}
 
-instance FromJSON PlacementOption where
-    parseJSON (String "desktopfeed") = pure Desktopfeed
-    parseJSON (String "rightcolumn") = pure RightColumn
-    parseJSON (String "mobilefeed") = pure MobileFeed
-    parseJSON (String "mobileexternal") = pure MobileExternal
-    parseJSON (String "home") = pure Home
-    parseJSON (String "instagramstream") = pure InstagramStream
+instance FromJSON DevicePlatform where
+    parseJSON (String "mobile") = pure Mobile
+    parseJSON (String "desktop") = pure Desktop
 
+data PublisherPlatform = Facebook | Instagram | AudienceNetwork
+  deriving (Show, Eq, Generic)
 
+instance ToJSON PublisherPlatform where
+    toJSON Facebook = String "facebook"
+    toJSON Instagram = String "instagram"
+    toJSON AudienceNetwork = String "audience_network"
+
+instance FromJSON PublisherPlatform where
+    parseJSON (String "facebook") = pure Facebook
+    parseJSON (String "instagram") = pure Instagram
+    parseJSON (String "audience_network") = pure AudienceNetwork
+
+-- it is unclear if there is also instagram_positions and if so
+-- what the values can be
+data FacebookPosition = Feed | RightHandColumn
+  deriving (Show, Eq, Generic)
+
+instance ToJSON FacebookPosition where
+    toJSON = genericToJSON defaultOptions {constructorTagModifier = map toLower}
+
+instance FromJSON FacebookPosition where
+    parseJSON (String "feed") = pure Feed
+    parseJSON (String "right_hand_column") = pure RightHandColumn
+
+{-
+device_platforms, - mobile, desktop - any number of.
+
+publisher_platforms - facebook, instagram, audience_network - any number of.
+
+facebook_positions - feed, right_hand_column
+-}
 

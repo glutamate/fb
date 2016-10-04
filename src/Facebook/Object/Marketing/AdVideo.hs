@@ -187,7 +187,7 @@ sendVideoFinish id tok title (UploadStartResp sess _ _ _) = do
   let r = toForm $ (UploadPhase, UploadPhase_ Finish) :*:
             (UploadSessId, UploadSessId_ sess) :*:
             (Title, Title_ title) :*: Nil
-  postFormVideo ("/v2.6/" <> id <> "/advideos") r tok
+  postFormVideo ("/v2.7/" <> id <> "/advideos") r tok
 
 sendVideoChunks :: (R.MonadResource m, MonadBaseControl IO m) =>
   T.Text
@@ -211,7 +211,7 @@ sendVideoChunks id tok bs (sess, transResp) = do
               (UploadSessId, UploadSessId_ sess) :*:
               (StartOffset, StartOffset_ start) :*:
               (VideoChunk, VideoChunk_ fp) :*: Nil
-        ret <- postFormVideo ("/v2.6/" <> id <> "/advideos") r tok
+        ret <- postFormVideo ("/v2.7/" <> id <> "/advideos") r tok
         case ret of
           Right resp -> go resp fp
           Left x -> return $ Left x
@@ -225,7 +225,7 @@ sendVideoStart id mtoken bs = do
   let r = toForm $ (UploadPhase, UploadPhase_ Start) :*:
                   (Filesize, Filesize_ $ BS.length bs) :*:
                   Nil
-  postFormVideo ("/v2.6/" <> id <> "/advideos") r mtoken
+  postFormVideo ("/v2.7/" <> id <> "/advideos") r mtoken
 
 data Thumbnail = Thumbnail {
     height :: Int
@@ -252,7 +252,7 @@ getThumbnails:: (R.MonadResource m, MonadBaseControl IO m) =>
 	VideoId --
 	-> UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Pager Thumbnail)
-getThumbnails vId tok = getObject ("/v2.6/" <> (T.pack $ show vId) <> "/thumbnails") [] $ Just tok
+getThumbnails vId tok = getObject ("/v2.7/" <> (T.pack $ show vId) <> "/thumbnails") [] $ Just tok
 
 data Video = Video { -- more fields if needed: https://developers.facebook.com/docs/graph-api/reference/video
     status :: VideoStatus
@@ -274,7 +274,7 @@ isVideoReady :: (R.MonadResource m, MonadBaseControl IO m) =>
 	-> UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m VideoStatusADT
 isVideoReady vId tok = do
-  vid <- getObject ("/v2.6/" <> (T.pack $ show vId)) [("fields", "status")] (Just tok)
+  vid <- getObject ("/v2.7/" <> (T.pack $ show vId)) [("fields", "status")] (Just tok)
   liftIO $ print $ status vid
   return $ video_status (status vid)
 

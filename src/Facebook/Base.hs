@@ -34,7 +34,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Network.HTTP.Conduit as H
 import qualified Network.HTTP.Types as HT
-
+#define DEBUG 1
 #if DEBUG
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Text.Printf (printf)
@@ -130,7 +130,7 @@ asJsonHelper response = do
         liftIO $ print val
         E.throw $ FbLibraryException $ T.concat
              [ "Facebook.Base.asJson: could not parse "
-             , " Facebook's response as a JSON value ("
+             , "Facebook's response as a JSON value ("
              , T.pack str, ")" ]
 
 

@@ -11,7 +11,7 @@ data CropKey = CropKey { ckValue :: (Int, Int)
 getCropKey :: Placement -> CropKey
 getCropKey NewsFeedCarousel = CropKey (100,100) 1
 getCropKey NewsFeedRHS = CropKey (191,100) 1.91
-getCropKey NewsFeedSmall = CropKey (400,150) 2.67
+getCropKey NewsFeedSmall = CropKey (400,150) 2.77
 getCropKey NewsFeedLarge = CropKey (600,360) 1.67
 
 data CropValue = CropValue (Int,Int) (Int,Int)
