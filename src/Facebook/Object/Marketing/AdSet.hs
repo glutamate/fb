@@ -96,7 +96,7 @@ instance A.FromJSON DailyBudget_ where
 	parseJSON (Number x) =
 	 case toBoundedInteger x of
 	   Just num -> pure $ DailyBudget_ num
-	   Nothing -> error "Well... awesome"
+	   Nothing -> error "DailyBudget parseJSON toBoundedInteger failed"
 	parseJSON (String str) =
 	 case decimal str of
 	   Left err -> error err
