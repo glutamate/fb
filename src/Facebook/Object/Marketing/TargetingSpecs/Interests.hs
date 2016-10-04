@@ -23,6 +23,17 @@ data Interest = Interest {
 instance ToJSON Interest
 instance FromJSON Interest
 
+data TargetingType = AdInterest | Income deriving (Show, Eq)
+
+instance ToJSON TargetingType where
+  toJSON AdInterest = "adinterest"
+  toJSON Income = "income"
+
+instance FromJSON TargetingType where
+  parseJSON (String "adinterest") = return AdInterest
+  parseJSON (String "income") = return Income
+
+
 data QueryResult = QueryResult {
     id_ :: T.Text
   , name :: T.Text
@@ -60,3 +71,11 @@ queryInterest :: (R.MonadResource m, MonadBaseControl IO m)
 queryInterest query tok =
   getObject "/v2.7/search" [("type", "adinterest"), ("q", T.encodeUtf8 query)] $ Just tok
 
+queryTargeting :: (R.MonadResource m, MonadBaseControl IO m)
+  => TargetingType -> T.Text -> UserAccessToken -> FacebookT Auth m QueryResults
+queryTargeting AdInterest query tok =
+  getObject "/v2.7/search" [("type", "adinterest"), ("q", T.encodeUtf8 query)] $ Just tok
+queryTargeting Income query tok =
+  case query of
+    "" -> getObject "/v2.7/search" [("type", "adTargetingCategory"), ("class", "income")] $ Just tok
+    q  -> getObject "/v2.7/search" [("type", "adTargetingCategory"), ("class", "income"), ("q", T.encodeUtf8 query)] $ Just tok
