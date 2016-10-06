@@ -95,11 +95,11 @@ main = do
     --let (Id_ idText) = id $ head adSets
     --Pager insights _ _ <- In.getInsights (FB.Id idText) [] tok
     --liftIO $ print (insights:: [WithJSON In.Insights])
-    let adSetId = (id $ head adSets)
-    Pager insights _ _ <- In.getInsightsBreak adSetId (In.Age ::: In.Gender ::: Nil) tok
+--    let adSetId = (id $ head adSets)
+--    Pager insights _ _ <- In.getInsightsBreak adSetId (In.Age ::: In.Gender ::: Nil) tok
     ----Pager insights _ _ <- In.getInsightsBreak adSetId (In.Country ::: Nil) tok
     ----liftIO $ print idText
-    liftIO $ print insights
+--    liftIO $ print insights
     --Pager images _ _ <- getAdImage (id $ head adaccids)
     --        (Id ::: Name ::: Nil) tok
     --liftIO $ print $ (id $ head adaccids)
@@ -116,7 +116,7 @@ main = do
     --Pager images'' _ _ <- getAdImage acc
     --    Nil tok
     --liftIO $ print images''
-    let campaign = (Name, Name_ "Test Campaign Video") :*: (Objective, Objective_ OBJ_LINK_CLICKS)
+    let campaign = (Name, Name_ "Test Campaign Video") :*: (Objective, Objective_ OBJ_POST_ENGAGEMENT)
                    :*: (AdC.Status, AdC.Status_ PAUSED_) :*: (BuyingType, BuyingType_ AUCTION) :*: Nil
     ret' <- setAdCampaign acc campaign tok
     liftIO $ print ret'
@@ -124,10 +124,10 @@ main = do
     let campaign = ret
     let location = TargetLocation ["US", "GB"]
     let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
-    let target = TargetingSpecs location (Just demo) Nothing (Just [Instagram]) Nothing $ Just ids
+    let target = TargetingSpecs location (Just demo) Nothing (Just [Instagram]) Nothing $ Just (zip (repeat Int.AdInterest) ids)
     let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "Test AdSet Video API")
                 :*: (CampaignId, CampaignId_ $ campaignId ret) :*: (Targeting, Targeting_ target)
-                :*: (OptimizationGoal, OptimizationGoal_ REACH)
+                :*: (OptimizationGoal, OptimizationGoal_ POST_ENGAGEMENT)
                 :*: (BillingEvent, BillingEvent_ IMPRESSIONS_) :*: (DailyBudget, DailyBudget_ 500) :*: Nil
     adsetRet' <- setAdSet acc adset tok
     liftIO $ print adsetRet'

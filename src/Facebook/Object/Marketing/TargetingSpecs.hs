@@ -24,7 +24,7 @@ data TargetingSpecs = TargetingSpecs
   , device_platforms :: Maybe [DevicePlatform]
   , publisher_platforms :: Maybe [PublisherPlatform]
   , facebook_positions :: Maybe [FacebookPosition]
-  , interests :: Maybe [Interest]
+  , interests :: Maybe [(TargetingType,Interest)]
   } deriving (Show, Eq, Generic)
 
 instance ToJSON TargetingSpecs where
@@ -35,7 +35,14 @@ instance ToJSON TargetingSpecs where
                         Just dem -> demoToJSON dem
             intsJson = case ints of
                           Nothing -> Null
-                          Just ints' -> object ["interests" .= toJSON ints']
+                          Just ints' -> case filter ((==AdInterest) . fst) ints' of
+                                          [] -> Null
+                                          ints'' -> object ["interests" .= toJSON (map snd ints'')]
+            incomJson = case ints of
+                          Nothing -> Null
+                          Just ints' -> case filter ((==Income) . fst) ints' of
+                                          [] -> Null
+                                          ints'' -> object ["income" .= toJSON (map snd ints'')]
             deviceJson = case dp of
                           Nothing -> Null
                           Just x -> object ["device_platforms" .= toJSON x]
@@ -45,7 +52,7 @@ instance ToJSON TargetingSpecs where
             posJson = case fp of
                           Nothing -> Null
                           Just x -> object ["facebook_positions" .= toJSON x]
-        in foldl merge Null [locJson, demoJson, intsJson, deviceJson, pubsJson, posJson]
+        in foldl merge Null [locJson, demoJson, intsJson, incomJson, deviceJson, pubsJson, posJson]
 
 merge :: Value -> Value -> Value
 merge Null v = v
