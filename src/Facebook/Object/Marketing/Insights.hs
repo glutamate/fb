@@ -9,6 +9,8 @@ import Data.Text (Text)
 import GHC.Generics (Generic)
 import Data.Time
 import Data.Time.Format
+import Text.Read
+
 #if MIN_VERSION_time(1,5,0)
 import System.Locale hiding (defaultTimeLocale, rfc822DateFormat)
 import Data.Time.Clock
@@ -186,6 +188,19 @@ data Insights = Insights
     ins_unique_impressions:: Int,
     ins_reach :: Int,
     ins_spend:: Double } deriving (Eq, Show, Typeable, Generic)
+
+newtype SInt = SInt { unSInt :: Int } deriving (Eq, Show, Typeable, Generic)
+
+instance A.FromJSON SInt where
+  parseJSON (A.String v) = case readMaybe $ T.unpack v of
+                           Just x -> return $ SInt x
+                           Nothing -> fail $ "fromJSON SInt fail String "++ T.unpack v
+  parseJSON (A.Number x) = return $ SInt $ round x
+  parseJSON v = fail $ "fromJSON SInt fail "++ show v
+
+instance A.ToJSON SInt where
+  toJSON = A.toJSON . unSInt
+
 
 instance A.FromJSON Insights where
   parseJSON = parseJSONWithPrefix "ins_"
