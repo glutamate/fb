@@ -185,8 +185,8 @@ data Insights = Insights
     ins_ctr :: Double,
     ins_cpp :: Double,
     ins_unique_ctr :: Double,
-    ins_unique_impressions:: Int,
-    ins_reach :: Int,
+    ins_unique_impressions:: SInt,
+    ins_reach :: SInt,
     ins_spend:: Double } deriving (Eq, Show, Typeable, Generic)
 
 newtype SInt = SInt { unSInt :: Int } deriving (Eq, Show, Typeable, Generic)
