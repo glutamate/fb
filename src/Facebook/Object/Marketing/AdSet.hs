@@ -209,7 +209,7 @@ adsetIdToInt (CreateAdSetId id) =
 	      Right (num, _) -> num
 	      Left err -> error $ "Could not convert CreateAdSetId to Int:" ++ show err
 
-type AdSetSet r = (Has IsAutobid r, Has BillingEvent r, Has CampaignId r, Has Name r, Has DailyBudget r, Has Targeting r, A.FromJSON r, IsAdSetSetField r, ToForm r)
+type AdSetSet r = (Has IsAutobid r, Has BillingEvent r, Has CampaignId r, Has Name r, Has Targeting r, A.FromJSON r, IsAdSetSetField r, ToForm r)
 setAdSet :: (R.MonadResource m, MonadBaseControl IO m, AdSetSet r) =>
 	Id_    -- ^ Ad Account Id
 	-> r     -- ^ Arguments to be passed to Facebook.
