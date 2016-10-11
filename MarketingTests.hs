@@ -69,9 +69,9 @@ main = do
     ----let igId = unId_ $ id igId'
     let igId = "143574149129350" -- BD
     ----liftIO $ print igId
-    liftIO $ print "AdAccount Ids"
-    liftIO $ print adaccids
+    liftIO $ print ("AdAccount Ids", adaccids)
     let acc = id $ head adaccids
+
     --adAcc <- getAdAccount acc
     --            (Balance ::: AmountSpent ::: Age ::: Owner ::: Name ::: Nil)
     --            (Just tok)
@@ -124,11 +124,12 @@ main = do
     let campaign = ret
     let location = TargetLocation ["US", "GB"]
     let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
-    let target = TargetingSpecs location (Just demo) Nothing (Just [Instagram]) Nothing $ Just (zip (repeat Int.AdInterest) ids)
+    let target = TargetingSpecs location (Just demo) Nothing (Just [Instagram]) Nothing Nothing -- $ Just (zip (repeat Int.AdInterest) ids)
     let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "Test AdSet Video API")
                 :*: (CampaignId, CampaignId_ $ campaignId ret) :*: (Targeting, Targeting_ target)
                 :*: (OptimizationGoal, OptimizationGoal_ POST_ENGAGEMENT)
                 :*: (BillingEvent, BillingEvent_ IMPRESSIONS_) :*: (DailyBudget, DailyBudget_ 500) :*: Nil
+    liftIO $ print ("creating adset", (acc, adset, tok))
     adsetRet' <- setAdSet acc adset tok
     liftIO $ print adsetRet'
     let adsetRet = either (error . show) P.id adsetRet'

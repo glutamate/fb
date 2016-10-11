@@ -40,7 +40,8 @@ data FacebookPosition = Feed | RightHandColumn
   deriving (Show, Eq, Generic)
 
 instance ToJSON FacebookPosition where
-    toJSON = genericToJSON defaultOptions {constructorTagModifier = map toLower}
+    toJSON Feed = String "feed"
+    toJSON RightHandColumn = String "right_hand_column"
 
 instance FromJSON FacebookPosition where
     parseJSON (String "feed") = pure Feed
@@ -53,4 +54,3 @@ publisher_platforms - facebook, instagram, audience_network - any number of.
 
 facebook_positions - feed, right_hand_column
 -}
-
