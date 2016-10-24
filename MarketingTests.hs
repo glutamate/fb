@@ -1,4 +1,7 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, BangPatterns #-}
+{-# Language BangPatterns #-}
+{-# Language FlexibleContexts #-}
+{-# Language OverloadedStrings #-}
+{-# Language ScopedTypeVariables #-}
 
 import System.Environment
 import Network.HTTP.Conduit
@@ -10,7 +13,6 @@ import Facebook.Records
 import           Control.Monad.Trans.Resource
 import           Control.Monad
 import Data.Time
---import Control.Monad.Trans
 import Control.Monad.IO.Class
 import Facebook.Object.Marketing.AdAccount
 import Facebook.Object.Marketing.Types
@@ -20,7 +22,6 @@ import qualified Facebook.Object.Marketing.AdCampaign as AdC
 import qualified Facebook.Object.Marketing.AdSet as AdS
 import qualified Facebook.Object.Marketing.AdImage as AdI
 import qualified Facebook.Object.Marketing.AdVideo as AdV
---import Facebook.Object.Marketing.AdLabel
 import Facebook.Object.Marketing.TargetingSpecs
 import Facebook.Object.Marketing.TargetingSpecs.Location
 import Facebook.Object.Marketing.TargetingSpecs.Demographies
@@ -45,138 +46,161 @@ main = do
   fbUid <- getEnv "FB_USER_ID"
   pageId <- liftM T.pack $ getEnv "FB_PAGE_ID"
   fbUrl <- liftM T.pack $ getEnv "FB_URL"
-  --let fbUrl = "http://me.example.com"
+  igId <- liftM T.pack $ getEnv "IG_ID"
+
   man <- newManager conduitManagerSettings
   now <- getCurrentTime
+
+  -- "bdpromo" is wrongly here, but it doesn't seem
+  -- to affect any of the tests actually run by this
+  -- test set.
   let creds = Credentials "bdpromo" (T.pack appId) (T.pack appSecret)
       fbuser = FB.Id (T.pack fbUid)
       tokExpires = addUTCTime 1000 now
       tok = UserAccessToken fbuser (T.pack tokenBody) now
   runResourceT $ runFacebookT creds man $ do
+
+    testGetUser tok
+
+    acc <- testGetAdAccId tok
+
+    (videoId, thumb) <- testUploadVideo acc tok
+
+    testQueryInterests tok
+
+    campaign <- testCreateCampaign acc tok
+
+    testGetAdCampaigns acc tok
+
+    adsetRet <- testCreateAdSet campaign acc tok
+
+
+    creativeRet <- testCreateCreative fbUrl videoId thumb igId pageId acc tok
+
+    testGetCreative acc tok
+
+    testGetAds acc tok
+
+    testSetAd adsetRet creativeRet acc tok
+
+    liftIO $ putStrLn "Test suite finished without failure."
+
+testGetUser tok = do
+    liftIO $ putStrLn "TEST: getUser"
     u <- getUser "me" [] (Just tok)
-    --liftIO $ print u
+    return ()
+
+
+testGetAdAccId tok = do
+    liftIO $ putStrLn "TEST: getAdAccountId"
     Pager adaccids _ _ <- getAdAccountId $ Just tok
-    ret <- AdV.uploadVideo (id $ head adaccids) "tomn.mp4" "Tom's test video" tok
-    liftIO $ print ret
-    let videoId = either (error . show) P.id ret
-    AdV.waitForVideo videoId tok
-    liftIO $ print "Video ready!"
-    thumb <- AdV.getPrefThumbnail videoId tok
-    --Pager (igId':_) _ _ <- getIgId tok $ FBPageId pageId
-    qs <- Int.queryInterest "travel" tok
-    let ids = map (Int.Interest <$> Int.id_) $ Int.data_ qs
-    ----liftIO $ print ids
-    ----let igId = unId_ $ id igId'
-    let igId = "143574149129350" -- BD
-    ----liftIO $ print igId
+
+    when (length adaccids == 0) $ error "Test failure: the test user does not seem to have any ad accounts"
     liftIO $ print ("AdAccount Ids", adaccids)
     let acc = id $ head adaccids
 
-    --adAcc <- getAdAccount acc
-    --            (Balance ::: AmountSpent ::: Age ::: Owner ::: Name ::: Nil)
-    --            (Just tok)
-    --liftIO $ print adAcc
-    ----adAcc2 <- getAdAccount (id $ head $ tail adaccids)
-    ----            (Balance ::: AmountSpent ::: Age ::: Owner ::: Name ::: Nil)
-    ----            (Just tok)
-    ----liftIO $ print adAcc2
-    ----adAcc3 <- getAdAccount (id $ head $ tail $ tail adaccids)
-    ----            (Balance ::: AmountSpent ::: Age ::: Owner ::: Name ::: Nil)
-    ----            (Just tok)
-    ----liftIO $ print adAcc3
+    return acc
+
+
+testUploadVideo acc tok = do
+
+    liftIO $ putStrLn "TEST: upload video"
+
+    ret <- AdV.uploadVideo acc "tomn.mp4" "Tom's test video" tok
+    liftIO $ print ("Return value from uploadVideo", ret)
+    let videoId = either (error . show) P.id ret
+    AdV.waitForVideo videoId tok
+    liftIO $ putStrLn "Video ready"
+    thumb <- AdV.getPrefThumbnail videoId tok
+    liftIO $ print ("videoid,thumb", videoId, thumb)
+    return (videoId, thumb)
+
+
+testQueryInterests tok = do
+    liftIO $ putStrLn "TEST: querying travel interest"
+    qs <- Int.queryInterest "travel" tok
+    let ids = map (Int.Interest <$> Int.id_) $ Int.data_ qs
+    return ()
+
+
+testGetAdCampaigns acc tok = do
+    liftIO $ putStrLn "TEST: get ad campaigns and sets"
+    -- this test requires there to be an ad campaign in the
+    -- test account already? That isn't necessarily the
+    -- case with a plain test user?
     Pager adCamps _ _ <- getAdCampaign acc (Name ::: Nil) tok
-    liftIO $ print "AdCamps"
+    liftIO $ print "Ad campaigns"
     liftIO $ print adCamps
+    when (length adCamps == 0) $ error "Test failure: adCamps == []"
     let adCampId = (id $ head adCamps)
     --let adCampId = Id_ "6044657233872"
     Pager adSets _ _ <- getAdSet adCampId (ConfiguredStatus ::: EffectiveStatus ::: DailyBudget ::: Nil) tok
     liftIO $ print "AdSets"
     liftIO $ print adSets
-    --let (Id_ idText) = id $ head adSets
-    --Pager insights _ _ <- In.getInsights (FB.Id idText) [] tok
-    --liftIO $ print (insights:: [WithJSON In.Insights])
---    let adSetId = (id $ head adSets)
---    Pager insights _ _ <- In.getInsightsBreak adSetId (In.Age ::: In.Gender ::: Nil) tok
-    ----Pager insights _ _ <- In.getInsightsBreak adSetId (In.Country ::: Nil) tok
-    ----liftIO $ print idText
---    liftIO $ print insights
-    --Pager images _ _ <- getAdImage (id $ head adaccids)
-    --        (Id ::: Name ::: Nil) tok
-    --liftIO $ print $ (id $ head adaccids)
-    --liftIO $ print $ length images
-    --let rec = (Filename, Filename_ "/home/alex/code/beautilytics/fb/bridge.jpg") :*: Nil
-    --adImg' <- setAdImage acc rec tok
-    --let adImg = either (error . show) P.id adImg'
-    --liftIO $ print adImg
-    --Pager images' _ _ <- getAdImage acc
-    --    (Id ::: Nil) tok
-    --liftIO $ print $ length images'
-    ----delRet <- delAdImage (id $ head adaccids) ((Hash, Hash_ "5f73a7d1df0252ac7f012224dde315d0") :*: Nil) tok
-    ----liftIO $ print delRet
-    --Pager images'' _ _ <- getAdImage acc
-    --    Nil tok
-    --liftIO $ print images''
-    let campaign = (Name, Name_ "Test Campaign Video") :*: (Objective, Objective_ OBJ_POST_ENGAGEMENT)
+    return ()
+
+testCreateCampaign acc tok = do
+    liftIO $ putStrLn "TEST: Create campaign"
+    let campaign = (Name, Name_ "Test campaign created by Haskell fb module test suite") :*: (Objective, Objective_ OBJ_POST_ENGAGEMENT)
                    :*: (AdC.Status, AdC.Status_ PAUSED_) :*: (BuyingType, BuyingType_ AUCTION) :*: Nil
     ret' <- setAdCampaign acc campaign tok
-    liftIO $ print ret'
-    let ret = either (error . show) P.id ret'
-    let campaign = ret
+
+    liftIO $ print ("return value from setAdCampaign", ret')
+    let campaign = either (\e -> error $ "error returned from setCampaign: " ++ show e)
+                          P.id ret'
+
+    return campaign
+
+testCreateAdSet campaign acc tok = do
+
+    liftIO $ putStrLn "TEST: create adset"
+
     let location = TargetLocation ["US", "GB"]
     let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
-    let target = TargetingSpecs location (Just demo) Nothing (Just [Instagram]) Nothing Nothing -- $ Just (zip (repeat Int.AdInterest) ids)
+    let target = TargetingSpecs location (Just demo) Nothing (Just [Facebook]) Nothing Nothing -- $ Just (zip (repeat Int.AdInterest) ids)
     let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "Test AdSet Video API")
-                :*: (CampaignId, CampaignId_ $ campaignId ret) :*: (Targeting, Targeting_ target)
+                :*: (CampaignId, CampaignId_ $ campaignId campaign) :*: (Targeting, Targeting_ target)
                 :*: (OptimizationGoal, OptimizationGoal_ POST_ENGAGEMENT)
                 :*: (BillingEvent, BillingEvent_ IMPRESSIONS_) :*: (DailyBudget, DailyBudget_ 500) :*: Nil
     liftIO $ print ("creating adset", (acc, adset, tok))
     adsetRet' <- setAdSet acc adset tok
-    liftIO $ print adsetRet'
+    liftIO $ print ("adset ret", adsetRet')
     let adsetRet = either (error . show) P.id adsetRet'
-    ----bla <- delAdSet adsetRet Nil tok
-    ----liftIO $ print bla
-    ----Pager adCr _ _ <- getAdCreative (id $ head adaccids) (Name ::: ObjectStoryId ::: Nil) $ Just tok
-    ----liftIO $ print adCr
-    ----let pageId = unObjectStoryId_ $ object_story_id $ head adCr
-    ----Pager adSets _ _ <- getAdSet acc (Name ::: BillingEvent ::: OptimizationGoal ::: Targeting ::: Nil) tok
-    ----liftIO $ print adSets
-    --let imgHash = AdI.hash $ AdI.images adImg Map.! "bridge.jpg"
-    let cta_value = CallToActionValue fbUrl "FIXME"
-    --let call_to_action = Just $ CallToActionADT LEARN_MORE cta_value
-    --let msg = "Planning your holiday travel? Discover the best destinations, hotels, and more!"
-    ---- regular ad
+    return adsetRet
+
+testCreateCreative fbUrl videoId thumb igId pageId acc tok = do
+    liftIO $ putStrLn "TEST: create ad creative"
+    let cta_value = CallToActionValue fbUrl "Test link caption"
     let call_to_action = CallToActionADT LEARN_MORE cta_value
+
     let videoLink = AdCreativeVideoData call_to_action "This is a description" (AdV.uri thumb) videoId
-    ----let link = AdCreativeLinkData "This is a caption" (Hash_ imgHash) fbUrl msg
-    ----                (Just ("This is a description" :: T.Text)) call_to_action
-    ---- carousel ad
-    --let carousel_child = CarouselChild "Child name" (Hash_ imgHash) fbUrl (Just "this is a carousel child description")
-    --let link = CreativeCarouselData "This is a carousel caption" msg (replicate 4 carousel_child) "http://example.com" -- <-- cannot be fbUrl
-   ---- Left (FacebookException {..., fbeErrorUserTitle = Just "Objective of campaign requires creative with external link or call to action", fbeErrorUserMsg = Just "For this campaign objective, a creative is required to have either external link or Call to Action.", ...})
-    --let oss = ObjectStorySpecADT link (FBPageId pageId) $ Just $ IgId igId
     let oss = ObjectStorySpecVideoLink videoLink (FBPageId pageId) $ Just $ IgId igId
-    let adcreative = (Name, Name_ "Test Video AdCreative")
+    let adcreative = (Name, Name_ "Test AdCreative created by Haskell fb module test suite")
                     :*: (ObjectStorySpec, ObjectStorySpec_ oss) :*: Nil
     creativeRet' <- setAdCreative acc adcreative tok
     liftIO $ print creativeRet'
     let !creativeRet = either (error . show) P.id creativeRet'
-    let ad = (Creative, Creative_ $ creativeToCreative creativeRet) :*: (AdsetId, AdsetId_ $ adsetIdToInt adsetRet)
-            :*: (Name, Name_ "Another Test Ad Video API") :*: (Ad.Status, Ad.Status_ PAUSED_) :*: Nil
+    return creativeRet
+
+testGetCreative acc tok = do
+    liftIO $ putStrLn "TEST: get ad creative"
+    creative <- getAdCreative acc (Name {- ::: InstagramPermalinkUrl -} ::: InstagramActorId ::: Nil) tok
+    liftIO $ print creative
+    return ()
+
+testGetAds acc tok = do
+    liftIO $ putStrLn "TEST: get ads"
     Pager ads _ _ <- getAd acc (Name ::: BidType ::: Nil) tok
     liftIO $ print ads
+
+
+testSetAd adsetRet creativeRet acc tok = do
+    liftIO $ putStrLn "TEST: set ad"
+    let ad = (Creative, Creative_ $ creativeToCreative creativeRet) :*: (AdsetId, AdsetId_ $ adsetIdToInt adsetRet)
+            :*: (Name, Name_ "Another Test Ad Video API") :*: (Ad.Status, Ad.Status_ PAUSED_) :*: Nil
+
     adId' <- setAd acc ad tok
     liftIO $ print adId'
     let adId = either (error "haha") P.id adId'
     liftIO $ print adId
-
-    -------- in order to run an ad, we have to set the status of the campaign, adset, and ad to ACTIVE
-    --------updAdCampaign campaign ((AdC.Status, AdC.Status_ DELETED_) :*: Nil) tok
-    --------liftIO $ print aaa
-    --------bbb <- updAdSet adsetRet ((AdS.Status, AdS.Status_ ACTIVE_) :*: (DailyBudget, DailyBudget_ 510) :*: Nil) tok
-    --------liftIO $ print bbb
-    --------ccc <- updAd adId ((Ad.Status, Ad.Status_ ACTIVE_) :*: Nil) tok
-    --------liftIO $ print ccc
-    --------let delId = (Id, Id_ $ campaignId ret) :*: (DeleteStrategy, DeleteStrategy_ Nil
-    --------delCampaign <- delAdCampaign ret delId tok -- (id $ head adaccids) delId tok
-    --------liftIO $ print delCampaign
-    --return ()
+    return ()

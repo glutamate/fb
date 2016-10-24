@@ -408,7 +408,7 @@ typesToJsonInstances (nt, "Int", "Text") =
         \\tparseJSON (Number x) =\n\
         \\t case toBoundedInteger x of\n\
         \\t   Just num -> " <> create <> "\n" <>
-        "\t   Nothing -> error \"Well... awesome\"\n\
+        "\t   Nothing -> error \"parseJSON toBoundedInteger failed\"\n\
         \\tparseJSON (String str) =\n\
         \\t case decimal str of\n\
         \\t   Left err -> error err\n\

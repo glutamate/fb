@@ -17,5 +17,4 @@ Now run the tests with:
 
 stack exec facebook-marketing-test
 
-The tests fail for me (Ben Clifford) 50% of the time with:
 
