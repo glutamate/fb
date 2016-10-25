@@ -201,6 +201,7 @@ testSetAd adsetRet creativeRet acc tok = do
 
     adId' <- setAd acc ad tok
     liftIO $ print adId'
-    let adId = either (error "haha") P.id adId'
+    let adId = either (\e -> error $ "setAd returned: " ++ show e)
+                      P.id adId'
     liftIO $ print adId
     return ()
