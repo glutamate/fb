@@ -40,6 +40,15 @@ import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)
 #endif
 import Facebook.Object.Marketing.Types
 
+data ExternalEventSource = ExternalEventSource
+newtype ExternalEventSource_ = ExternalEventSource_ AdsPixel deriving (Show, Generic)
+instance Field ExternalEventSource where
+  type FieldValue ExternalEventSource = ExternalEventSource_
+  fieldName _ = "external_event_source"
+  fieldLabel = ExternalEventSource
+unExternalEventSource_ :: ExternalEventSource_ -> AdsPixel
+unExternalEventSource_ (ExternalEventSource_ x) = x
+
 data Description = Description
 newtype Description_ = Description_ Text deriving (Show, Generic)
 instance Field Description where
@@ -75,6 +84,8 @@ instance Field ApproximateCount where
   fieldLabel = ApproximateCount
 unApproximateCount_ :: ApproximateCount_ -> Integer
 unApproximateCount_ (ApproximateCount_ x) = x
+instance A.FromJSON ExternalEventSource_
+instance A.ToJSON ExternalEventSource_
 instance A.FromJSON Description_
 instance A.ToJSON Description_
 instance A.FromJSON DeliveryStatus_
@@ -83,6 +94,9 @@ instance A.FromJSON DataSource_
 instance A.ToJSON DataSource_
 instance A.FromJSON ApproximateCount_
 instance A.ToJSON ApproximateCount_
+
+instance ToBS ExternalEventSource_ where
+  toBS (ExternalEventSource_ a) = toBS a
 
 instance ToBS Description_ where
   toBS (Description_ a) = toBS a
@@ -96,6 +110,7 @@ instance ToBS DataSource_ where
 instance ToBS ApproximateCount_ where
   toBS (ApproximateCount_ a) = toBS a
 
+external_event_source r = r `Rec.get` ExternalEventSource
 description r = r `Rec.get` Description
 delivery_status r = r `Rec.get` DeliveryStatus
 data_source r = r `Rec.get` DataSource
@@ -104,6 +119,7 @@ approximate_count r = r `Rec.get` ApproximateCount
 class IsCustomAudienceGetField r
 instance (IsCustomAudienceGetField h, IsCustomAudienceGetField t) => IsCustomAudienceGetField (h :*: t)
 instance IsCustomAudienceGetField Nil
+instance IsCustomAudienceGetField ExternalEventSource
 instance IsCustomAudienceGetField Description
 instance IsCustomAudienceGetField DeliveryStatus
 instance IsCustomAudienceGetField DataSource

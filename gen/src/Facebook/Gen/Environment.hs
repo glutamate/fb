@@ -41,6 +41,7 @@ typesMap =
                 , ("list<ExecOption>", "Vector ExecOption")
                 , ("ISO 4217 Currency Code", "Money") -- ???
                 , ("map<string, int32>", "Map.Map Text Int")
+                , ("AdsPixel", "AdsPixel")
                 , ("ConfigureStatus", "ConfigureStatusADT")
                 , ("CustomAudienceDataSource", "CustomAudienceDataSource")
                 , ("CustomAudienceStatus", "CustomAudienceStatus")

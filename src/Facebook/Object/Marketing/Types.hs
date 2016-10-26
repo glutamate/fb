@@ -399,6 +399,26 @@ instance FromJSON CustomAudienceStatus where
 instance ToBS CustomAudienceStatus
   where toBS = error "BENC NOTIMPL custom audience status"
 
+-- BENC: NOTIMPL
+-- WARNING: deserialisation of this is not testing in MarketingTests
+-- (or anywhere) because there is no accessor that will return a single
+-- CustomAudience, and external_event_source :: AdsPixel cannot be
+-- requested for all audiences when some audiences do not have that field.
+data AdsPixel = AdsPixel {
+  stuff :: Text
+   -- TODO: what fields are we going to get?
+} deriving Show
+
+instance ToJSON AdsPixel where
+  toJSON = error "BENC NOTIMPL tojson adspixel"
+
+instance FromJSON AdsPixel where
+  parseJSON x = pure $ AdsPixel (pack $ show x)
+
+instance ToBS AdsPixel where
+  toBS = error "BENC NOTIMPL tobs adspixel"
+
+
 instance ToBS Text where
   toBS = TE.encodeUtf8
 instance ToBS Char where
