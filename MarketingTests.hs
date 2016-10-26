@@ -213,6 +213,6 @@ testSetAd adsetRet creativeRet acc tok = do
 
 testGetCustomAudience acc tok = do
     liftIO $ putStrLn "TEST: getCustomAudience"
-    audiences <- getCustomAudience acc (Id ::: ApproximateCount ::: AccountId ::: Nil) tok
+    audiences <- getCustomAudience acc (Id ::: ApproximateCount ::: AccountId ::: DataSource ::: Nil) tok
 
     liftIO $ print ("audiences", audiences)

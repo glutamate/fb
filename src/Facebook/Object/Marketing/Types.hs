@@ -362,16 +362,25 @@ instance FromJSON SuccessId where
 
 
 -- BENC NOTIMPL !!!
-data CustomAudienceDataSource = CustomAudienceDataSource ()
+data CustomAudienceDataSource = CustomAudienceDataSource {
+    type_ :: Text, -- BENC TODO: make an ENUM
+    sub_type :: Text, -- BENC TODO: make an ENUM
+    creation_params :: Text -- this really is a string not an enum
+  }
   deriving Show
 
 instance ToJSON CustomAudienceDataSource
   where toJSON = error "BENC NOTIMPL custom audience data source toJSON"
-instance FromJSON CustomAudienceDataSource
-  where parseJSON = error "BENC NOTIMPL custom audience data source fromJSON"
+
+instance FromJSON CustomAudienceDataSource where
+  parseJSON (Object v) =
+    CustomAudienceDataSource <$> v .: "type"
+                             <*> v .: "sub_type"
+                             <*> v .: "creation_params"
+  parseJSON _ = error $ "could not parse non-Object as a CustomAudienceDataSource"
+
 instance ToBS CustomAudienceDataSource
   where toBS = error "BENC NOTIMPL custom audience data source toBS"
-
 
 
 instance ToBS Text where
