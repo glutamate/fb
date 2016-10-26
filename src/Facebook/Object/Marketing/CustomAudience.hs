@@ -40,6 +40,15 @@ import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)
 #endif
 import Facebook.Object.Marketing.Types
 
+data LookalikeAudienceIds = LookalikeAudienceIds
+newtype LookalikeAudienceIds_ = LookalikeAudienceIds_ (Vector Text) deriving (Show, Generic)
+instance Field LookalikeAudienceIds where
+  type FieldValue LookalikeAudienceIds = LookalikeAudienceIds_
+  fieldName _ = "lookalike_audience_ids"
+  fieldLabel = LookalikeAudienceIds
+unLookalikeAudienceIds_ :: LookalikeAudienceIds_ -> Vector Text
+unLookalikeAudienceIds_ (LookalikeAudienceIds_ x) = x
+
 data ExternalEventSource = ExternalEventSource
 newtype ExternalEventSource_ = ExternalEventSource_ AdsPixel deriving (Show, Generic)
 instance Field ExternalEventSource where
@@ -84,6 +93,8 @@ instance Field ApproximateCount where
   fieldLabel = ApproximateCount
 unApproximateCount_ :: ApproximateCount_ -> Integer
 unApproximateCount_ (ApproximateCount_ x) = x
+instance A.FromJSON LookalikeAudienceIds_
+instance A.ToJSON LookalikeAudienceIds_
 instance A.FromJSON ExternalEventSource_
 instance A.ToJSON ExternalEventSource_
 instance A.FromJSON Description_
@@ -94,6 +105,9 @@ instance A.FromJSON DataSource_
 instance A.ToJSON DataSource_
 instance A.FromJSON ApproximateCount_
 instance A.ToJSON ApproximateCount_
+
+instance ToBS LookalikeAudienceIds_ where
+  toBS (LookalikeAudienceIds_ a) = toBS a
 
 instance ToBS ExternalEventSource_ where
   toBS (ExternalEventSource_ a) = toBS a
@@ -110,6 +124,7 @@ instance ToBS DataSource_ where
 instance ToBS ApproximateCount_ where
   toBS (ApproximateCount_ a) = toBS a
 
+lookalike_audience_ids r = r `Rec.get` LookalikeAudienceIds
 external_event_source r = r `Rec.get` ExternalEventSource
 description r = r `Rec.get` Description
 delivery_status r = r `Rec.get` DeliveryStatus
@@ -119,6 +134,7 @@ approximate_count r = r `Rec.get` ApproximateCount
 class IsCustomAudienceGetField r
 instance (IsCustomAudienceGetField h, IsCustomAudienceGetField t) => IsCustomAudienceGetField (h :*: t)
 instance IsCustomAudienceGetField Nil
+instance IsCustomAudienceGetField LookalikeAudienceIds
 instance IsCustomAudienceGetField ExternalEventSource
 instance IsCustomAudienceGetField Description
 instance IsCustomAudienceGetField DeliveryStatus
