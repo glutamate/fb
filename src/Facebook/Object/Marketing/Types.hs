@@ -360,6 +360,20 @@ instance FromJSON SuccessId where
   parseJSON (Object v) =
       SuccessId <$> v .: "id"
 
+
+-- BENC NOTIMPL !!!
+data CustomAudienceDataSource = CustomAudienceDataSource ()
+  deriving Show
+
+instance ToJSON CustomAudienceDataSource
+  where toJSON = error "BENC NOTIMPL custom audience data source toJSON"
+instance FromJSON CustomAudienceDataSource
+  where parseJSON = error "BENC NOTIMPL custom audience data source fromJSON"
+instance ToBS CustomAudienceDataSource
+  where toBS = error "BENC NOTIMPL custom audience data source toBS"
+
+
+
 instance ToBS Text where
   toBS = TE.encodeUtf8
 instance ToBS Char where

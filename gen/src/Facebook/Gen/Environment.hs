@@ -42,6 +42,7 @@ typesMap =
                 , ("ISO 4217 Currency Code", "Money") -- ???
                 , ("map<string, int32>", "Map.Map Text Int")
                 , ("ConfigureStatus", "ConfigureStatusADT")
+                , ("CustomAudienceDataSource", "CustomAudienceDataSource")
                 , ("EffectiveStatus", "EffectiveStatusADT")
                 , ("ConfiguredAdStatus", "ConfiguredAdStatus")
                 , ("EffectiveAdStatus", "EffectiveAdStatus")
@@ -68,7 +69,8 @@ typesMap =
                 , ("map<string, unsigned int32>", "Map.Map Text Int")
                 , ("dictionary", "A.Value") -- ???
                 , ("Object", "A.Value") -- ???
-                , ("videoId", "VideoId")]
+                , ("videoId", "VideoId")
+                ]
 type ModeFieldInfoMap = Map.Map InteractionMode (Vector FieldInfo)
 type EntityModeMap = Map.Map Entity ModeFieldInfoMap
 newtype Env = Env EntityModeMap deriving Show
