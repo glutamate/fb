@@ -9,7 +9,7 @@ synopsis:          Bindings to Facebook's API.
 category:          Web
 stability:         Experimental
 cabal-version:     >= 1.8
-build-type:        Simple
+build-type:        Custom
 homepage:          https://github.com/prowdsponsor/fb
 
 description:
@@ -36,6 +36,9 @@ source-repository head
   type:     git
   location: git://github.com/prowdsponsor/fb.git
 
+flag regenerate
+  default: False
+  description: recompile gen/data definitions
 
 flag debug
   default: False
