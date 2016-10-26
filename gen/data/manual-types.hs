@@ -334,6 +334,7 @@ instance ToJSON CustomAudienceDataSource
 
 instance FromJSON CustomAudienceDataSource where
   parseJSON (Object v) =
+    -- BENC TODO: make a genericParseJSON
     CustomAudienceDataSource <$> v .: "type"
                              <*> v .: "sub_type"
                              <*> v .: "creation_params"
@@ -342,3 +343,18 @@ instance FromJSON CustomAudienceDataSource where
 instance ToBS CustomAudienceDataSource
   where toBS = error "BENC NOTIMPL custom audience data source toBS"
 
+
+-- BENC: NOTIMPL
+data CustomAudienceStatus = CustomAudienceStatus {
+    cas_code :: Int,
+    cas_description :: Text
+} deriving (Show, Generic)
+
+instance ToJSON CustomAudienceStatus
+  where toJSON = error "BENC NOTIMPL custom audience status"
+
+instance FromJSON CustomAudienceStatus where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop $ length ("cas_" :: String)}
+
+instance ToBS CustomAudienceStatus
+  where toBS = error "BENC NOTIMPL custom audience status"

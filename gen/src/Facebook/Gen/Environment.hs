@@ -43,6 +43,7 @@ typesMap =
                 , ("map<string, int32>", "Map.Map Text Int")
                 , ("ConfigureStatus", "ConfigureStatusADT")
                 , ("CustomAudienceDataSource", "CustomAudienceDataSource")
+                , ("CustomAudienceStatus", "CustomAudienceStatus")
                 , ("EffectiveStatus", "EffectiveStatusADT")
                 , ("ConfiguredAdStatus", "ConfiguredAdStatus")
                 , ("EffectiveAdStatus", "EffectiveAdStatus")
