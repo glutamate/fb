@@ -22,6 +22,7 @@ import qualified Facebook.Object.Marketing.AdCampaign as AdC
 import qualified Facebook.Object.Marketing.AdSet as AdS
 import qualified Facebook.Object.Marketing.AdImage as AdI
 import qualified Facebook.Object.Marketing.AdVideo as AdV
+import Facebook.Object.Marketing.CustomAudience
 import Facebook.Object.Marketing.TargetingSpecs
 import Facebook.Object.Marketing.TargetingSpecs.Location
 import Facebook.Object.Marketing.TargetingSpecs.Demographies
@@ -63,6 +64,10 @@ main = do
     testGetUser tok
 
     acc <- testGetAdAccId tok
+
+    testGetCustomAudience acc tok
+
+    error "BENC - enough tests"
 
     (videoId, thumb) <- testUploadVideo acc tok
 
@@ -205,3 +210,9 @@ testSetAd adsetRet creativeRet acc tok = do
                       P.id adId'
     liftIO $ print adId
     return ()
+
+testGetCustomAudience acc tok = do
+    liftIO $ putStrLn "TEST: getCustomAudience"
+    audiences <- getCustomAudience acc (Id ::: Nil) tok
+
+    liftIO $ print ("audiences", audiences)

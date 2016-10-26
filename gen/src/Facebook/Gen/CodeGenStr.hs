@@ -68,7 +68,9 @@ entityUrlPostfixMap =
                   ((Entity "AdCreative", Reading), "/adcreatives"),
                   ((Entity "AdCreative", Creating), "/adcreatives"),
                   ((Entity "AdSet", Reading), "/adsets"),
-                  ((Entity "AdSet", Creating), "/adsets")]
+                  ((Entity "AdSet", Creating), "/adsets"),
+                  ((Entity "CustomAudience", Reading), "/customaudiences")
+                 ]
 
 -- Does the generated function return a Pager?
 entityModePagerSet =
@@ -77,7 +79,8 @@ entityModePagerSet =
                   (Entity "AdImage", Reading),
                   (Entity "AdCreative", Reading),
                   (Entity "Ad", Reading),
-                  (Entity "AdSet", Reading)]
+                  (Entity "AdSet", Reading),
+                  (Entity "CustomAudience", Reading)]
 
 entityModeIdNotInURL  =
     Set.fromList [(Entity "AdCreative", Deleting)]
@@ -195,7 +198,8 @@ isTokenNecessarySet =
                   (Entity "AdSet", Deleting),
                   (Entity "AdSet", Updating),
                   (Entity "AdSet", Creating),
-                  (Entity "AdSet", Reading)]
+                  (Entity "AdSet", Reading),
+                  (Entity "CustomAudience", Reading)]
 
 modPrefix = "Facebook.Object.Marketing."
 modNameToPath = replace "." "/"

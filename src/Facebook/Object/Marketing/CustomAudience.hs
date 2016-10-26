@@ -84,7 +84,7 @@ type CustomAudienceGetRet r = r -- Default fields
 getCustomAudience :: (R.MonadResource m, MonadBaseControl IO m, CustomAudienceGet fl r) =>
   Id_    -- ^ Ad Account Id
   -> fl     -- ^ Arguments to be passed to Facebook.
-  -> Maybe UserAccessToken -- ^ Optional user access token.
-  -> FacebookT anyAuth m (CustomAudienceGetRet r)
-getCustomAudience (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "") [("fields", textListToBS $ fieldNameList $ fl)] mtoken
+  ->  UserAccessToken -- ^ Optional user access token.
+  -> FacebookT anyAuth m (Pager (CustomAudienceGetRet r))
+getCustomAudience (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "/customaudiences") [("fields", textListToBS $ fieldNameList $ fl)] $ Just mtoken
 
