@@ -43,36 +43,36 @@ import Facebook.Object.Marketing.Types
 data Status = Status
 newtype Status_ = Status_ ConfigureStatusADT deriving (Show, Generic)
 instance Field Status where
-	type FieldValue Status = Status_
-	fieldName _ = "status"
-	fieldLabel = Status
+  type FieldValue Status = Status_
+  fieldName _ = "status"
+  fieldLabel = Status
 unStatus_ :: Status_ -> ConfigureStatusADT
 unStatus_ (Status_ x) = x
 
 data DateFormat = DateFormat
 newtype DateFormat_ = DateFormat_ Text deriving (Show, Generic)
 instance Field DateFormat where
-	type FieldValue DateFormat = DateFormat_
-	fieldName _ = "date_format"
-	fieldLabel = DateFormat
+  type FieldValue DateFormat = DateFormat_
+  fieldName _ = "date_format"
+  fieldLabel = DateFormat
 unDateFormat_ :: DateFormat_ -> Text
 unDateFormat_ (DateFormat_ x) = x
 
 data BidType = BidType
 newtype BidType_ = BidType_ BidTypeADT deriving (Show, Generic)
 instance Field BidType where
-	type FieldValue BidType = BidType_
-	fieldName _ = "bid_type"
-	fieldLabel = BidType
+  type FieldValue BidType = BidType_
+  fieldName _ = "bid_type"
+  fieldLabel = BidType
 unBidType_ :: BidType_ -> BidTypeADT
 unBidType_ (BidType_ x) = x
 
 data LastUpdatedByAppId = LastUpdatedByAppId
 newtype LastUpdatedByAppId_ = LastUpdatedByAppId_ Text deriving (Show, Generic)
 instance Field LastUpdatedByAppId where
-	type FieldValue LastUpdatedByAppId = LastUpdatedByAppId_
-	fieldName _ = "last_updated_by_app_id"
-	fieldLabel = LastUpdatedByAppId
+  type FieldValue LastUpdatedByAppId = LastUpdatedByAppId_
+  fieldName _ = "last_updated_by_app_id"
+  fieldLabel = LastUpdatedByAppId
 unLastUpdatedByAppId_ :: LastUpdatedByAppId_ -> Text
 unLastUpdatedByAppId_ (LastUpdatedByAppId_ x) = x
 instance A.FromJSON Status_
@@ -87,30 +87,30 @@ instance A.ToJSON LastUpdatedByAppId_
 data Creative = Creative
 newtype Creative_ = Creative_ AdCreativeADT deriving (Show, Generic)
 instance Field Creative where
-	type FieldValue Creative = Creative_
-	fieldName _ = "creative"
-	fieldLabel = Creative
+  type FieldValue Creative = Creative_
+  fieldName _ = "creative"
+  fieldLabel = Creative
 unCreative_ :: Creative_ -> AdCreativeADT
 unCreative_ (Creative_ x) = x
 instance A.FromJSON Creative_ where
-	parseJSON (Object v) = Creative_ <$> AdCreativeADT <$>
-	 v .: "id" <|> v .: "creative_id"
+  parseJSON (Object v) = Creative_ <$> AdCreativeADT <$>
+   v .: "id" <|> v .: "creative_id"
 instance A.ToJSON Creative_
 
 instance ToBS Status_ where
-	toBS (Status_ a) = toBS a
+  toBS (Status_ a) = toBS a
 
 instance ToBS Creative_ where
-	toBS (Creative_ a) = toBS a
+  toBS (Creative_ a) = toBS a
 
 instance ToBS DateFormat_ where
-	toBS (DateFormat_ a) = toBS a
+  toBS (DateFormat_ a) = toBS a
 
 instance ToBS BidType_ where
-	toBS (BidType_ a) = toBS a
+  toBS (BidType_ a) = toBS a
 
 instance ToBS LastUpdatedByAppId_ where
-	toBS (LastUpdatedByAppId_ a) = toBS a
+  toBS (LastUpdatedByAppId_ a) = toBS a
 
 status r = r `Rec.get` Status
 creative r = r `Rec.get` Creative
@@ -138,10 +138,10 @@ instance IsAdGetField CreatedTime
 type AdGet fl r = (A.FromJSON r, IsAdGetField r, FieldListToRec fl r)
 type AdGetRet r = Creative :*: Id :*: r -- Default fields
 getAd :: (R.MonadResource m, MonadBaseControl IO m, AdGet fl r) =>
-	Id_    -- ^ Ad Account Id
-	-> fl     -- ^ Arguments to be passed to Facebook.
-	->  UserAccessToken -- ^ Optional user access token.
-	-> FacebookT anyAuth m (Pager (AdGetRet r))
+  Id_    -- ^ Ad Account Id
+  -> fl     -- ^ Arguments to be passed to Facebook.
+  ->  UserAccessToken -- ^ Optional user access token.
+  -> FacebookT anyAuth m (Pager (AdGetRet r))
 getAd (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "/ads") [("fields", textListToBS $ fieldNameList $ Creative ::: Id ::: fl)] $ Just mtoken
 
 
@@ -160,18 +160,18 @@ instance IsAdSetField BidAmount
 instance IsAdSetField DateFormat
 instance IsAdSetField AdsetId
 data CreateAdId = CreateAdId {
-	adId :: Text
-	} deriving Show
+  adId :: Text
+  } deriving Show
 instance FromJSON CreateAdId where
-		parseJSON (Object v) =
-		   CreateAdId <$> v .: "id"
+    parseJSON (Object v) =
+       CreateAdId <$> v .: "id"
 
 type AdSet r = (Has Creative r, Has Name r, Has Status r, Has AdsetId r, A.FromJSON r, IsAdSetField r, ToForm r)
 setAd :: (R.MonadResource m, MonadBaseControl IO m, AdSet r) =>
-	Id_    -- ^ Ad Account Id
-	-> r     -- ^ Arguments to be passed to Facebook.
-	->  UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m (Either FacebookException CreateAdId)
+  Id_    -- ^ Ad Account Id
+  -> r     -- ^ Arguments to be passed to Facebook.
+  ->  UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m (Either FacebookException CreateAdId)
 setAd (Id_ id) r mtoken = postForm ("/v2.7/" <> id <> "/ads") (toForm r) mtoken
 
 
@@ -191,10 +191,10 @@ instance IsAdUpdField Name
 
 type AdUpd r = (A.FromJSON r, IsAdUpdField r, ToForm r)
 updAd :: (R.MonadResource m, MonadBaseControl IO m, AdUpd r) =>
-	CreateAdId    -- ^ Ad Account Id
-	-> r     -- ^ Arguments to be passed to Facebook.
-	->  UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m (Either FacebookException Success)
+  CreateAdId    -- ^ Ad Account Id
+  -> r     -- ^ Arguments to be passed to Facebook.
+  ->  UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m (Either FacebookException Success)
 updAd (CreateAdId id) r mtoken = postForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 
 
@@ -206,9 +206,9 @@ instance IsAdDelField Id
 
 type AdDel r = (Has Id r, A.FromJSON r, IsAdDelField r, ToForm r)
 delAd :: (R.MonadResource m, MonadBaseControl IO m, AdDel r) =>
-	CreateAdId    -- ^ Ad Account Id
-	-> r     -- ^ Arguments to be passed to Facebook.
-	->  UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m (Either FacebookException r)
+  CreateAdId    -- ^ Ad Account Id
+  -> r     -- ^ Arguments to be passed to Facebook.
+  ->  UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m (Either FacebookException r)
 delAd (CreateAdId id) r mtoken = deleteForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 

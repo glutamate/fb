@@ -54,9 +54,9 @@ instance ToJSON UploadPhaseADT
 data UploadPhase = UploadPhase
 newtype UploadPhase_ = UploadPhase_ UploadPhaseADT deriving (Show, Generic)
 instance Field UploadPhase where
-	type FieldValue UploadPhase = UploadPhase_
-	fieldName _ = "upload_phase"
-	fieldLabel = UploadPhase
+  type FieldValue UploadPhase = UploadPhase_
+  fieldName _ = "upload_phase"
+  fieldLabel = UploadPhase
 unUploadPhase_ :: UploadPhase_ -> UploadPhaseADT
 unUploadPhase_ (UploadPhase_ x) = x
 instance FromJSON UploadPhase_
@@ -68,23 +68,23 @@ instance ToBS UploadPhaseADT where
   toBS Finish = toBS ("finish" :: String)
 
 instance ToBS UploadPhase_ where
-	toBS (UploadPhase_ a) = toBS a
+  toBS (UploadPhase_ a) = toBS a
 
 uploadPhase r = r `Rec.get` UploadPhase
 
 data Filesize = Filesize
 newtype Filesize_ = Filesize_ Int deriving (Show, Generic)
 instance Field Filesize where
-	type FieldValue Filesize = Filesize_
-	fieldName _ = "file_size"
-	fieldLabel = Filesize
+  type FieldValue Filesize = Filesize_
+  fieldName _ = "file_size"
+  fieldLabel = Filesize
 unFilesize_ :: Filesize_ -> Int
 unFilesize_ (Filesize_ x) = x
 instance FromJSON Filesize_
 instance ToJSON Filesize_
 
 instance ToBS Filesize_ where
-	toBS (Filesize_ a) = toBS a
+  toBS (Filesize_ a) = toBS a
 
 data UploadStartResp = UploadStartResp {
     uploadSessionId :: Int
@@ -104,42 +104,42 @@ instance FromJSON UploadStartResp where
 data UploadSessId = UploadSessId
 newtype UploadSessId_ = UploadSessId_ Int deriving (Show, Generic)
 instance Field UploadSessId where
-	type FieldValue UploadSessId = UploadSessId_
-	fieldName _ = "upload_session_id"
-	fieldLabel = UploadSessId
+  type FieldValue UploadSessId = UploadSessId_
+  fieldName _ = "upload_session_id"
+  fieldLabel = UploadSessId
 unUploadSessId_ :: UploadSessId_ -> Int
 unUploadSessId_ (UploadSessId_ x) = x
 instance FromJSON UploadSessId_
 instance ToJSON UploadSessId_
 
 instance ToBS UploadSessId_ where
-	toBS (UploadSessId_ a) = toBS a
+  toBS (UploadSessId_ a) = toBS a
 
 data StartOffset = StartOffset
 newtype StartOffset_ = StartOffset_ Int deriving (Show, Generic)
 instance Field StartOffset where
-	type FieldValue StartOffset = StartOffset_
-	fieldName _ = "start_offset"
-	fieldLabel = StartOffset
+  type FieldValue StartOffset = StartOffset_
+  fieldName _ = "start_offset"
+  fieldLabel = StartOffset
 unStartOffset_ :: StartOffset_ -> Int
 unStartOffset_ (StartOffset_ x) = x
 instance FromJSON StartOffset_
 instance ToJSON StartOffset_
 
 instance ToBS StartOffset_ where
-	toBS (StartOffset_ a) = toBS a
+  toBS (StartOffset_ a) = toBS a
 
 data VideoChunk = VideoChunk
 newtype VideoChunk_ = VideoChunk_ FilePath deriving (Show, Generic)
 instance Field VideoChunk where
-	type FieldValue VideoChunk = VideoChunk_
-	fieldName _ = "video_file_chunk"
-	fieldLabel = VideoChunk
+  type FieldValue VideoChunk = VideoChunk_
+  fieldName _ = "video_file_chunk"
+  fieldLabel = VideoChunk
 unVideoChunk_ :: VideoChunk_ -> FilePath
 unVideoChunk_ (VideoChunk_ x) = x
 
 instance ToBS VideoChunk_ where
-	toBS (VideoChunk_ a) = toBS a
+  toBS (VideoChunk_ a) = toBS a
 
 data UploadTransferResp = UploadTransferResp {
     start :: Int
@@ -154,11 +154,11 @@ instance FromJSON UploadTransferResp where
 
 type VideoId = Integer
 uploadVideo :: (R.MonadResource m, MonadBaseControl IO m) =>
-	Id_    -- ^ Ad Account Id
-	-> FilePath    -- ^ Arguments to be passed to Facebook.
+  Id_    -- ^ Ad Account Id
+  -> FilePath    -- ^ Arguments to be passed to Facebook.
   ->  T.Text
-	->  UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m (Either FacebookException VideoId)
+  ->  UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m (Either FacebookException VideoId)
 uploadVideo (Id_ id) fp videoTitle mtoken = do
   bs <- liftIO $ BS.readFile fp
   ret <- sendVideoStart id mtoken bs
@@ -182,7 +182,7 @@ sendVideoFinish :: (R.MonadResource m, MonadBaseControl IO m) =>
   -> UserAccessToken
   -> T.Text
   -> UploadStartResp
-	-> FacebookT Auth m (Either FacebookException Success)
+  -> FacebookT Auth m (Either FacebookException Success)
 sendVideoFinish id tok title (UploadStartResp sess _ _ _) = do
   let r = toForm $ (UploadPhase, UploadPhase_ Finish) :*:
             (UploadSessId, UploadSessId_ sess) :*:
@@ -194,7 +194,7 @@ sendVideoChunks :: (R.MonadResource m, MonadBaseControl IO m) =>
   -> UserAccessToken
   -> BS.ByteString
   -> (Int, UploadTransferResp)
-	-> FacebookT Auth m (Either FacebookException Bool)
+  -> FacebookT Auth m (Either FacebookException Bool)
 sendVideoChunks id tok bs (sess, transResp) = do
     (tmpFp, hdl) <- liftIO $ openBinaryTempFile "/tmp" "foo.bar"
     liftIO $ hClose hdl
@@ -217,10 +217,10 @@ sendVideoChunks id tok bs (sess, transResp) = do
           Left x -> return $ Left x
 
 sendVideoStart :: (R.MonadResource m, MonadBaseControl IO m) =>
-	T.Text -- ^ Ad Account Id
-	-> UserAccessToken -- ^ Optional user access token.
+  T.Text -- ^ Ad Account Id
+  -> UserAccessToken -- ^ Optional user access token.
   -> BS.ByteString
-	-> FacebookT Auth m (Either FacebookException UploadStartResp)
+  -> FacebookT Auth m (Either FacebookException UploadStartResp)
 sendVideoStart id mtoken bs = do
   let r = toForm $ (UploadPhase, UploadPhase_ Start) :*:
                   (Filesize, Filesize_ $ BS.length bs) :*:
@@ -238,9 +238,9 @@ data Thumbnail = Thumbnail {
 instance FromJSON Thumbnail
 
 getPrefThumbnail:: (R.MonadResource m, MonadBaseControl IO m) =>
-	VideoId --
-	-> UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m Thumbnail
+  VideoId --
+  -> UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m Thumbnail
 getPrefThumbnail vId tok = do
   Pager thumbs _ _ <- getThumbnails vId tok
   let filtered = filter is_preferred thumbs
@@ -249,9 +249,9 @@ getPrefThumbnail vId tok = do
     else return $ head thumbs
 
 getThumbnails:: (R.MonadResource m, MonadBaseControl IO m) =>
-	VideoId --
-	-> UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m (Pager Thumbnail)
+  VideoId --
+  -> UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m (Pager Thumbnail)
 getThumbnails vId tok = getObject ("/v2.7/" <> (T.pack $ show vId) <> "/thumbnails") [] $ Just tok
 
 data Video = Video { -- more fields if needed: https://developers.facebook.com/docs/graph-api/reference/video
@@ -270,18 +270,18 @@ data VideoStatus = VideoStatus {
 instance FromJSON VideoStatus
 
 isVideoReady :: (R.MonadResource m, MonadBaseControl IO m) =>
-	VideoId --
-	-> UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m VideoStatusADT
+  VideoId --
+  -> UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m VideoStatusADT
 isVideoReady vId tok = do
   vid <- getObject ("/v2.7/" <> (T.pack $ show vId)) [("fields", "status")] (Just tok)
   liftIO $ print $ status vid
   return $ video_status (status vid)
 
 waitForVideo :: (R.MonadResource m, MonadBaseControl IO m) =>
-	VideoId --
-	-> UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m Bool
+  VideoId --
+  -> UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m Bool
 waitForVideo vId tok = do -- FIXME: Add timeout
   st <- isVideoReady vId tok
   case st of

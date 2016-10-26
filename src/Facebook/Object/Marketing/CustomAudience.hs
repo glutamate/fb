@@ -49,9 +49,9 @@ instance IsCustomAudienceGetField AccountId
 type CustomAudienceGet fl r = (A.FromJSON r, IsCustomAudienceGetField r, FieldListToRec fl r)
 type CustomAudienceGetRet r = r -- Default fields
 getCustomAudience :: (R.MonadResource m, MonadBaseControl IO m, CustomAudienceGet fl r) =>
-	Id_    -- ^ Ad Account Id
-	-> fl     -- ^ Arguments to be passed to Facebook.
-	-> Maybe UserAccessToken -- ^ Optional user access token.
-	-> FacebookT anyAuth m (CustomAudienceGetRet r)
+  Id_    -- ^ Ad Account Id
+  -> fl     -- ^ Arguments to be passed to Facebook.
+  -> Maybe UserAccessToken -- ^ Optional user access token.
+  -> FacebookT anyAuth m (CustomAudienceGetRet r)
 getCustomAudience (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "") [("fields", textListToBS $ fieldNameList $ fl)] mtoken
 

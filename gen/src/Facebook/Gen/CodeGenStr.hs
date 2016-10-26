@@ -122,55 +122,55 @@ entityModeRetDefs =
                   ((Entity "AdSet", Creating), adsetCreate)]
 
 imgCreate = "data SetImgs = SetImgs { -- as seen when using curl\n\
-                \\timages  :: Map.Map Text SetImg\n\
-                \\t} deriving (Show, Generic)\n\
+                \  images  :: Map.Map Text SetImg\n\
+                \  } deriving (Show, Generic)\n\
             \instance FromJSON SetImgs\n\
             \data SetImg = SetImg {\n\
-                \\thash, url_ :: Text\n\
-            \\t} deriving Show\n\
+                \  hash, url_ :: Text\n\
+            \  } deriving Show\n\
             \instance FromJSON SetImg where\n\
-                \\tparseJSON (Object v) =\n\
-                    \\t\tSetImg <$> v .: \"hash\"\n\
-                           \\t\t\t\t<*> v .: \"url\"\n"
+                \  parseJSON (Object v) =\n\
+                    \    SetImg <$> v .: \"hash\"\n\
+                           \        <*> v .: \"url\"\n"
 
 imgDelete =  "data Success = Success {\n\
-              \\tsuccess :: Bool\n\
-              \\t} deriving (Show, Generic)\n\
+              \  success :: Bool\n\
+              \  } deriving (Show, Generic)\n\
               \instance FromJSON Success"
 
 campaignCreate =
     "data CreateCampaignId = CreateCampaignId {\n\
-     \\tcampaignId :: Text\n\
-     \\t} deriving Show\n\
+     \  campaignId :: Text\n\
+     \  } deriving Show\n\
      \instance FromJSON CreateCampaignId where\n\
-     \\t\tparseJSON (Object v) =\n\
-     \\t\t   CreateCampaignId <$> v .: \"id\"\n"
+     \    parseJSON (Object v) =\n\
+     \       CreateCampaignId <$> v .: \"id\"\n"
 
 adsetCreate =
     "data CreateAdSetId = CreateAdSetId {\n\
-     \\tadsetId :: Text\n\
-     \\t} deriving Show\n\
+     \  adsetId :: Text\n\
+     \  } deriving Show\n\
      \instance FromJSON CreateAdSetId where\n\
-     \\t\tparseJSON (Object v) =\n\
-     \\t\t   CreateAdSetId <$> v .: \"id\"\n"
+     \    parseJSON (Object v) =\n\
+     \       CreateAdSetId <$> v .: \"id\"\n"
      <> hackSet
 
 adcreativeCreate =
     "data CreateAdCreativeId = CreateAdCreativeId {\n\
-     \\tadcreativeId :: Text\n\
-     \\t} deriving Show\n\
+     \  adcreativeId :: Text\n\
+     \  } deriving Show\n\
      \instance FromJSON CreateAdCreativeId where\n\
-     \\t\tparseJSON (Object v) =\n\
-     \\t\t   CreateAdCreativeId <$> v .: \"id\"\n"
+     \    parseJSON (Object v) =\n\
+     \       CreateAdCreativeId <$> v .: \"id\"\n"
      <> hackCreative
 
 adCreate =
     "data CreateAdId = CreateAdId {\n\
-     \\tadId :: Text\n\
-     \\t} deriving Show\n\
+     \  adId :: Text\n\
+     \  } deriving Show\n\
      \instance FromJSON CreateAdId where\n\
-     \\t\tparseJSON (Object v) =\n\
-     \\t\t   CreateAdId <$> v .: \"id\"\n"
+     \    parseJSON (Object v) =\n\
+     \       CreateAdId <$> v .: \"id\"\n"
 
 -- Doees the API call need a token?
 isTokenNecessarySet =
@@ -204,29 +204,29 @@ modNameToPath = replace "." "/"
 toBsInstances :: Text
 toBsInstances = -- FIXME, look at old SimpleType class for instances
   "\ninstance ToBS Text where\n\
-  \\ttoBS = TE.encodeUtf8\n\
+  \  toBS = TE.encodeUtf8\n\
   \instance ToBS Char where\n\
-  \\ttoBS = B8.singleton\n\
+  \  toBS = B8.singleton\n\
   \instance ToBS Integer\n\
   \instance ToBS Int\n\
   \instance ToBS Bool where\n\
-  \\ttoBS True = toBS (\"true\" :: String)\n\
-  \\ttoBS False = toBS (\"false\" :: String)\n\
+  \  toBS True = toBS (\"true\" :: String)\n\
+  \  toBS False = toBS (\"false\" :: String)\n\
   \--instance ToBS Value where\n\
-  \--\ttoBS = BSL.toStrict . encode\n\
+  \--  toBS = BSL.toStrict . encode\n\
   \instance ToBS Float\n\
   \instance ToBS a => ToBS (Vector a) where\n\
-  \\ttoBS xs = V.foldl' BS.append BS.empty $ V.map toBS xs\n\
+  \  toBS xs = V.foldl' BS.append BS.empty $ V.map toBS xs\n\
   \instance ToBS UTCTime where\n\
-  \\ttoBS t = B8.pack $ formatTime defaultTimeLocale rfc822DateFormat t\n"
+  \  toBS t = B8.pack $ formatTime defaultTimeLocale rfc822DateFormat t\n"
 
 hackSet :: Text
 hackSet =
     "\nadsetIdToInt :: CreateAdSetId -> Int\n\
     \adsetIdToInt (CreateAdSetId id) =\n\
-    \\t    case decimal id of\n\
-    \\t      Right (num, _) -> num\n\
-    \\t      Left err -> error $ \"Could not convert CreateAdSetId to Int:\" ++ show err\n"
+    \      case decimal id of\n\
+    \        Right (num, _) -> num\n\
+    \        Left err -> error $ \"Could not convert CreateAdSetId to Int:\" ++ show err\n"
 
 hackCreative :: Text
 hackCreative =
@@ -296,7 +296,7 @@ genToBsInstances fis = myConcat $ V.map go fis
         go fi =
          let nt = fieldToAdt fi <> "_" -- FIXME
          in "\ninstance ToBS " <> nt <> " where\n"
-            <> "\ttoBS (" <> nt <> " a) = toBS a\n"
+            <> "  toBS (" <> nt <> " a) = toBS a\n"
 
 getRetDef :: Entity -> InteractionMode -> Text
 getRetDef ent mode =
@@ -406,20 +406,20 @@ typesToJsonInstances :: (Text, Text, Text) -> Text
 typesToJsonInstances (nt, "Int", "Text") =
     let create = "pure $ " <> nt <> " num"
     in "instance A.FromJSON " <> nt <> " where\n\
-        \\tparseJSON (Number x) =\n\
-        \\t case toBoundedInteger x of\n\
-        \\t   Just num -> " <> create <> "\n" <>
-        "\t   Nothing -> error \"parseJSON toBoundedInteger failed\"\n\
-        \\tparseJSON (String str) =\n\
-        \\t case decimal str of\n\
-        \\t   Left err -> error err\n\
-        \\t   Right (num, _) -> " <> create <> "\n" <> -- FIXME
+        \  parseJSON (Number x) =\n\
+        \   case toBoundedInteger x of\n\
+        \     Just num -> " <> create <> "\n" <>
+        "     Nothing -> error \"parseJSON toBoundedInteger failed\"\n\
+        \  parseJSON (String str) =\n\
+        \   case decimal str of\n\
+        \     Left err -> error err\n\
+        \     Right (num, _) -> " <> create <> "\n" <> -- FIXME
         "instance A.ToJSON " <> nt <> "\n"
 typesToJsonInstances (nt, "AdCreativeADT", "Text") =
     let create = "pure $ " <> nt <> " creativeId"
     in "instance A.FromJSON " <> nt <> " where\n\
-        \\tparseJSON (Object v) = " <> nt <> " <$> AdCreativeADT <$>\n\
-        \\t v .: \"id\" <|> v .: \"creative_id\"\n" <>
+        \  parseJSON (Object v) = " <> nt <> " <$> AdCreativeADT <$>\n\
+        \   v .: \"id\" <|> v .: \"creative_id\"\n" <>
         "instance A.ToJSON " <> nt <> "\n"
 typesToJsonInstances x = error $ show x
 
@@ -439,9 +439,9 @@ dataAndFieldInstance fi =
     in "\ndata "  <> adtName <> " = " <> adtName <> "\n"
         <> "newtype " <> nt <> " = " <> nt <> " "
         <> fieldTypeParan fieldType <> " deriving " <> derivings fieldType <> "\n"
-        <> "instance Field " <> adtName <> " where\n\t"
-        <> "type FieldValue " <> adtName <> " = " <> nt <> "\n\t"
-        <> "fieldName _ = \"" <> fieldName <> "\"\n\t"
+        <> "instance Field " <> adtName <> " where\n  "
+        <> "type FieldValue " <> adtName <> " = " <> nt <> "\n  "
+        <> "fieldName _ = \"" <> fieldName <> "\"\n  "
         <> "fieldLabel = " <> adtName <> "\n"
         <> "un" <> nt <> " :: " <> nt <> " -> " <> fieldType <> "\n"
         <> "un" <> nt <> " (" <> nt <> " x) = x\n"
@@ -504,8 +504,8 @@ adAccIdDetails = "type AdAccountIdDetails = Id :*: AccountId :*: Nil\n"
 
 genGetId :: Text
 genGetId =
-    "\ngetAdAccountId :: (R.MonadResource m, MonadBaseControl IO m) =>\n\t\
-              \ Maybe UserAccessToken -- ^ User access token.\n\t\
+    "\ngetAdAccountId :: (R.MonadResource m, MonadBaseControl IO m) =>\n  \
+              \ Maybe UserAccessToken -- ^ User access token.\n  \
             \-> FacebookT anyAuth m (Pager AdAccountIdDetails)\n\
     \getAdAccountId token = getObject \"/v2.7/me/adaccounts\" [] token\n"
 
@@ -514,9 +514,9 @@ igIdDetails = "type IgIdDetails = Id :*: Nil"
 
 genFBPageIdToIgId :: Text
 genFBPageIdToIgId =
-    "\ngetIgId :: (R.MonadResource m, MonadBaseControl IO m) =>\n\t\
-              \ UserAccessToken -- ^ User access token.\n\t\
-            \-> FBPageId \n\t\
+    "\ngetIgId :: (R.MonadResource m, MonadBaseControl IO m) =>\n  \
+              \ UserAccessToken -- ^ User access token.\n  \
+            \-> FBPageId \n  \
             \-> FacebookT anyAuth m (Pager IgIdDetails)\n\
     \getIgId token (FBPageId pageId) = getObject (\"/v2.7/\" <> pageId <> \"/instagram_accounts\") [(\"fields\", textListToBS $ fieldNameList $ Id ::: Nil)] $ Just token\n"
 
@@ -557,10 +557,10 @@ genFctType ent mode =
                   Just x -> x
                   Nothing -> "Id_"
   in
-  fctName <> " :: (R.MonadResource m, MonadBaseControl IO m, " <> className <> " " <> param <> ") =>\n\t"
-          <> idConstr <> "    -- ^ Ad Account Id\n\t\
-          \-> " <> argName <> "     -- ^ Arguments to be passed to Facebook.\n\t\
-          \-> " <> maybeToken <> " UserAccessToken -- ^ Optional user access token.\n\t\
+  fctName <> " :: (R.MonadResource m, MonadBaseControl IO m, " <> className <> " " <> param <> ") =>\n  "
+          <> idConstr <> "    -- ^ Ad Account Id\n  \
+          \-> " <> argName <> "     -- ^ Arguments to be passed to Facebook.\n  \
+          \-> " <> maybeToken <> " UserAccessToken -- ^ Optional user access token.\n  \
           \-> FacebookT " <> auth <> " m " <> pager'
 
 genFct :: Entity -> InteractionMode -> Text -> Text
