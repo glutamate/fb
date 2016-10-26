@@ -10,6 +10,7 @@ import qualified Data.Vector as V
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import qualified Data.List as List
+import System.IO.Unsafe (unsafePerformIO)
 
 import Facebook.Gen.Environment
 import Facebook.Gen.Types
@@ -357,7 +358,7 @@ header modName = "module " <> modName <> " where\n\n"
 
 concatNewline xs = V.foldl' append "" $ V.map (\x -> x <> "\n") xs
 
-genImports (Entity "Types")  = concatNewline imports <> oldTypesImport <> oldTypes <> newTypes
+genImports (Entity "Types")  = concatNewline imports <> (pack $ unsafePerformIO $ readFile "data/manual-types.hs") -- manualTypesImport -- <> oldTypesImport <> oldTypes <> newTypes
 genImports _ = concatNewline imports
 genLangExts = concatNewline $ V.map (\x -> "{-# LANGUAGE " <> x <> " #-}") langExts
 
