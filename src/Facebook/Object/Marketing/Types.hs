@@ -377,15 +377,6 @@ instance ToBS a => ToBS (Vector a) where
 instance ToBS UTCTime where
 	toBS t = B8.pack $ formatTime defaultTimeLocale rfc822DateFormat t
 
-data Id = Id
-newtype Id_ = Id_ Text deriving (Show, Generic)
-instance Field Id where
-	type FieldValue Id = Id_
-	fieldName _ = "id"
-	fieldLabel = Id
-unId_ :: Id_ -> Text
-unId_ (Id_ x) = x
-
 data AccountId = AccountId
 newtype AccountId_ = AccountId_ Text deriving (Show, Generic)
 instance Field AccountId where
@@ -394,6 +385,15 @@ instance Field AccountId where
 	fieldLabel = AccountId
 unAccountId_ :: AccountId_ -> Text
 unAccountId_ (AccountId_ x) = x
+
+data Id = Id
+newtype Id_ = Id_ Text deriving (Show, Generic)
+instance Field Id where
+	type FieldValue Id = Id_
+	fieldName _ = "id"
+	fieldLabel = Id
+unId_ :: Id_ -> Text
+unId_ (Id_ x) = x
 
 data ExecutionOptions = ExecutionOptions
 newtype ExecutionOptions_ = ExecutionOptions_ (Vector ExecOption) deriving (Show, Generic)
@@ -970,10 +970,10 @@ instance Field AdsetId where
 	fieldLabel = AdsetId
 unAdsetId_ :: AdsetId_ -> Int
 unAdsetId_ (AdsetId_ x) = x
-instance A.FromJSON Id_
-instance A.ToJSON Id_
 instance A.FromJSON AccountId_
 instance A.ToJSON AccountId_
+instance A.FromJSON Id_
+instance A.ToJSON Id_
 instance A.FromJSON ExecutionOptions_
 instance A.ToJSON ExecutionOptions_
 instance A.FromJSON OptimizationGoal_
@@ -1103,11 +1103,11 @@ instance A.ToJSON CampaignGroupId_
 instance A.FromJSON AdsetId_
 instance A.ToJSON AdsetId_
 
-instance ToBS Id_ where
-	toBS (Id_ a) = toBS a
-
 instance ToBS AccountId_ where
 	toBS (AccountId_ a) = toBS a
+
+instance ToBS Id_ where
+	toBS (Id_ a) = toBS a
 
 instance ToBS ExecutionOptions_ where
 	toBS (ExecutionOptions_ a) = toBS a
@@ -1301,8 +1301,8 @@ instance ToBS CampaignGroupId_ where
 instance ToBS AdsetId_ where
 	toBS (AdsetId_ a) = toBS a
 
-id r = r `Rec.get` Id
 account_id r = r `Rec.get` AccountId
+id r = r `Rec.get` Id
 execution_options r = r `Rec.get` ExecutionOptions
 optimization_goal r = r `Rec.get` OptimizationGoal
 bid_amount r = r `Rec.get` BidAmount

@@ -9,7 +9,7 @@ synopsis:          Bindings to Facebook's API.
 category:          Web
 stability:         Experimental
 cabal-version:     >= 1.8
-build-type:        Simple
+build-type:        Custom
 homepage:          https://github.com/prowdsponsor/fb
 
 description:
