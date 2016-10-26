@@ -1,5 +1,5 @@
 Entity,InteractionMode,FieldName,FieldType,Description,Required,InResp
 Custom Audience,Reading,id,numeric string,,,
 Custom Audience,Reading,account_id,numeric string,,,
-Custom Audience,Reading,approximate_count,numeric string,,,
+Custom Audience,Reading,approximate_count,integer,,,
 Custom Audience,Reading,data_source,CustomAudienceDataSource,,,

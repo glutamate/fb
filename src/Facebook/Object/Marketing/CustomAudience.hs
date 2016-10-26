@@ -50,12 +50,12 @@ unDataSource_ :: DataSource_ -> CustomAudienceDataSource
 unDataSource_ (DataSource_ x) = x
 
 data ApproximateCount = ApproximateCount
-newtype ApproximateCount_ = ApproximateCount_ Text deriving (Show, Generic)
+newtype ApproximateCount_ = ApproximateCount_ Integer deriving (Show, Generic)
 instance Field ApproximateCount where
   type FieldValue ApproximateCount = ApproximateCount_
   fieldName _ = "approximate_count"
   fieldLabel = ApproximateCount
-unApproximateCount_ :: ApproximateCount_ -> Text
+unApproximateCount_ :: ApproximateCount_ -> Integer
 unApproximateCount_ (ApproximateCount_ x) = x
 instance A.FromJSON DataSource_
 instance A.ToJSON DataSource_
