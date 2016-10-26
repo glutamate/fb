@@ -40,6 +40,15 @@ import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)
 #endif
 import Facebook.Object.Marketing.Types
 
+data Description = Description
+newtype Description_ = Description_ Text deriving (Show, Generic)
+instance Field Description where
+  type FieldValue Description = Description_
+  fieldName _ = "description"
+  fieldLabel = Description
+unDescription_ :: Description_ -> Text
+unDescription_ (Description_ x) = x
+
 data DeliveryStatus = DeliveryStatus
 newtype DeliveryStatus_ = DeliveryStatus_ CustomAudienceStatus deriving (Show, Generic)
 instance Field DeliveryStatus where
@@ -66,12 +75,17 @@ instance Field ApproximateCount where
   fieldLabel = ApproximateCount
 unApproximateCount_ :: ApproximateCount_ -> Integer
 unApproximateCount_ (ApproximateCount_ x) = x
+instance A.FromJSON Description_
+instance A.ToJSON Description_
 instance A.FromJSON DeliveryStatus_
 instance A.ToJSON DeliveryStatus_
 instance A.FromJSON DataSource_
 instance A.ToJSON DataSource_
 instance A.FromJSON ApproximateCount_
 instance A.ToJSON ApproximateCount_
+
+instance ToBS Description_ where
+  toBS (Description_ a) = toBS a
 
 instance ToBS DeliveryStatus_ where
   toBS (DeliveryStatus_ a) = toBS a
@@ -82,6 +96,7 @@ instance ToBS DataSource_ where
 instance ToBS ApproximateCount_ where
   toBS (ApproximateCount_ a) = toBS a
 
+description r = r `Rec.get` Description
 delivery_status r = r `Rec.get` DeliveryStatus
 data_source r = r `Rec.get` DataSource
 approximate_count r = r `Rec.get` ApproximateCount
@@ -89,6 +104,7 @@ approximate_count r = r `Rec.get` ApproximateCount
 class IsCustomAudienceGetField r
 instance (IsCustomAudienceGetField h, IsCustomAudienceGetField t) => IsCustomAudienceGetField (h :*: t)
 instance IsCustomAudienceGetField Nil
+instance IsCustomAudienceGetField Description
 instance IsCustomAudienceGetField DeliveryStatus
 instance IsCustomAudienceGetField DataSource
 instance IsCustomAudienceGetField ApproximateCount
