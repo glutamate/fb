@@ -1,3 +1,4 @@
+import Data.String (fromString)
 import Data.Text (Text, pack, unpack)
 import Data.Typeable (Typeable)
 import GHC.Generics
@@ -377,4 +378,16 @@ instance FromJSON AdsPixel where
 
 instance ToBS AdsPixel where
   toBS = error "BENC NOTIMPL tobs adspixel"
+
+data CustomAudienceSubtypeADT = CUSTOM | WEBSITE | APP | OFFLINE_CONVERSION | CLAIM | PARTNER | MANAGED | VIDEO | LOOKALIKE | ENGAGEMENT | DATA_SET | BAG_OF_ACCOUNTS | STUDY_RULE_AUDIENCE
+  deriving Show
+
+instance ToJSON CustomAudienceSubtypeADT where
+  toJSON = toJSON . show
+
+instance FromJSON CustomAudienceSubtypeADT where
+  parseJSON = error "BENC NOTIMPL fromjson customaudiencesubtypeadt"
+
+instance ToBS CustomAudienceSubtypeADT where
+  toBS = toBS . toJSON
 

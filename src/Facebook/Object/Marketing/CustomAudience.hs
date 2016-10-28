@@ -134,6 +134,8 @@ approximate_count r = r `Rec.get` ApproximateCount
 class IsCustomAudienceGetField r
 instance (IsCustomAudienceGetField h, IsCustomAudienceGetField t) => IsCustomAudienceGetField (h :*: t)
 instance IsCustomAudienceGetField Nil
+instance IsCustomAudienceGetField Subtype
+instance IsCustomAudienceGetField Name
 instance IsCustomAudienceGetField LookalikeAudienceIds
 instance IsCustomAudienceGetField ExternalEventSource
 instance IsCustomAudienceGetField Description
@@ -151,4 +153,26 @@ getCustomAudience :: (R.MonadResource m, MonadBaseControl IO m, CustomAudienceGe
   ->  UserAccessToken -- ^ Optional user access token.
   -> FacebookT anyAuth m (Pager (CustomAudienceGetRet r))
 getCustomAudience (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "/customaudiences") [("fields", textListToBS $ fieldNameList $ fl)] $ Just mtoken
+
+
+-- Entity:CustomAudience, mode:Creating
+class IsCustomAudienceSetField r
+instance (IsCustomAudienceSetField h, IsCustomAudienceSetField t) => IsCustomAudienceSetField (h :*: t)
+instance IsCustomAudienceSetField Nil
+instance IsCustomAudienceSetField Subtype
+instance IsCustomAudienceSetField Name
+data CreateCustomAudienceId = CreateCustomAudienceId {
+  customAudienceId :: Text
+  } deriving Show
+instance FromJSON CreateCustomAudienceId where
+    parseJSON (Object v) =
+       CreateCustomAudienceId <$> v .: "id"
+
+type CustomAudienceSet r = (A.FromJSON r, IsCustomAudienceSetField r, ToForm r)
+setCustomAudience :: (R.MonadResource m, MonadBaseControl IO m, CustomAudienceSet r) =>
+  Id_    -- ^ Ad Account Id
+  -> r     -- ^ Arguments to be passed to Facebook.
+  ->  UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m (Either FacebookException CreateCustomAudienceId)
+setCustomAudience (Id_ id) r mtoken = postForm ("/v2.7/" <> id <> "/customaudiences") (toForm r) mtoken
 

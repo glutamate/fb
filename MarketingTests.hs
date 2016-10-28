@@ -67,6 +67,8 @@ main = do
 
     testGetCustomAudience acc tok
 
+    testCreateCustomAudience acc tok
+
     error "BENC - enough tests"
 
     (videoId, thumb) <- testUploadVideo acc tok
@@ -213,9 +215,22 @@ testSetAd adsetRet creativeRet acc tok = do
 
 testGetCustomAudience acc tok = do
     liftIO $ putStrLn "TEST: getCustomAudience"
-    audiences <- getCustomAudience acc (Id ::: ApproximateCount ::: AccountId ::: DataSource ::: DeliveryStatus ::: Description ::: Nil) tok
+    audiences <- getCustomAudience acc (Id ::: ApproximateCount ::: AccountId ::: DataSource ::: DeliveryStatus ::: Description ::: Subtype ::: Nil) tok
     --- can't be tested with get-of-everything as not present in every custom audience: ::: LookalikeAudienceIds 
     -- doesn't test ExternalEventSource because it is not present in every custom audience - only ones based round an external event source
     
 
     liftIO $ print ("audiences", audiences)
+
+testCreateCustomAudience acc tok = do
+    liftIO $ putStrLn "TEST: create custom audience"
+    -- let params = (Subtype, Subtype_ CUSTOM) :*: Nil
+    let params = (Subtype, Subtype_ CUSTOM) :*: Nil
+  
+    liftIO $ print $ toJSON params
+    ret <- setCustomAudience acc params tok
+    let customAudienceId = either (\e -> error $ "setCustomAudience returned: " ++ show e)
+                                  P.id ret
+    liftIO $ print ("ret", ret)
+    liftIO $ print ("custom audience id", customAudienceId)
+    return customAudienceId

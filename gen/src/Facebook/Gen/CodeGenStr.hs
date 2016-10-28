@@ -69,7 +69,8 @@ entityUrlPostfixMap =
                   ((Entity "AdCreative", Creating), "/adcreatives"),
                   ((Entity "AdSet", Reading), "/adsets"),
                   ((Entity "AdSet", Creating), "/adsets"),
-                  ((Entity "CustomAudience", Reading), "/customaudiences")
+                  ((Entity "CustomAudience", Reading), "/customaudiences"),
+                  ((Entity "CustomAudience", Creating), "/customaudiences")
                  ]
 
 -- Does the generated function return a Pager?
@@ -104,7 +105,8 @@ entityModeRetType = -- FIXME!
                   ((Entity "AdAccount", Creating), "(Either FacebookException r)"),
                   ((Entity "AdAccount", Deleting), "(Either FacebookException r)"),
                   ((Entity "AdAccount", Updating), "(Either FacebookException r)"),
-                  ((Entity "AdCampaign", Creating), "(Either FacebookException CreateCampaignId)")]
+                  ((Entity "AdCampaign", Creating), "(Either FacebookException CreateCampaignId)"),
+                  ((Entity "CustomAudience", Creating), "(Either FacebookException CreateCustomAudienceId)")]
 
 idTypeMap =
     Map.fromList [((Entity "AdCampaign", Deleting), "CreateCampaignId"),
@@ -122,7 +124,8 @@ entityModeRetDefs =
                   ((Entity "AdCampaign", Creating), campaignCreate),
                   ((Entity "AdCreative", Creating), adcreativeCreate),
                   ((Entity "Ad", Creating), adCreate),
-                  ((Entity "AdSet", Creating), adsetCreate)]
+                  ((Entity "AdSet", Creating), adsetCreate),
+                  ((Entity "CustomAudience", Creating), customAudienceCreate)]
 
 imgCreate = "data SetImgs = SetImgs { -- as seen when using curl\n\
                 \  images  :: Map.Map Text SetImg\n\
@@ -148,6 +151,14 @@ campaignCreate =
      \instance FromJSON CreateCampaignId where\n\
      \    parseJSON (Object v) =\n\
      \       CreateCampaignId <$> v .: \"id\"\n"
+
+customAudienceCreate =
+    "data CreateCustomAudienceId = CreateCustomAudienceId {\n\
+     \  customAudienceId :: Text\n\
+     \  } deriving Show\n\
+     \instance FromJSON CreateCustomAudienceId where\n\
+     \    parseJSON (Object v) =\n\
+     \       CreateCustomAudienceId <$> v .: \"id\"\n"
 
 adsetCreate =
     "data CreateAdSetId = CreateAdSetId {\n\
@@ -199,7 +210,8 @@ isTokenNecessarySet =
                   (Entity "AdSet", Updating),
                   (Entity "AdSet", Creating),
                   (Entity "AdSet", Reading),
-                  (Entity "CustomAudience", Reading)]
+                  (Entity "CustomAudience", Reading),
+                  (Entity "CustomAudience", Creating)]
 
 modPrefix = "Facebook.Object.Marketing."
 modNameToPath = replace "." "/"

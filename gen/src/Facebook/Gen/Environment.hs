@@ -45,6 +45,7 @@ typesMap =
                 , ("ConfigureStatus", "ConfigureStatusADT")
                 , ("CustomAudienceDataSource", "CustomAudienceDataSource")
                 , ("CustomAudienceStatus", "CustomAudienceStatus")
+                , ("CustomAudienceSubtypeADT", "CustomAudienceSubtypeADT")
                 , ("EffectiveStatus", "EffectiveStatusADT")
                 , ("ConfiguredAdStatus", "ConfiguredAdStatus")
                 , ("EffectiveAdStatus", "EffectiveAdStatus")
