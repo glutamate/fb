@@ -224,8 +224,8 @@ testGetCustomAudience acc tok = do
 
 testCreateCustomAudience acc tok = do
     liftIO $ putStrLn "TEST: create custom audience"
+    let params = (Subtype, Subtype_ "CUSTOM") :*: Nil
     -- let params = (Subtype, Subtype_ CUSTOM) :*: Nil
-    let params = (Subtype, Subtype_ CUSTOM) :*: Nil
   
     liftIO $ print $ toJSON params
     ret <- setCustomAudience acc params tok

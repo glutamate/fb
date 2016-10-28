@@ -450,12 +450,12 @@ instance ToBS UTCTime where
   toBS t = B8.pack $ formatTime defaultTimeLocale rfc822DateFormat t
 
 data Subtype = Subtype
-newtype Subtype_ = Subtype_ CustomAudienceSubtypeADT deriving (Show, Generic)
+newtype Subtype_ = Subtype_ Text deriving (Show, Generic)
 instance Field Subtype where
   type FieldValue Subtype = Subtype_
   fieldName _ = "subtype"
   fieldLabel = Subtype
-unSubtype_ :: Subtype_ -> CustomAudienceSubtypeADT
+unSubtype_ :: Subtype_ -> Text
 unSubtype_ (Subtype_ x) = x
 
 data Name = Name

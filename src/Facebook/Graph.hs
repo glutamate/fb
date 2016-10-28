@@ -16,7 +16,7 @@ module Facebook.Graph
     , Tag(..)
     ) where
 
-
+import Control.Monad.IO.Class
 import Control.Applicative
 import qualified Control.Exception.Lifted as E
 import Control.Monad (mzero)
@@ -84,7 +84,10 @@ postForm :: (R.MonadResource m, MonadBaseControl IO m, A.FromJSON a) =>
            -> [Part]          -- ^ Arguments to be passed to Facebook
            -> AccessToken anyKind -- ^ Access token
            -> FacebookT Auth m (Either FacebookException a)
-postForm = methodForm HT.methodPost
+postForm a b c = do
+  liftIO $ print "postForm"
+  liftIO $ print (a,b)
+  methodForm HT.methodPost a b c
 
 postFormVideo :: (R.MonadResource m, MonadBaseControl IO m, A.FromJSON a) =>
               Text                -- ^ Path (should begin with a slash @\/@)
