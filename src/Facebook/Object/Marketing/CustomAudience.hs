@@ -58,15 +58,6 @@ instance Field ExternalEventSource where
 unExternalEventSource_ :: ExternalEventSource_ -> AdsPixel
 unExternalEventSource_ (ExternalEventSource_ x) = x
 
-data Description = Description
-newtype Description_ = Description_ Text deriving (Show, Generic)
-instance Field Description where
-  type FieldValue Description = Description_
-  fieldName _ = "description"
-  fieldLabel = Description
-unDescription_ :: Description_ -> Text
-unDescription_ (Description_ x) = x
-
 data DeliveryStatus = DeliveryStatus
 newtype DeliveryStatus_ = DeliveryStatus_ CustomAudienceStatus deriving (Show, Generic)
 instance Field DeliveryStatus where
@@ -97,8 +88,6 @@ instance A.FromJSON LookalikeAudienceIds_
 instance A.ToJSON LookalikeAudienceIds_
 instance A.FromJSON ExternalEventSource_
 instance A.ToJSON ExternalEventSource_
-instance A.FromJSON Description_
-instance A.ToJSON Description_
 instance A.FromJSON DeliveryStatus_
 instance A.ToJSON DeliveryStatus_
 instance A.FromJSON DataSource_
@@ -112,9 +101,6 @@ instance ToBS LookalikeAudienceIds_ where
 instance ToBS ExternalEventSource_ where
   toBS (ExternalEventSource_ a) = toBS a
 
-instance ToBS Description_ where
-  toBS (Description_ a) = toBS a
-
 instance ToBS DeliveryStatus_ where
   toBS (DeliveryStatus_ a) = toBS a
 
@@ -126,7 +112,6 @@ instance ToBS ApproximateCount_ where
 
 lookalike_audience_ids r = r `Rec.get` LookalikeAudienceIds
 external_event_source r = r `Rec.get` ExternalEventSource
-description r = r `Rec.get` Description
 delivery_status r = r `Rec.get` DeliveryStatus
 data_source r = r `Rec.get` DataSource
 approximate_count r = r `Rec.get` ApproximateCount
@@ -161,6 +146,7 @@ instance (IsCustomAudienceSetField h, IsCustomAudienceSetField t) => IsCustomAud
 instance IsCustomAudienceSetField Nil
 instance IsCustomAudienceSetField Subtype
 instance IsCustomAudienceSetField Name
+instance IsCustomAudienceSetField Description
 data CreateCustomAudienceId = CreateCustomAudienceId {
   customAudienceId :: Text
   } deriving Show

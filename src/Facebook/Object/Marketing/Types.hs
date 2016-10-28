@@ -245,7 +245,9 @@ data AdCreativeLinkData = AdCreativeLinkData {
     caption  :: Text,
     imageHash ::  Hash_,
     link, message :: Text,
-    description  :: Maybe Text,
+    -- description  :: Maybe Text,
+    -- removed because compile conflict with custom audience
+    -- field of the same name.
     call_to_action :: Maybe CallToActionADT}
   | CreativeCarouselData {
     caption_carousel, message_carousel :: Text,
@@ -253,7 +255,7 @@ data AdCreativeLinkData = AdCreativeLinkData {
     link :: Text }
   deriving (Show, Generic)
 instance ToJSON AdCreativeLinkData where
-  toJSON (AdCreativeLinkData c i l m (Just d) (Just cta)) =
+  toJSON (AdCreativeLinkData c i l m (Just cta)) =
     object [ "caption" .= c,
              "image_hash" .= i,
              "link" .= l,
@@ -277,7 +279,6 @@ parseAdCreativeLinkData v =
                       <*> v .: "image_hash"
                       <*> v .: "link"
                       <*> v .: "message"
-                      <*> v .:? "description"
                       <*> v .:? "call_to_action"
 
 parseCreativeCarouselData v =
@@ -466,6 +467,15 @@ instance Field Name where
   fieldLabel = Name
 unName_ :: Name_ -> Text
 unName_ (Name_ x) = x
+
+data Description = Description
+newtype Description_ = Description_ Text deriving (Show, Generic)
+instance Field Description where
+  type FieldValue Description = Description_
+  fieldName _ = "description"
+  fieldLabel = Description
+unDescription_ :: Description_ -> Text
+unDescription_ (Description_ x) = x
 
 data AccountId = AccountId
 newtype AccountId_ = AccountId_ Text deriving (Show, Generic)
@@ -1055,6 +1065,8 @@ instance A.FromJSON Subtype_
 instance A.ToJSON Subtype_
 instance A.FromJSON Name_
 instance A.ToJSON Name_
+instance A.FromJSON Description_
+instance A.ToJSON Description_
 instance A.FromJSON AccountId_
 instance A.ToJSON AccountId_
 instance A.FromJSON Id_
@@ -1191,6 +1203,9 @@ instance ToBS Subtype_ where
 
 instance ToBS Name_ where
   toBS (Name_ a) = toBS a
+
+instance ToBS Description_ where
+  toBS (Description_ a) = toBS a
 
 instance ToBS AccountId_ where
   toBS (AccountId_ a) = toBS a
@@ -1389,6 +1404,7 @@ instance ToBS AdsetId_ where
 
 subtype r = r `Rec.get` Subtype
 name r = r `Rec.get` Name
+description r = r `Rec.get` Description
 account_id r = r `Rec.get` AccountId
 id r = r `Rec.get` Id
 execution_options r = r `Rec.get` ExecutionOptions

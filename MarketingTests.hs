@@ -224,7 +224,10 @@ testGetCustomAudience acc tok = do
 
 testCreateCustomAudience acc tok = do
     liftIO $ putStrLn "TEST: create custom audience"
-    let params = (Subtype, Subtype_ "CUSTOM") :*: Nil
+    let params = (Subtype, Subtype_ "CUSTOM") -- TODO: enumerated Subtype_ doesn't work despite apparently being the same in JSON serialisation.
+          :*: (Description, Description_ "custom audience for fb test - description")
+          :*: (Name, Name_ "fb test custom audience")
+          :*: Nil
     -- let params = (Subtype, Subtype_ CUSTOM) :*: Nil
   
     liftIO $ print $ toJSON params

@@ -205,7 +205,9 @@ data AdCreativeLinkData = AdCreativeLinkData {
     caption  :: Text,
     imageHash ::  Hash_,
     link, message :: Text,
-    description  :: Maybe Text,
+    -- description  :: Maybe Text,
+    -- removed because compile conflict with custom audience
+    -- field of the same name.
     call_to_action :: Maybe CallToActionADT}
   | CreativeCarouselData {
     caption_carousel, message_carousel :: Text,
@@ -213,7 +215,7 @@ data AdCreativeLinkData = AdCreativeLinkData {
     link :: Text }
   deriving (Show, Generic)
 instance ToJSON AdCreativeLinkData where
-  toJSON (AdCreativeLinkData c i l m (Just d) (Just cta)) =
+  toJSON (AdCreativeLinkData c i l m (Just cta)) =
     object [ "caption" .= c,
              "image_hash" .= i,
              "link" .= l,
@@ -237,7 +239,6 @@ parseAdCreativeLinkData v =
                       <*> v .: "image_hash"
                       <*> v .: "link"
                       <*> v .: "message"
-                      <*> v .:? "description"
                       <*> v .:? "call_to_action"
 
 parseCreativeCarouselData v =
