@@ -67,9 +67,11 @@ main = do
 
     testGetCustomAudience acc tok
 
-    testCreateCustomAudience acc tok
+    audience <- testCreateCustomAudience acc tok
 
-    error "BENC - enough tests"
+    testCreateLookalikeAudience acc tok audience
+
+    error "BENC: enough tests"
 
     (videoId, thumb) <- testUploadVideo acc tok
 
@@ -237,3 +239,18 @@ testCreateCustomAudience acc tok = do
     liftIO $ print ("ret", ret)
     liftIO $ print ("custom audience id", customAudienceId)
     return customAudienceId
+
+testCreateLookalikeAudience acc tok audience = do
+    liftIO $ putStrLn "TEST: create lookalike audience"
+    let params = (Subtype, Subtype_ "LOOKALIKE")
+             :*: (Name, Name_ "fb test lookalike audience")
+             :*: (OriginAudienceId, OriginAudienceId_ audience)
+             :*: Nil
+    liftIO $ print $ toJSON params
+    ret <- setCustomAudience acc params tok
+    let customAudienceId = either (\e -> error $ "setCustomAudience returned: " ++ show e)
+                                  P.id ret
+    liftIO $ print ("ret", ret)
+    liftIO $ print ("custom audience id", customAudienceId)
+    return customAudienceId
+

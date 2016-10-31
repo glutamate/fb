@@ -40,6 +40,15 @@ import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)
 #endif
 import Facebook.Object.Marketing.Types
 
+data OriginAudienceId = OriginAudienceId
+newtype OriginAudienceId_ = OriginAudienceId_ Text deriving (Show, Generic)
+instance Field OriginAudienceId where
+  type FieldValue OriginAudienceId = OriginAudienceId_
+  fieldName _ = "origin_audience_id"
+  fieldLabel = OriginAudienceId
+unOriginAudienceId_ :: OriginAudienceId_ -> Text
+unOriginAudienceId_ (OriginAudienceId_ x) = x
+
 data LookalikeAudienceIds = LookalikeAudienceIds
 newtype LookalikeAudienceIds_ = LookalikeAudienceIds_ (Vector Text) deriving (Show, Generic)
 instance Field LookalikeAudienceIds where
@@ -84,6 +93,8 @@ instance Field ApproximateCount where
   fieldLabel = ApproximateCount
 unApproximateCount_ :: ApproximateCount_ -> Integer
 unApproximateCount_ (ApproximateCount_ x) = x
+instance A.FromJSON OriginAudienceId_
+instance A.ToJSON OriginAudienceId_
 instance A.FromJSON LookalikeAudienceIds_
 instance A.ToJSON LookalikeAudienceIds_
 instance A.FromJSON ExternalEventSource_
@@ -94,6 +105,9 @@ instance A.FromJSON DataSource_
 instance A.ToJSON DataSource_
 instance A.FromJSON ApproximateCount_
 instance A.ToJSON ApproximateCount_
+
+instance ToBS OriginAudienceId_ where
+  toBS (OriginAudienceId_ a) = toBS a
 
 instance ToBS LookalikeAudienceIds_ where
   toBS (LookalikeAudienceIds_ a) = toBS a
@@ -110,6 +124,7 @@ instance ToBS DataSource_ where
 instance ToBS ApproximateCount_ where
   toBS (ApproximateCount_ a) = toBS a
 
+origin_audience_id r = r `Rec.get` OriginAudienceId
 lookalike_audience_ids r = r `Rec.get` LookalikeAudienceIds
 external_event_source r = r `Rec.get` ExternalEventSource
 delivery_status r = r `Rec.get` DeliveryStatus
@@ -144,6 +159,7 @@ getCustomAudience (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "/customaudi
 class IsCustomAudienceSetField r
 instance (IsCustomAudienceSetField h, IsCustomAudienceSetField t) => IsCustomAudienceSetField (h :*: t)
 instance IsCustomAudienceSetField Nil
+instance IsCustomAudienceSetField OriginAudienceId
 instance IsCustomAudienceSetField Subtype
 instance IsCustomAudienceSetField Name
 instance IsCustomAudienceSetField Description
