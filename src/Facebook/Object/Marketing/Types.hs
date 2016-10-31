@@ -436,7 +436,9 @@ instance ToBS CustomAudienceSubtypeADT where
 -- as I've seen in one example...
 data LookalikeSpecADT = LookalikeSpecADT {
     lookalike_type :: Maybe Text,
-    lookalike_country :: Text
+    lookalike_country :: Text,
+    lookalike_pixels :: Maybe [Text],
+    lookalike_conversion_type :: Maybe Text
   } deriving (Show, Generic)
 
 instance ToJSON LookalikeSpecADT where

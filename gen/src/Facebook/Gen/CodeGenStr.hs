@@ -70,7 +70,8 @@ entityUrlPostfixMap =
                   ((Entity "AdSet", Reading), "/adsets"),
                   ((Entity "AdSet", Creating), "/adsets"),
                   ((Entity "CustomAudience", Reading), "/customaudiences"),
-                  ((Entity "CustomAudience", Creating), "/customaudiences")
+                  ((Entity "CustomAudience", Creating), "/customaudiences"),
+                  ((Entity "AdsPixel", Reading), "/adspixels")
                  ]
 
 -- Does the generated function return a Pager?
@@ -81,7 +82,8 @@ entityModePagerSet =
                   (Entity "AdCreative", Reading),
                   (Entity "Ad", Reading),
                   (Entity "AdSet", Reading),
-                  (Entity "CustomAudience", Reading)]
+                  (Entity "CustomAudience", Reading),
+                  (Entity "AdsPixel", Reading)]
 
 entityModeIdNotInURL  =
     Set.fromList [(Entity "AdCreative", Deleting)]
