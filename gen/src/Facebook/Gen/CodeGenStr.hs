@@ -152,6 +152,13 @@ campaignCreate =
      \    parseJSON (Object v) =\n\
      \       CreateCampaignId <$> v .: \"id\"\n"
 
+-- TODO: BENC: it is unclear to me that this should
+-- be a separate "create" response type -- what is
+-- coming back is a graph node ID (or possibly a
+-- graph node ID that we know the type of - a
+-- custom audience)
+-- Other types do this too but unclear to me if
+-- that makes sense?
 customAudienceCreate =
     "data CreateCustomAudienceId = CreateCustomAudienceId {\n\
      \  customAudienceId :: Text\n\

@@ -38,6 +38,8 @@ import Prelude hiding (id)
 import qualified Data.Map.Strict as Map
 import Data.Aeson
 import Data.Either
+import Data.Function (on)
+import Data.List (sortBy)
 import qualified Prelude as P
 
 main = do
@@ -65,11 +67,23 @@ main = do
 
     acc <- testGetAdAccId tok
 
-    testGetCustomAudience acc tok
+    new_audience <- testCreateCustomAudience acc tok
 
-    audience <- testCreateCustomAudience acc tok
+    audiences_pager <- testGetCustomAudience acc tok
 
-    testCreateLookalikeAudience acc tok audience
+    let audiences = pagerData audiences_pager
+        nonlookalike_audiences = filter (\audience -> (unSubtype_ $ subtype audience) /= "LOOKALIKE") audiences
+        sorted_audiences = sortBy ((flip compare) `on` (unApproximateCount_ . approximate_count)) nonlookalike_audiences
+        biggest_audience = head sorted_audiences
+
+    -- so we can get the audience in the first page with
+    -- the biggest approximate count.
+
+    -- this is failing -- maybe because the
+    -- just-created audience is too small or not ready?
+    -- testCreateLookalikeAudience acc tok (customAudienceId new_audience)
+
+    testCreateLookalikeAudience acc tok ((unId_ . id) biggest_audience)
 
     error "BENC: enough tests"
 
@@ -82,7 +96,6 @@ main = do
     testGetAdCampaigns acc tok
 
     adsetRet <- testCreateAdSet campaign acc tok
-
 
     creativeRet <- testCreateCreative fbUrl videoId thumb igId pageId acc tok
 
@@ -223,6 +236,7 @@ testGetCustomAudience acc tok = do
     
 
     liftIO $ print ("audiences", audiences)
+    return audiences
 
 testCreateCustomAudience acc tok = do
     liftIO $ putStrLn "TEST: create custom audience"
@@ -245,6 +259,7 @@ testCreateLookalikeAudience acc tok audience = do
     let params = (Subtype, Subtype_ "LOOKALIKE")
              :*: (Name, Name_ "fb test lookalike audience")
              :*: (OriginAudienceId, OriginAudienceId_ audience)
+             :*: (LookalikeSpec, LookalikeSpec_ (LookalikeSpecADT "similarity" "US"))
              :*: Nil
     liftIO $ print $ toJSON params
     ret <- setCustomAudience acc params tok
