@@ -1,0 +1,4 @@
+Entity,InteractionMode,FieldName,FieldType,Description,Required,InResp
+Ads Pixel,Reading,id,numeric string,,,
+Ads Pixel,Reading,code,string,,,
+Ads Pixel,Reading,name,string,,,

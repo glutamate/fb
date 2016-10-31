@@ -18,6 +18,7 @@ import Facebook.Object.Marketing.AdAccount
 import Facebook.Object.Marketing.Types
 import Facebook.Object.Marketing.AdCampaign
 import Facebook.Object.Marketing.AdCreative
+import Facebook.Object.Marketing.AdsPixel
 import qualified Facebook.Object.Marketing.AdCampaign as AdC
 import qualified Facebook.Object.Marketing.AdSet as AdS
 import qualified Facebook.Object.Marketing.AdImage as AdI
@@ -66,6 +67,11 @@ main = do
     testGetUser tok
 
     acc <- testGetAdAccId tok
+    pixels <- testGetPixels acc tok
+
+    let pixel_id = (unId_ . id) pixels
+
+    liftIO $ print ("pixel_id", pixel_id)
 
     new_audience <- testCreateCustomAudience acc tok
 
@@ -85,7 +91,7 @@ main = do
 
     -- this won't work when run multiple times because a lookalike
     -- audience can only be created once with a particular spec.
-    testCreateLookalikeAudience acc tok ((unId_ . id) biggest_audience)
+    testCreateLookalikeAudienceByExistingAudience acc tok ((unId_ . id) biggest_audience)
 
     (videoId, thumb) <- testUploadVideo acc tok
 
@@ -254,12 +260,12 @@ testCreateCustomAudience acc tok = do
     liftIO $ print ("custom audience id", customAudienceId)
     return customAudienceId
 
-testCreateLookalikeAudience acc tok audience = do
-    liftIO $ putStrLn "TEST: create lookalike audience"
+testCreateLookalikeAudienceByExistingAudience acc tok audience = do
+    liftIO $ putStrLn "TEST: create lookalike audience by existing audience"
     let params = (Subtype, Subtype_ "LOOKALIKE")
-             :*: (Name, Name_ "fb test lookalike audience")
+             :*: (Name, Name_ "fb test lookalike audience by existing audience")
              :*: (OriginAudienceId, OriginAudienceId_ audience)
-             :*: (LookalikeSpec, LookalikeSpec_ (LookalikeSpecADT (Just "similarity") "US"))
+             :*: (LookalikeSpec, LookalikeSpec_ (LookalikeSpecADT (Just "similarity") "US" Nothing Nothing))
              :*: Nil
     liftIO $ print $ toJSON params
     ret <- setCustomAudience acc params tok
@@ -269,3 +275,14 @@ testCreateLookalikeAudience acc tok audience = do
     liftIO $ print ("custom audience id", customAudienceId)
     return customAudienceId
 
+testGetPixels acc tok = do
+    liftIO $ putStrLn "TEST: get pixels"
+    ret <- getAdsPixel acc (Id ::: Name ::: Code ::: Nil) (Just tok) -- TODO: token is compulsory, i think so make not a maybe
+    liftIO $ print ("ret", ret)
+
+    -- let pager = either (\e -> error "getAdsPixel returned: " ++ show e) P.id ret
+
+    let some_pixel = head $ pagerData ret -- TODO: BENC make everything else use pagerData not pattern.
+
+    liftIO $ print ("some_pixel", some_pixel)
+    return some_pixel

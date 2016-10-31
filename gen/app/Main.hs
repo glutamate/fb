@@ -18,7 +18,7 @@ import Facebook.Gen.CodeGenStr
 
 csvFiles = V.fromList ["data/adaccount.csv", "data/adcampaign.csv", "data/adset.csv",
                        "data/adimage.csv", "data/adcreative.csv", "data/ad.csv", "data/adlabel.csv",
-                       "data/customaudience.csv"]
+                       "data/customaudience.csv", "data/adspixel.csv"]
 
 main :: IO ()
 main = do

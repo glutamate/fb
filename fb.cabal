@@ -58,6 +58,7 @@ library
     Facebook.Object.Marketing.AdCreative
     Facebook.Object.Marketing.AdAccountGroup
     Facebook.Object.Marketing.AdSet
+    Facebook.Object.Marketing.AdsPixel
     Facebook.Object.Marketing.AdImage
     Facebook.Object.Marketing.AdVideo
     Facebook.Object.Marketing.CustomAudience
