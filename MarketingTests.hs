@@ -73,7 +73,25 @@ main = do
 
     liftIO $ print ("pixel_id", pixel_id)
 
-    error "BENC: enough tests 2"
+    -- TODO: get a pixel_id from somewhere.
+    -- We might need the conversion audience to be big
+    -- enough on that pixel, rather than using a
+    -- freshly created pixel?
+    -- or maybe it will create an audience that won't ever be ready?
+    -- or maybe we can just accept that specific failure, rather than
+    -- failing the test? (eg accept certain failure codes?)
+
+
+    -- this needs to create a custom audience for people
+    -- who actually fired the pixel, and then a lookalike
+    -- audience based on that - lookalike audiences, as far
+    -- as I can tell, can't come directly from a pixel.
+
+
+
+    -- testCreateLookalikeAudienceByPixel acc tok pixel_id
+
+    error "BENC: enough tests"
 
     new_audience <- testCreateCustomAudience acc tok
 
@@ -94,20 +112,6 @@ main = do
     -- this won't work when run multiple times because a lookalike
     -- audience can only be created once with a particular spec.
     testCreateLookalikeAudienceByExistingAudience acc tok ((unId_ . id) biggest_audience)
-
-
-    -- TODO: get a pixel_id from somewhere.
-    -- We might need the conversion audience to be big
-    -- enough on that pixel, rather than using a
-    -- freshly created pixel?
-    -- or maybe it will create an audience that won't ever be ready?
-    -- or maybe we can just accept that specific failure, rather than
-    -- failing the test? (eg accept certain failure codes?)
-
-
-    testCreateLookalikeAudienceByPixel acc tok pixel_id
-
-    error "BENC: enough tests"
 
     (videoId, thumb) <- testUploadVideo acc tok
 
@@ -295,7 +299,6 @@ testCreateLookalikeAudienceByPixel acc tok pixel = do
     liftIO $ putStrLn "TEST: create lookalike audience by pixel"
     let params = (Subtype, Subtype_ "LOOKALIKE")
              :*: (Name, Name_ "fb test lookalike audience by pixel")
-             -- :*: (OriginAudienceId, OriginAudienceId_ audience)
              :*: (LookalikeSpec, LookalikeSpec_ (LookalikeSpecADT (Just "similarity") "US" (Just [pixel]) (Just "offsite")))
              :*: Nil
     liftIO $ print $ toJSON params

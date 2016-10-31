@@ -437,7 +437,7 @@ instance ToBS CustomAudienceSubtypeADT where
 data LookalikeSpecADT = LookalikeSpecADT {
     lookalike_type :: Maybe Text,
     lookalike_country :: Text,
-    lookalike_pixels :: Maybe [Text],
+    lookalike_pixel_ids :: Maybe [Text],
     lookalike_conversion_type :: Maybe Text
   } deriving (Show, Generic)
 
