@@ -83,6 +83,8 @@ main = do
     -- just-created audience is too small or not ready?
     -- testCreateLookalikeAudience acc tok (customAudienceId new_audience)
 
+    -- this won't work when run multiple times because a lookalike
+    -- audience can only be created once with a particular spec.
     testCreateLookalikeAudience acc tok ((unId_ . id) biggest_audience)
 
     (videoId, thumb) <- testUploadVideo acc tok
@@ -257,7 +259,7 @@ testCreateLookalikeAudience acc tok audience = do
     let params = (Subtype, Subtype_ "LOOKALIKE")
              :*: (Name, Name_ "fb test lookalike audience")
              :*: (OriginAudienceId, OriginAudienceId_ audience)
-             :*: (LookalikeSpec, LookalikeSpec_ (LookalikeSpecADT "similarity" "US"))
+             :*: (LookalikeSpec, LookalikeSpec_ (LookalikeSpecADT (Just "similarity") "US"))
              :*: Nil
     liftIO $ print $ toJSON params
     ret <- setCustomAudience acc params tok

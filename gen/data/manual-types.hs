@@ -374,7 +374,7 @@ instance ToBS CustomAudienceSubtypeADT where
 -- BENC: this is only as much lookalike spec
 -- as I've seen in one example...
 data LookalikeSpecADT = LookalikeSpecADT {
-    lookalike_type :: Text,
+    lookalike_type :: Maybe Text,
     lookalike_country :: Text
   } deriving (Show, Generic)
 
