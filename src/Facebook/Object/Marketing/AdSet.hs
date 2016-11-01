@@ -40,6 +40,15 @@ import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)
 #endif
 import Facebook.Object.Marketing.Types
 
+data PixelId = PixelId
+newtype PixelId_ = PixelId_ Text deriving (Show, Generic)
+instance Field PixelId where
+  type FieldValue PixelId = PixelId_
+  fieldName _ = "pixel_id"
+  fieldLabel = PixelId
+unPixelId_ :: PixelId_ -> Text
+unPixelId_ (PixelId_ x) = x
+
 data Status = Status
 newtype Status_ = Status_ ConfigureStatusADT deriving (Show, Generic)
 instance Field Status where
@@ -75,6 +84,8 @@ instance Field FrequencyCap where
   fieldLabel = FrequencyCap
 unFrequencyCap_ :: FrequencyCap_ -> Int
 unFrequencyCap_ (FrequencyCap_ x) = x
+instance A.FromJSON PixelId_
+instance A.ToJSON PixelId_
 instance A.FromJSON Status_
 instance A.ToJSON Status_
 instance A.FromJSON BudgetRemaining_
@@ -103,6 +114,9 @@ instance A.FromJSON DailyBudget_ where
      Right (num, _) -> pure $ DailyBudget_ num
 instance A.ToJSON DailyBudget_
 
+instance ToBS PixelId_ where
+  toBS (PixelId_ a) = toBS a
+
 instance ToBS DailyBudget_ where
   toBS (DailyBudget_ a) = toBS a
 
@@ -118,6 +132,7 @@ instance ToBS FrequencyCapResetPeriod_ where
 instance ToBS FrequencyCap_ where
   toBS (FrequencyCap_ a) = toBS a
 
+pixel_id r = r `Rec.get` PixelId
 daily_budget r = r `Rec.get` DailyBudget
 status r = r `Rec.get` Status
 budget_remaining r = r `Rec.get` BudgetRemaining

@@ -23,7 +23,7 @@ import qualified Facebook.Object.Marketing.AdCampaign as AdC
 import qualified Facebook.Object.Marketing.AdSet as AdS
 import qualified Facebook.Object.Marketing.AdImage as AdI
 import qualified Facebook.Object.Marketing.AdVideo as AdV
-import Facebook.Object.Marketing.CustomAudience
+import Facebook.Object.Marketing.CustomAudience as CA
 import Facebook.Object.Marketing.TargetingSpecs
 import Facebook.Object.Marketing.TargetingSpecs.Location
 import Facebook.Object.Marketing.TargetingSpecs.Demographies
@@ -72,6 +72,18 @@ main = do
     let pixel_id = (unId_ . id) pixels
 
     liftIO $ print ("pixel_id", pixel_id)
+
+    -- this needs to create a custom audience for people
+    -- who actually fired the pixel, and then a lookalike
+    -- audience based on that - lookalike audiences, as far
+    -- as I can tell, can't come directly from a pixel.
+
+    -- that second audience creation might fail because the
+    -- first audiecne isn't ready yet? not sure.
+
+    website_audience <- testCreateAudienceFromPixel acc tok pixel_id
+
+    website_lookalike_audience <- testCreateLookalikeAudienceByExistingAudience acc tok (customAudienceId website_audience)
 
     new_audience <- testCreateCustomAudience acc tok
 
@@ -267,6 +279,25 @@ testCreateLookalikeAudienceByExistingAudience acc tok audience = do
              :*: (OriginAudienceId, OriginAudienceId_ audience)
              :*: (LookalikeSpec, LookalikeSpec_ (LookalikeSpecADT (Just "similarity") "US" Nothing Nothing))
              :*: Nil
+    liftIO $ print $ toJSON params
+    ret <- setCustomAudience acc params tok
+    let customAudienceId = either (\e -> error $ "setCustomAudience returned: " ++ show e)
+                                  P.id ret
+    liftIO $ print ("ret", ret)
+    liftIO $ print ("custom audience id", customAudienceId)
+    return customAudienceId
+
+testCreateAudienceFromPixel acc tok pixel_id = do
+    liftIO $ putStrLn "TEST: create custom audience from pixel/website"
+    let params = (Subtype, Subtype_ "WEBSITE")
+             :*: (Description, Description_ "custom website audience for fb test - description")
+             :*: (Name, Name_ "fb test custom audience from website pixel")
+             :*: (Prefill, Prefill_ True)
+             :*: (RetentionDays, RetentionDays_ 180)
+             :*: (Rule, Rule_ "{\"url\":{\"i_contains\":\"beautifuldestinations\"}}")
+             :*: (CA.PixelId, CA.PixelId_ (P.read $ T.unpack pixel_id)) -- TODO: this is a bit awkward... should pixel IDs just be Text in our API always? (or pixelid wrapper type?)
+             :*: Nil
+  
     liftIO $ print $ toJSON params
     ret <- setCustomAudience acc params tok
     let customAudienceId = either (\e -> error $ "setCustomAudience returned: " ++ show e)

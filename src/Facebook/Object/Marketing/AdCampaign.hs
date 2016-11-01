@@ -76,6 +76,15 @@ instance Field Status where
 unStatus_ :: Status_ -> ConfigureStatusADT
 unStatus_ (Status_ x) = x
 
+data PixelId = PixelId
+newtype PixelId_ = PixelId_ Text deriving (Show, Generic)
+instance Field PixelId where
+  type FieldValue PixelId = PixelId_
+  fieldName _ = "pixel_id"
+  fieldLabel = PixelId
+unPixelId_ :: PixelId_ -> Text
+unPixelId_ (PixelId_ x) = x
+
 data CanUseSpendCap = CanUseSpendCap
 newtype CanUseSpendCap_ = CanUseSpendCap_ Bool deriving (Show, Generic)
 instance Field CanUseSpendCap where
@@ -101,6 +110,8 @@ instance A.FromJSON BeforeDate_
 instance A.ToJSON BeforeDate_
 instance A.FromJSON Status_
 instance A.ToJSON Status_
+instance A.FromJSON PixelId_
+instance A.ToJSON PixelId_
 instance A.FromJSON CanUseSpendCap_
 instance A.ToJSON CanUseSpendCap_
 instance A.FromJSON StopTime_
@@ -118,6 +129,9 @@ instance ToBS BeforeDate_ where
 instance ToBS Status_ where
   toBS (Status_ a) = toBS a
 
+instance ToBS PixelId_ where
+  toBS (PixelId_ a) = toBS a
+
 instance ToBS CanUseSpendCap_ where
   toBS (CanUseSpendCap_ a) = toBS a
 
@@ -128,6 +142,7 @@ object_count r = r `Rec.get` ObjectCount
 delete_strategy r = r `Rec.get` DeleteStrategy
 before_date r = r `Rec.get` BeforeDate
 status r = r `Rec.get` Status
+pixel_id r = r `Rec.get` PixelId
 can_use_spend_cap r = r `Rec.get` CanUseSpendCap
 stop_time r = r `Rec.get` StopTime
 -- Entity:AdCampaign, mode:Reading

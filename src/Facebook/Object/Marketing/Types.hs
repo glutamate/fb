@@ -582,15 +582,6 @@ instance Field Days where
 unDays_ :: Days_ -> Vector Int
 unDays_ (Days_ x) = x
 
-data PixelId = PixelId
-newtype PixelId_ = PixelId_ Text deriving (Show, Generic)
-instance Field PixelId where
-  type FieldValue PixelId = PixelId_
-  fieldName _ = "pixel_id"
-  fieldLabel = PixelId
-unPixelId_ :: PixelId_ -> Text
-unPixelId_ (PixelId_ x) = x
-
 data EndTime = EndTime
 newtype EndTime_ = EndTime_ UTCTime deriving Generic
 instance Field EndTime where
@@ -1088,8 +1079,6 @@ instance A.FromJSON StartMinute_
 instance A.ToJSON StartMinute_
 instance A.FromJSON Days_
 instance A.ToJSON Days_
-instance A.FromJSON PixelId_
-instance A.ToJSON PixelId_
 instance A.FromJSON EndTime_
 instance A.ToJSON EndTime_
 instance A.FromJSON LifetimeImps_
@@ -1239,9 +1228,6 @@ instance ToBS StartMinute_ where
 
 instance ToBS Days_ where
   toBS (Days_ a) = toBS a
-
-instance ToBS PixelId_ where
-  toBS (PixelId_ a) = toBS a
 
 instance ToBS EndTime_ where
   toBS (EndTime_ a) = toBS a
@@ -1414,7 +1400,6 @@ billing_event r = r `Rec.get` BillingEvent
 is_autobid r = r `Rec.get` IsAutobid
 start_minute r = r `Rec.get` StartMinute
 days r = r `Rec.get` Days
-pixel_id r = r `Rec.get` PixelId
 end_time r = r `Rec.get` EndTime
 lifetime_imps r = r `Rec.get` LifetimeImps
 offer_id r = r `Rec.get` OfferId

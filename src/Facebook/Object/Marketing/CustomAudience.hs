@@ -40,6 +40,42 @@ import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)
 #endif
 import Facebook.Object.Marketing.Types
 
+data Prefill = Prefill
+newtype Prefill_ = Prefill_ Bool deriving (Show, Generic)
+instance Field Prefill where
+  type FieldValue Prefill = Prefill_
+  fieldName _ = "prefill"
+  fieldLabel = Prefill
+unPrefill_ :: Prefill_ -> Bool
+unPrefill_ (Prefill_ x) = x
+
+data PixelId = PixelId
+newtype PixelId_ = PixelId_ Integer deriving (Show, Generic)
+instance Field PixelId where
+  type FieldValue PixelId = PixelId_
+  fieldName _ = "pixel_id"
+  fieldLabel = PixelId
+unPixelId_ :: PixelId_ -> Integer
+unPixelId_ (PixelId_ x) = x
+
+data RetentionDays = RetentionDays
+newtype RetentionDays_ = RetentionDays_ Integer deriving (Show, Generic)
+instance Field RetentionDays where
+  type FieldValue RetentionDays = RetentionDays_
+  fieldName _ = "retention_days"
+  fieldLabel = RetentionDays
+unRetentionDays_ :: RetentionDays_ -> Integer
+unRetentionDays_ (RetentionDays_ x) = x
+
+data Rule = Rule
+newtype Rule_ = Rule_ Text deriving (Show, Generic)
+instance Field Rule where
+  type FieldValue Rule = Rule_
+  fieldName _ = "rule"
+  fieldLabel = Rule
+unRule_ :: Rule_ -> Text
+unRule_ (Rule_ x) = x
+
 data LookalikeSpec = LookalikeSpec
 newtype LookalikeSpec_ = LookalikeSpec_ LookalikeSpecADT deriving (Show, Generic)
 instance Field LookalikeSpec where
@@ -93,6 +129,14 @@ instance Field ApproximateCount where
   fieldLabel = ApproximateCount
 unApproximateCount_ :: ApproximateCount_ -> Integer
 unApproximateCount_ (ApproximateCount_ x) = x
+instance A.FromJSON Prefill_
+instance A.ToJSON Prefill_
+instance A.FromJSON PixelId_
+instance A.ToJSON PixelId_
+instance A.FromJSON RetentionDays_
+instance A.ToJSON RetentionDays_
+instance A.FromJSON Rule_
+instance A.ToJSON Rule_
 instance A.FromJSON LookalikeSpec_
 instance A.ToJSON LookalikeSpec_
 instance A.FromJSON OriginAudienceId_
@@ -105,6 +149,18 @@ instance A.FromJSON DataSource_
 instance A.ToJSON DataSource_
 instance A.FromJSON ApproximateCount_
 instance A.ToJSON ApproximateCount_
+
+instance ToBS Prefill_ where
+  toBS (Prefill_ a) = toBS a
+
+instance ToBS PixelId_ where
+  toBS (PixelId_ a) = toBS a
+
+instance ToBS RetentionDays_ where
+  toBS (RetentionDays_ a) = toBS a
+
+instance ToBS Rule_ where
+  toBS (Rule_ a) = toBS a
 
 instance ToBS LookalikeSpec_ where
   toBS (LookalikeSpec_ a) = toBS a
@@ -124,6 +180,10 @@ instance ToBS DataSource_ where
 instance ToBS ApproximateCount_ where
   toBS (ApproximateCount_ a) = toBS a
 
+prefill r = r `Rec.get` Prefill
+pixel_id r = r `Rec.get` PixelId
+retention_days r = r `Rec.get` RetentionDays
+rule r = r `Rec.get` Rule
 lookalike_spec r = r `Rec.get` LookalikeSpec
 origin_audience_id r = r `Rec.get` OriginAudienceId
 lookalike_audience_ids r = r `Rec.get` LookalikeAudienceIds
@@ -158,6 +218,10 @@ getCustomAudience (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "/customaudi
 class IsCustomAudienceSetField r
 instance (IsCustomAudienceSetField h, IsCustomAudienceSetField t) => IsCustomAudienceSetField (h :*: t)
 instance IsCustomAudienceSetField Nil
+instance IsCustomAudienceSetField Prefill
+instance IsCustomAudienceSetField PixelId
+instance IsCustomAudienceSetField RetentionDays
+instance IsCustomAudienceSetField Rule
 instance IsCustomAudienceSetField LookalikeSpec
 instance IsCustomAudienceSetField OriginAudienceId
 instance IsCustomAudienceSetField Subtype
