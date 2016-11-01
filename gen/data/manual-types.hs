@@ -296,7 +296,10 @@ instance ToBS AdCreativeADT where
   toBS = toBS . toJSON
 data CallToActionValue = CallToActionValue {
   ctav_link, ctav_link_caption :: Text
+  } | CallToActionLeadGenForm {
+  ctav_lead_gen_form_id :: Text
   } deriving (Show, Generic)
+
 instance ToJSON CallToActionValue where
   toJSON = genericToJSON defaultOptions {fieldLabelModifier = drop $ length ("ctav_" :: String)}
 instance FromJSON CallToActionValue where
