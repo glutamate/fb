@@ -300,16 +300,33 @@ data CallToActionValue = CallToActionValue {
   ctav_lead_gen_form_id :: Text
   } deriving (Show, Generic)
 
+-- Later versions of aeson than
+-- 0.8.0.2 which is what we support
+-- have a sumEncoding = UntaggedValue
+-- which would do this using
+-- genericToJSON
 instance ToJSON CallToActionValue where
-  toJSON = genericToJSON defaultOptions {fieldLabelModifier = drop $ length ("ctav_" :: String)}
+  toJSON (CallToActionValue l c) = object [
+      "link" .= l,
+      "caption" .= c
+    ]
+  toJSON (CallToActionLeadGenForm i) = object [
+      "lead_gen_form_id" .= i
+    ]
+
+-- TODO: this is possibly broken by having
+-- two constructors for CallToActionValue
+-- and not having sumEncoding = UntaggedObject?
 instance FromJSON CallToActionValue where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = drop $ length ("ctav_" :: String)}
+
 data CallToActionADT = CallToActionADT {
     cta_type :: CallToActionTypeADT,
     cta_value :: CallToActionValue
   } deriving (Show, Generic)
 instance ToJSON CallToActionADT where
   toJSON = genericToJSON defaultOptions {fieldLabelModifier = drop $ length ("cta_" :: String)}
+
 instance FromJSON CallToActionADT where
   parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = drop $ length ("cta_" :: String)}
 

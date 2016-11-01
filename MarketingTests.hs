@@ -51,6 +51,7 @@ main = do
   pageId <- liftM T.pack $ getEnv "FB_PAGE_ID"
   fbUrl <- liftM T.pack $ getEnv "FB_URL"
   igId <- liftM T.pack $ getEnv "IG_ID"
+  formId <- liftM T.pack $ getEnv "FB_FORM_ID"
 
   man <- newManager conduitManagerSettings
   now <- getCurrentTime
@@ -81,9 +82,9 @@ main = do
     -- that second audience creation might fail because the
     -- first audiecne isn't ready yet? not sure.
 
-    website_audience <- testCreateAudienceFromPixel acc tok pixel_id
+    -- website_audience <- testCreateAudienceFromPixel acc tok pixel_id
 
-    website_lookalike_audience <- testCreateLookalikeAudienceByExistingAudience acc tok (customAudienceId website_audience)
+    -- website_lookalike_audience <- testCreateLookalikeAudienceByExistingAudience acc tok (customAudienceId website_audience)
 
 
     new_audience <- testCreateCustomAudience acc tok
@@ -104,7 +105,7 @@ main = do
 
     -- this won't work when run multiple times because a lookalike
     -- audience can only be created once with a particular spec.
-    testCreateLookalikeAudienceByExistingAudience acc tok ((unId_ . id) biggest_audience)
+    -- testCreateLookalikeAudienceByExistingAudience acc tok ((unId_ . id) biggest_audience)
 
     (videoId, thumb) <- testUploadVideo acc tok
 
@@ -114,9 +115,9 @@ main = do
 
     testGetAdCampaigns acc tok
 
-    adsetRet <- testCreateAdSet campaign acc tok
+    adsetRet <- testCreateAdSet pageId campaign acc tok
 
-    creativeRet <- testCreateCreative fbUrl videoId thumb igId pageId acc tok
+    creativeRet <- testCreateCreative formId fbUrl videoId thumb igId pageId acc tok
 
     testGetCreative acc tok
 
@@ -182,7 +183,7 @@ testGetAdCampaigns acc tok = do
 
 testCreateCampaign acc tok = do
     liftIO $ putStrLn "TEST: Create campaign"
-    let campaign = (Name, Name_ "Test campaign created by Haskell fb module test suite") :*: (Objective, Objective_ OBJ_POST_ENGAGEMENT)
+    let campaign = (Name, Name_ "Test campaign created by Haskell fb module test suite") :*: (Objective, Objective_ OBJ_LEAD_GENERATION)
                    :*: (AdC.Status, AdC.Status_ PAUSED_) :*: (BuyingType, BuyingType_ AUCTION) :*: Nil
     ret' <- setAdCampaign acc campaign tok
 
@@ -192,7 +193,7 @@ testCreateCampaign acc tok = do
 
     return campaign
 
-testCreateAdSet campaign acc tok = do
+testCreateAdSet page campaign acc tok = do
 
     liftIO $ putStrLn "TEST: create adset"
 
@@ -201,17 +202,19 @@ testCreateAdSet campaign acc tok = do
     let target = TargetingSpecs location (Just demo) Nothing (Just [Facebook]) Nothing Nothing -- $ Just (zip (repeat Int.AdInterest) ids)
     let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "Test AdSet Video API")
                 :*: (CampaignId, CampaignId_ $ campaignId campaign) :*: (Targeting, Targeting_ target)
-                :*: (OptimizationGoal, OptimizationGoal_ POST_ENGAGEMENT)
-                :*: (BillingEvent, BillingEvent_ IMPRESSIONS_) :*: (DailyBudget, DailyBudget_ 500) :*: Nil
+                :*: (OptimizationGoal, OptimizationGoal_ LEAD_GENERATION)
+                :*: (BillingEvent, BillingEvent_ IMPRESSIONS_) :*: (DailyBudget, DailyBudget_ 500)
+                :*: (PromotedObject, PromotedObject_ page)
+                :*: Nil
     liftIO $ print ("creating adset", (acc, adset, tok))
     adsetRet' <- setAdSet acc adset tok
     liftIO $ print ("adset ret", adsetRet')
     let adsetRet = either (error . show) P.id adsetRet'
     return adsetRet
 
-testCreateCreative fbUrl videoId thumb igId pageId acc tok = do
+testCreateCreative form_id fbUrl videoId thumb igId pageId acc tok = do
     liftIO $ putStrLn "TEST: create ad creative"
-    let cta_value = CallToActionValue fbUrl "Test link caption"
+    let cta_value = CallToActionLeadGenForm form_id
     let call_to_action = CallToActionADT LEARN_MORE cta_value
 
     let videoLink = AdCreativeVideoData call_to_action "This is a description" (AdV.uri thumb) videoId
