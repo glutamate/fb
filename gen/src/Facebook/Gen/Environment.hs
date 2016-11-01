@@ -216,7 +216,9 @@ buildEnvCsv :: CsvLine -> Env
 buildEnvCsv (CsvLine (Entity ent) mode info) =
     let ent'  = (Entity $ T.concat $ splitOn " " ent)
         info' = insertHsType info (Entity ent) mode
-    in Env $ Map.insert ent' (Map.insert mode (V.singleton info') Map.empty) Map.empty
+
+        ret = Env $ Map.insert ent' (Map.insert mode (V.singleton info') Map.empty) Map.empty
+    in trace ("BuildCsvEnv: " ++ show (ent, mode, info)) $ ret
 
 insertHsType :: FieldInfo -> Entity -> InteractionMode -> FieldInfo
 insertHsType fi ent mode =
