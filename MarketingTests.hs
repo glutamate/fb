@@ -85,7 +85,6 @@ main = do
 
     website_lookalike_audience <- testCreateLookalikeAudienceByExistingAudience acc tok (customAudienceId website_audience)
 
-    error "BENC: enough tests"
 
     new_audience <- testCreateCustomAudience acc tok
 
