@@ -204,7 +204,7 @@ testCreateAdSet page campaign acc tok = do
                 :*: (CampaignId, CampaignId_ $ campaignId campaign) :*: (Targeting, Targeting_ target)
                 :*: (OptimizationGoal, OptimizationGoal_ LEAD_GENERATION)
                 :*: (BillingEvent, BillingEvent_ IMPRESSIONS_) :*: (DailyBudget, DailyBudget_ 500)
-                :*: (PromotedObject, PromotedObject_ page)
+                -- :*: (PromotedObject, PromotedObject_ page)
                 :*: Nil
     liftIO $ print ("creating adset", (acc, adset, tok))
     adsetRet' <- setAdSet acc adset tok
