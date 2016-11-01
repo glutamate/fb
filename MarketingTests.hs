@@ -23,7 +23,7 @@ import qualified Facebook.Object.Marketing.AdCampaign as AdC
 import qualified Facebook.Object.Marketing.AdSet as AdS
 import qualified Facebook.Object.Marketing.AdImage as AdI
 import qualified Facebook.Object.Marketing.AdVideo as AdV
-import Facebook.Object.Marketing.CustomAudience
+import Facebook.Object.Marketing.CustomAudience as CA
 import Facebook.Object.Marketing.TargetingSpecs
 import Facebook.Object.Marketing.TargetingSpecs.Location
 import Facebook.Object.Marketing.TargetingSpecs.Demographies
@@ -73,23 +73,17 @@ main = do
 
     liftIO $ print ("pixel_id", pixel_id)
 
-    -- TODO: get a pixel_id from somewhere.
-    -- We might need the conversion audience to be big
-    -- enough on that pixel, rather than using a
-    -- freshly created pixel?
-    -- or maybe it will create an audience that won't ever be ready?
-    -- or maybe we can just accept that specific failure, rather than
-    -- failing the test? (eg accept certain failure codes?)
-
-
     -- this needs to create a custom audience for people
     -- who actually fired the pixel, and then a lookalike
     -- audience based on that - lookalike audiences, as far
     -- as I can tell, can't come directly from a pixel.
 
+    -- that second audience creation might fail because the
+    -- first audiecne isn't ready yet? not sure.
 
+    website_audience <- testCreateAudienceFromPixel acc tok pixel_id
 
-    -- testCreateLookalikeAudienceByPixel acc tok pixel_id
+    website_lookalike_audience <- testCreateLookalikeAudienceByExistingAudience acc tok (customAudienceId website_audience)
 
     error "BENC: enough tests"
 
@@ -295,12 +289,17 @@ testCreateLookalikeAudienceByExistingAudience acc tok audience = do
     liftIO $ print ("custom audience id", customAudienceId)
     return customAudienceId
 
-testCreateLookalikeAudienceByPixel acc tok pixel = do
-    liftIO $ putStrLn "TEST: create lookalike audience by pixel"
-    let params = (Subtype, Subtype_ "LOOKALIKE")
-             :*: (Name, Name_ "fb test lookalike audience by pixel")
-             :*: (LookalikeSpec, LookalikeSpec_ (LookalikeSpecADT (Just "similarity") "US" (Just [pixel]) (Just "offsite")))
+testCreateAudienceFromPixel acc tok pixel_id = do
+    liftIO $ putStrLn "TEST: create custom audience from pixel/website"
+    let params = (Subtype, Subtype_ "WEBSITE")
+             :*: (Description, Description_ "custom website audience for fb test - description")
+             :*: (Name, Name_ "fb test custom audience from website pixel")
+             :*: (Prefill, Prefill_ True)
+             :*: (RetentionDays, RetentionDays_ 180)
+             :*: (Rule, Rule_ "{\"url\":{\"i_contains\":\"beautifuldestinations\"}}")
+             :*: (CA.PixelId, CA.PixelId_ (P.read $ T.unpack pixel_id)) -- TODO: this is a bit awkward... should pixel IDs just be Text in our API always? (or pixelid wrapper type?)
              :*: Nil
+  
     liftIO $ print $ toJSON params
     ret <- setCustomAudience acc params tok
     let customAudienceId = either (\e -> error $ "setCustomAudience returned: " ++ show e)
@@ -308,6 +307,8 @@ testCreateLookalikeAudienceByPixel acc tok pixel = do
     liftIO $ print ("ret", ret)
     liftIO $ print ("custom audience id", customAudienceId)
     return customAudienceId
+
+
 
 testGetPixels acc tok = do
     liftIO $ putStrLn "TEST: get pixels"
