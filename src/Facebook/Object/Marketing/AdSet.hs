@@ -277,3 +277,4 @@ delAdSet :: (R.MonadResource m, MonadBaseControl IO m, AdSetDel r) =>
 	->  UserAccessToken -- ^ Optional user access token.
 	-> FacebookT Auth m (Either FacebookException r)
 delAdSet (CreateAdSetId id) r mtoken = deleteForm ("/v2.7/" <> id <> "") (toForm r) mtoken
+
