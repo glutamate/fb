@@ -67,6 +67,7 @@ library
     Facebook.Object.Marketing.Utility
     Facebook.Object.Marketing.Types
     Facebook.Object.Marketing.TargetingSpecs
+    Facebook.Object.Marketing.TargetingSpecs.CustomAudience
     Facebook.Object.Marketing.TargetingSpecs.Demographies
     Facebook.Object.Marketing.TargetingSpecs.Location
     Facebook.Object.Marketing.TargetingSpecs.Mobile

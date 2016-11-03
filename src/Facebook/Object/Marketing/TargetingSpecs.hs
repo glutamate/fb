@@ -9,6 +9,7 @@ import Data.Default
 import qualified Data.HashMap.Strict as HM
 import GHC.Generics (Generic)
 import Facebook.Records
+import Facebook.Object.Marketing.TargetingSpecs.CustomAudience
 import Facebook.Object.Marketing.TargetingSpecs.Demographies
 import Facebook.Object.Marketing.TargetingSpecs.Location
 import Facebook.Object.Marketing.TargetingSpecs.Mobile
@@ -25,10 +26,11 @@ data TargetingSpecs = TargetingSpecs
   , publisher_platforms :: Maybe [PublisherPlatform]
   , facebook_positions :: Maybe [FacebookPosition]
   , interests :: Maybe [(TargetingType,Interest)]
+  , custom_audiences :: Maybe [CustomAudience]
   } deriving (Show, Eq, Generic)
 
 instance ToJSON TargetingSpecs where
-    toJSON (TargetingSpecs loc demo dp pp fp ints) =
+    toJSON (TargetingSpecs loc demo dp pp fp ints caud) =
         let locJson = object ["geo_locations" .= toJSON loc]
             demoJson = case demo of
                         Nothing ->  Null
@@ -52,7 +54,10 @@ instance ToJSON TargetingSpecs where
             posJson = case fp of
                           Nothing -> Null
                           Just x -> object ["facebook_positions" .= toJSON x]
-        in foldl merge Null [locJson, demoJson, intsJson, incomJson, deviceJson, pubsJson, posJson]
+            caudJson = case caud of
+                          Nothing -> Null
+                          Just x -> object ["custom_audiences" .= toJSON x]
+        in foldl merge Null [locJson, demoJson, intsJson, incomJson, deviceJson, pubsJson, posJson, caudJson]
 
 merge :: Value -> Value -> Value
 merge Null v = v

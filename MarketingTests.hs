@@ -41,6 +41,7 @@ import Data.Aeson
 import Data.Either
 import Data.Function (on)
 import Data.List (sortBy)
+import Data.Monoid ( (<>) )
 import qualified Prelude as P
 
 main = do
@@ -113,7 +114,7 @@ main = do
 
     testGetAdCampaigns acc tok
 
-    adsetRet <- testCreateAdSet campaign acc tok
+    adset <- testCreateAdSet campaign acc tok
 
     creativeRet <- testCreateCreative fbUrl videoId thumb igId pageId acc tok
 
@@ -121,7 +122,11 @@ main = do
 
     testGetAds acc tok
 
-    testSetAd adsetRet creativeRet acc tok
+    testSetAd "regular" adset creativeRet acc tok
+
+    custom_audience_adset <- testCreateAdSetForCustomAudience (customAudienceId website_lookalike_audience) campaign acc tok
+
+    testSetAd "custom audience" custom_audience_adset creativeRet acc tok
 
     liftIO $ putStrLn "Test suite finished without failure."
 
@@ -197,8 +202,8 @@ testCreateAdSet campaign acc tok = do
 
     let location = TargetLocation ["US", "GB"]
     let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
-    let target = TargetingSpecs location (Just demo) Nothing (Just [Facebook]) Nothing Nothing -- $ Just (zip (repeat Int.AdInterest) ids)
-    let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "Test AdSet Video API")
+    let target = TargetingSpecs location (Just demo) Nothing (Just [Facebook]) Nothing Nothing Nothing -- $ Just (zip (repeat Int.AdInterest) ids)
+    let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "fb test adset")
                 :*: (CampaignId, CampaignId_ $ campaignId campaign) :*: (Targeting, Targeting_ target)
                 :*: (OptimizationGoal, OptimizationGoal_ POST_ENGAGEMENT)
                 :*: (BillingEvent, BillingEvent_ IMPRESSIONS_) :*: (DailyBudget, DailyBudget_ 500) :*: Nil
@@ -207,6 +212,26 @@ testCreateAdSet campaign acc tok = do
     liftIO $ print ("adset ret", adsetRet')
     let adsetRet = either (error . show) P.id adsetRet'
     return adsetRet
+
+testCreateAdSetForCustomAudience audience campaign acc tok = do
+
+    liftIO $ putStrLn "TEST: create adset for custom audience"
+
+    let location = TargetLocation ["US", "GB"]
+    let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
+    -- TODO: these Just [] idioms could be replaced with [], avoiding
+    -- and avoiding the Maybe; treat Nothing = []
+    let target = TargetingSpecs location (Just demo) Nothing (Just [Facebook]) Nothing Nothing (Just [audience])
+    let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "fb test adset for custom audience")
+                :*: (CampaignId, CampaignId_ $ campaignId campaign) :*: (Targeting, Targeting_ target)
+                :*: (OptimizationGoal, OptimizationGoal_ POST_ENGAGEMENT)
+                :*: (BillingEvent, BillingEvent_ IMPRESSIONS_) :*: (DailyBudget, DailyBudget_ 500) :*: Nil
+    liftIO $ print ("creating adset", (acc, adset, tok))
+    adsetRet' <- setAdSet acc adset tok
+    liftIO $ print ("adset ret", adsetRet')
+    let adsetRet = either (error . show) P.id adsetRet'
+    return adsetRet
+
 
 testCreateCreative fbUrl videoId thumb igId pageId acc tok = do
     liftIO $ putStrLn "TEST: create ad creative"
@@ -234,10 +259,10 @@ testGetAds acc tok = do
     liftIO $ print ads
 
 
-testSetAd adsetRet creativeRet acc tok = do
+testSetAd adName adsetRet creativeRet acc tok = do
     liftIO $ putStrLn "TEST: set ad"
     let ad = (Creative, Creative_ $ creativeToCreative creativeRet) :*: (AdsetId, AdsetId_ $ adsetIdToInt adsetRet)
-            :*: (Name, Name_ "Another Test Ad Video API") :*: (Ad.Status, Ad.Status_ PAUSED_) :*: Nil
+            :*: (Name, Name_ $ "fb test ad: " <> adName) :*: (Ad.Status, Ad.Status_ PAUSED_) :*: Nil
 
     adId' <- setAd acc ad tok
     liftIO $ print adId'
