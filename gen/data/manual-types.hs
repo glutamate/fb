@@ -371,3 +371,19 @@ instance FromJSON CustomAudienceSubtypeADT where
 instance ToBS CustomAudienceSubtypeADT where
   toBS = toBS . toJSON
 
+-- BENC: this is only as much lookalike spec
+-- as I've seen in one example...
+data LookalikeSpecADT = LookalikeSpecADT {
+    lookalike_type :: Text,
+    lookalike_country :: Text
+  } deriving (Show, Generic)
+
+instance ToJSON LookalikeSpecADT where
+  toJSON = genericToJSON defaultOptions {fieldLabelModifier = drop $ length ("lookalike_" :: String)}
+
+instance FromJSON LookalikeSpecADT where
+  parseJSON = error "BENC NOTIMPL fromjson lookalike spec"
+
+instance ToBS LookalikeSpecADT where
+  toBS = toBS . toJSON
+
