@@ -1,3 +1,4 @@
+import Data.String (fromString)
 import Data.Text (Text, pack, unpack)
 import Data.Typeable (Typeable)
 import GHC.Generics
@@ -204,7 +205,9 @@ data AdCreativeLinkData = AdCreativeLinkData {
     caption  :: Text,
     imageHash ::  Hash_,
     link, message :: Text,
-    description  :: Maybe Text,
+    -- description  :: Maybe Text,
+    -- removed because compile conflict with custom audience
+    -- field of the same name.
     call_to_action :: Maybe CallToActionADT}
   | CreativeCarouselData {
     caption_carousel, message_carousel :: Text,
@@ -212,7 +215,7 @@ data AdCreativeLinkData = AdCreativeLinkData {
     link :: Text }
   deriving (Show, Generic)
 instance ToJSON AdCreativeLinkData where
-  toJSON (AdCreativeLinkData c i l m (Just d) (Just cta)) =
+  toJSON (AdCreativeLinkData c i l m (Just cta)) =
     object [ "caption" .= c,
              "image_hash" .= i,
              "link" .= l,
@@ -236,7 +239,6 @@ parseAdCreativeLinkData v =
                       <*> v .: "image_hash"
                       <*> v .: "link"
                       <*> v .: "message"
-                      <*> v .:? "description"
                       <*> v .:? "call_to_action"
 
 parseCreativeCarouselData v =
@@ -319,3 +321,53 @@ data SuccessId = SuccessId {
 instance FromJSON SuccessId where 
   parseJSON (Object v) =
       SuccessId <$> v .: "id"
+
+
+data CustomAudienceDataSource = CustomAudienceDataSource {
+    type_ :: Text, -- TODO: make an ENUM
+    sub_type :: Text, -- TODO: make an ENUM
+    creation_params :: Text
+  }
+  deriving Show
+
+instance ToJSON CustomAudienceDataSource
+  where toJSON = error "NOTIMPL: Custom audience data source can only be read, not written, in this implementation."
+
+instance FromJSON CustomAudienceDataSource where
+  parseJSON (Object v) =
+    -- TODO: make a genericParseJSON
+    CustomAudienceDataSource <$> v .: "type"
+                             <*> v .: "sub_type"
+                             <*> v .: "creation_params"
+  parseJSON _ = error $ "could not parse non-Object as a CustomAudienceDataSource"
+
+instance ToBS CustomAudienceDataSource
+  where toBS = error "NOTIMPL: Custom audience data source cannot be converted to a ByteString in this implementation."
+
+
+data CustomAudienceStatus = CustomAudienceStatus {
+    cas_code :: Int,
+    cas_description :: Text
+} deriving (Show, Generic)
+
+instance ToJSON CustomAudienceStatus
+  where toJSON = error "NOTIMPL: Custom audience status can only be read, not written, in this implementation."
+
+instance FromJSON CustomAudienceStatus where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop $ length ("cas_" :: String)}
+
+instance ToBS CustomAudienceStatus
+  where toBS = error "NOTIMPL: Custom audience status cannot be converted to a ByteString in this implementation."
+
+data CustomAudienceSubtypeADT = CUSTOM | WEBSITE | APP | OFFLINE_CONVERSION | CLAIM | PARTNER | MANAGED | VIDEO | LOOKALIKE | ENGAGEMENT | DATA_SET | BAG_OF_ACCOUNTS | STUDY_RULE_AUDIENCE
+  deriving Show
+
+instance ToJSON CustomAudienceSubtypeADT where
+  toJSON = toJSON . show
+
+instance FromJSON CustomAudienceSubtypeADT where
+  parseJSON = error "NOTIMPL: Custom audience subtype can only be written, not read, in this implementation."
+
+instance ToBS CustomAudienceSubtypeADT where
+  toBS = toBS . toJSON
+

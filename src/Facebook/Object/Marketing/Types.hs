@@ -38,6 +38,7 @@ import Data.Time.Clock
 import System.Locale
 import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)
 #endif
+import Data.String (fromString)
 import Data.Text (Text, pack, unpack)
 import Data.Typeable (Typeable)
 import GHC.Generics
@@ -244,7 +245,9 @@ data AdCreativeLinkData = AdCreativeLinkData {
     caption  :: Text,
     imageHash ::  Hash_,
     link, message :: Text,
-    description  :: Maybe Text,
+    -- description  :: Maybe Text,
+    -- removed because compile conflict with custom audience
+    -- field of the same name.
     call_to_action :: Maybe CallToActionADT}
   | CreativeCarouselData {
     caption_carousel, message_carousel :: Text,
@@ -252,7 +255,7 @@ data AdCreativeLinkData = AdCreativeLinkData {
     link :: Text }
   deriving (Show, Generic)
 instance ToJSON AdCreativeLinkData where
-  toJSON (AdCreativeLinkData c i l m (Just d) (Just cta)) =
+  toJSON (AdCreativeLinkData c i l m (Just cta)) =
     object [ "caption" .= c,
              "image_hash" .= i,
              "link" .= l,
@@ -276,7 +279,6 @@ parseAdCreativeLinkData v =
                       <*> v .: "image_hash"
                       <*> v .: "link"
                       <*> v .: "message"
-                      <*> v .:? "description"
                       <*> v .:? "call_to_action"
 
 parseCreativeCarouselData v =
@@ -360,6 +362,56 @@ instance FromJSON SuccessId where
   parseJSON (Object v) =
       SuccessId <$> v .: "id"
 
+
+data CustomAudienceDataSource = CustomAudienceDataSource {
+    type_ :: Text, -- TODO: make an ENUM
+    sub_type :: Text, -- TODO: make an ENUM
+    creation_params :: Text
+  }
+  deriving Show
+
+instance ToJSON CustomAudienceDataSource
+  where toJSON = error "NOTIMPL: Custom audience data source can only be read, not written, in this implementation."
+
+instance FromJSON CustomAudienceDataSource where
+  parseJSON (Object v) =
+    -- TODO: make a genericParseJSON
+    CustomAudienceDataSource <$> v .: "type"
+                             <*> v .: "sub_type"
+                             <*> v .: "creation_params"
+  parseJSON _ = error $ "could not parse non-Object as a CustomAudienceDataSource"
+
+instance ToBS CustomAudienceDataSource
+  where toBS = error "NOTIMPL: Custom audience data source cannot be converted to a ByteString in this implementation."
+
+
+data CustomAudienceStatus = CustomAudienceStatus {
+    cas_code :: Int,
+    cas_description :: Text
+} deriving (Show, Generic)
+
+instance ToJSON CustomAudienceStatus
+  where toJSON = error "NOTIMPL: Custom audience status can only be read, not written, in this implementation."
+
+instance FromJSON CustomAudienceStatus where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop $ length ("cas_" :: String)}
+
+instance ToBS CustomAudienceStatus
+  where toBS = error "NOTIMPL: Custom audience status cannot be converted to a ByteString in this implementation."
+
+data CustomAudienceSubtypeADT = CUSTOM | WEBSITE | APP | OFFLINE_CONVERSION | CLAIM | PARTNER | MANAGED | VIDEO | LOOKALIKE | ENGAGEMENT | DATA_SET | BAG_OF_ACCOUNTS | STUDY_RULE_AUDIENCE
+  deriving Show
+
+instance ToJSON CustomAudienceSubtypeADT where
+  toJSON = toJSON . show
+
+instance FromJSON CustomAudienceSubtypeADT where
+  parseJSON = error "NOTIMPL: Custom audience subtype can only be written, not read, in this implementation."
+
+instance ToBS CustomAudienceSubtypeADT where
+  toBS = toBS . toJSON
+
+
 instance ToBS Text where
   toBS = TE.encodeUtf8
 instance ToBS Char where
@@ -376,6 +428,33 @@ instance ToBS a => ToBS (Vector a) where
   toBS xs = V.foldl' BS.append BS.empty $ V.map toBS xs
 instance ToBS UTCTime where
   toBS t = B8.pack $ formatTime defaultTimeLocale rfc822DateFormat t
+
+data Subtype = Subtype
+newtype Subtype_ = Subtype_ Text deriving (Show, Generic)
+instance Field Subtype where
+  type FieldValue Subtype = Subtype_
+  fieldName _ = "subtype"
+  fieldLabel = Subtype
+unSubtype_ :: Subtype_ -> Text
+unSubtype_ (Subtype_ x) = x
+
+data Name = Name
+newtype Name_ = Name_ Text deriving (Show, Generic)
+instance Field Name where
+  type FieldValue Name = Name_
+  fieldName _ = "name"
+  fieldLabel = Name
+unName_ :: Name_ -> Text
+unName_ (Name_ x) = x
+
+data Description = Description
+newtype Description_ = Description_ Text deriving (Show, Generic)
+instance Field Description where
+  type FieldValue Description = Description_
+  fieldName _ = "description"
+  fieldLabel = Description
+unDescription_ :: Description_ -> Text
+unDescription_ (Description_ x) = x
 
 data AccountId = AccountId
 newtype AccountId_ = AccountId_ Text deriving (Show, Generic)
@@ -502,15 +581,6 @@ instance Field EndTime where
   fieldLabel = EndTime
 unEndTime_ :: EndTime_ -> UTCTime
 unEndTime_ (EndTime_ x) = x
-
-data Name = Name
-newtype Name_ = Name_ Text deriving (Show, Generic)
-instance Field Name where
-  type FieldValue Name = Name_
-  fieldName _ = "name"
-  fieldLabel = Name
-unName_ :: Name_ -> Text
-unName_ (Name_ x) = x
 
 data LifetimeImps = LifetimeImps
 newtype LifetimeImps_ = LifetimeImps_ Int deriving (Show, Generic)
@@ -970,6 +1040,12 @@ instance Field AdsetId where
   fieldLabel = AdsetId
 unAdsetId_ :: AdsetId_ -> Int
 unAdsetId_ (AdsetId_ x) = x
+instance A.FromJSON Subtype_
+instance A.ToJSON Subtype_
+instance A.FromJSON Name_
+instance A.ToJSON Name_
+instance A.FromJSON Description_
+instance A.ToJSON Description_
 instance A.FromJSON AccountId_
 instance A.ToJSON AccountId_
 instance A.FromJSON Id_
@@ -998,8 +1074,6 @@ instance A.FromJSON PixelId_
 instance A.ToJSON PixelId_
 instance A.FromJSON EndTime_
 instance A.ToJSON EndTime_
-instance A.FromJSON Name_
-instance A.ToJSON Name_
 instance A.FromJSON LifetimeImps_
 instance A.ToJSON LifetimeImps_
 instance A.FromJSON OfferId_
@@ -1103,6 +1177,15 @@ instance A.ToJSON CampaignGroupId_
 instance A.FromJSON AdsetId_
 instance A.ToJSON AdsetId_
 
+instance ToBS Subtype_ where
+  toBS (Subtype_ a) = toBS a
+
+instance ToBS Name_ where
+  toBS (Name_ a) = toBS a
+
+instance ToBS Description_ where
+  toBS (Description_ a) = toBS a
+
 instance ToBS AccountId_ where
   toBS (AccountId_ a) = toBS a
 
@@ -1144,9 +1227,6 @@ instance ToBS PixelId_ where
 
 instance ToBS EndTime_ where
   toBS (EndTime_ a) = toBS a
-
-instance ToBS Name_ where
-  toBS (Name_ a) = toBS a
 
 instance ToBS LifetimeImps_ where
   toBS (LifetimeImps_ a) = toBS a
@@ -1301,6 +1381,9 @@ instance ToBS CampaignGroupId_ where
 instance ToBS AdsetId_ where
   toBS (AdsetId_ a) = toBS a
 
+subtype r = r `Rec.get` Subtype
+name r = r `Rec.get` Name
+description r = r `Rec.get` Description
 account_id r = r `Rec.get` AccountId
 id r = r `Rec.get` Id
 execution_options r = r `Rec.get` ExecutionOptions
@@ -1315,7 +1398,6 @@ start_minute r = r `Rec.get` StartMinute
 days r = r `Rec.get` Days
 pixel_id r = r `Rec.get` PixelId
 end_time r = r `Rec.get` EndTime
-name r = r `Rec.get` Name
 lifetime_imps r = r `Rec.get` LifetimeImps
 offer_id r = r `Rec.get` OfferId
 lifetime_budget r = r `Rec.get` LifetimeBudget

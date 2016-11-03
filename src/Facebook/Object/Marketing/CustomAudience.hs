@@ -40,18 +40,109 @@ import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)
 #endif
 import Facebook.Object.Marketing.Types
 
+data LookalikeAudienceIds = LookalikeAudienceIds
+newtype LookalikeAudienceIds_ = LookalikeAudienceIds_ (Vector Text) deriving (Show, Generic)
+instance Field LookalikeAudienceIds where
+  type FieldValue LookalikeAudienceIds = LookalikeAudienceIds_
+  fieldName _ = "lookalike_audience_ids"
+  fieldLabel = LookalikeAudienceIds
+unLookalikeAudienceIds_ :: LookalikeAudienceIds_ -> Vector Text
+unLookalikeAudienceIds_ (LookalikeAudienceIds_ x) = x
+
+data DeliveryStatus = DeliveryStatus
+newtype DeliveryStatus_ = DeliveryStatus_ CustomAudienceStatus deriving (Show, Generic)
+instance Field DeliveryStatus where
+  type FieldValue DeliveryStatus = DeliveryStatus_
+  fieldName _ = "delivery_status"
+  fieldLabel = DeliveryStatus
+unDeliveryStatus_ :: DeliveryStatus_ -> CustomAudienceStatus
+unDeliveryStatus_ (DeliveryStatus_ x) = x
+
+data DataSource = DataSource
+newtype DataSource_ = DataSource_ CustomAudienceDataSource deriving (Show, Generic)
+instance Field DataSource where
+  type FieldValue DataSource = DataSource_
+  fieldName _ = "data_source"
+  fieldLabel = DataSource
+unDataSource_ :: DataSource_ -> CustomAudienceDataSource
+unDataSource_ (DataSource_ x) = x
+
+data ApproximateCount = ApproximateCount
+newtype ApproximateCount_ = ApproximateCount_ Integer deriving (Show, Generic)
+instance Field ApproximateCount where
+  type FieldValue ApproximateCount = ApproximateCount_
+  fieldName _ = "approximate_count"
+  fieldLabel = ApproximateCount
+unApproximateCount_ :: ApproximateCount_ -> Integer
+unApproximateCount_ (ApproximateCount_ x) = x
+instance A.FromJSON LookalikeAudienceIds_
+instance A.ToJSON LookalikeAudienceIds_
+instance A.FromJSON DeliveryStatus_
+instance A.ToJSON DeliveryStatus_
+instance A.FromJSON DataSource_
+instance A.ToJSON DataSource_
+instance A.FromJSON ApproximateCount_
+instance A.ToJSON ApproximateCount_
+
+instance ToBS LookalikeAudienceIds_ where
+  toBS (LookalikeAudienceIds_ a) = toBS a
+
+instance ToBS DeliveryStatus_ where
+  toBS (DeliveryStatus_ a) = toBS a
+
+instance ToBS DataSource_ where
+  toBS (DataSource_ a) = toBS a
+
+instance ToBS ApproximateCount_ where
+  toBS (ApproximateCount_ a) = toBS a
+
+lookalike_audience_ids r = r `Rec.get` LookalikeAudienceIds
+delivery_status r = r `Rec.get` DeliveryStatus
+data_source r = r `Rec.get` DataSource
+approximate_count r = r `Rec.get` ApproximateCount
 -- Entity:CustomAudience, mode:Reading
 class IsCustomAudienceGetField r
 instance (IsCustomAudienceGetField h, IsCustomAudienceGetField t) => IsCustomAudienceGetField (h :*: t)
 instance IsCustomAudienceGetField Nil
+instance IsCustomAudienceGetField Subtype
+instance IsCustomAudienceGetField Name
+instance IsCustomAudienceGetField LookalikeAudienceIds
+instance IsCustomAudienceGetField Description
+instance IsCustomAudienceGetField DeliveryStatus
+instance IsCustomAudienceGetField DataSource
+instance IsCustomAudienceGetField ApproximateCount
 instance IsCustomAudienceGetField AccountId
+instance IsCustomAudienceGetField Id
 
 type CustomAudienceGet fl r = (A.FromJSON r, IsCustomAudienceGetField r, FieldListToRec fl r)
 type CustomAudienceGetRet r = r -- Default fields
 getCustomAudience :: (R.MonadResource m, MonadBaseControl IO m, CustomAudienceGet fl r) =>
   Id_    -- ^ Ad Account Id
   -> fl     -- ^ Arguments to be passed to Facebook.
-  -> Maybe UserAccessToken -- ^ Optional user access token.
-  -> FacebookT anyAuth m (CustomAudienceGetRet r)
-getCustomAudience (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "") [("fields", textListToBS $ fieldNameList $ fl)] mtoken
+  ->  UserAccessToken -- ^ Optional user access token.
+  -> FacebookT anyAuth m (Pager (CustomAudienceGetRet r))
+getCustomAudience (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "/customaudiences") [("fields", textListToBS $ fieldNameList $ fl)] $ Just mtoken
+
+
+-- Entity:CustomAudience, mode:Creating
+class IsCustomAudienceSetField r
+instance (IsCustomAudienceSetField h, IsCustomAudienceSetField t) => IsCustomAudienceSetField (h :*: t)
+instance IsCustomAudienceSetField Nil
+instance IsCustomAudienceSetField Subtype
+instance IsCustomAudienceSetField Name
+instance IsCustomAudienceSetField Description
+data CreateCustomAudienceId = CreateCustomAudienceId {
+  customAudienceId :: Text
+  } deriving Show
+instance FromJSON CreateCustomAudienceId where
+    parseJSON (Object v) =
+       CreateCustomAudienceId <$> v .: "id"
+
+type CustomAudienceSet r = (A.FromJSON r, IsCustomAudienceSetField r, ToForm r)
+setCustomAudience :: (R.MonadResource m, MonadBaseControl IO m, CustomAudienceSet r) =>
+  Id_    -- ^ Ad Account Id
+  -> r     -- ^ Arguments to be passed to Facebook.
+  ->  UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m (Either FacebookException CreateCustomAudienceId)
+setCustomAudience (Id_ id) r mtoken = postForm ("/v2.7/" <> id <> "/customaudiences") (toForm r) mtoken
 

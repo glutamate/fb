@@ -22,6 +22,7 @@ import qualified Facebook.Object.Marketing.AdCampaign as AdC
 import qualified Facebook.Object.Marketing.AdSet as AdS
 import qualified Facebook.Object.Marketing.AdImage as AdI
 import qualified Facebook.Object.Marketing.AdVideo as AdV
+import Facebook.Object.Marketing.CustomAudience
 import Facebook.Object.Marketing.TargetingSpecs
 import Facebook.Object.Marketing.TargetingSpecs.Location
 import Facebook.Object.Marketing.TargetingSpecs.Demographies
@@ -63,6 +64,10 @@ main = do
     testGetUser tok
 
     acc <- testGetAdAccId tok
+
+    testGetCustomAudience acc tok
+
+    testCreateCustomAudience acc tok
 
     (videoId, thumb) <- testUploadVideo acc tok
 
@@ -184,7 +189,7 @@ testCreateCreative fbUrl videoId thumb igId pageId acc tok = do
 
 testGetCreative acc tok = do
     liftIO $ putStrLn "TEST: get ad creative"
-    creative <- getAdCreative acc (Name {- ::: InstagramPermalinkUrl -} ::: InstagramActorId ::: Nil) tok
+    creative <- getAdCreative acc (Name {- ::: InstagramPermalinkUrl -} {- ::: InstagramActorId -} ::: Nil) tok
     liftIO $ print creative
     return ()
 
@@ -205,3 +210,28 @@ testSetAd adsetRet creativeRet acc tok = do
                       P.id adId'
     liftIO $ print adId
     return ()
+
+testGetCustomAudience acc tok = do
+    liftIO $ putStrLn "TEST: getCustomAudience"
+    audiences <- getCustomAudience acc (Id ::: ApproximateCount ::: AccountId ::: DataSource ::: DeliveryStatus ::: Description ::: Subtype ::: Nil) tok
+    --- can't be tested with get-of-everything as not present in every custom audience: ::: LookalikeAudienceIds 
+    -- doesn't test ExternalEventSource because it is not present in every custom audience - only ones based round an external event source
+    
+
+    liftIO $ print ("audiences", audiences)
+
+testCreateCustomAudience acc tok = do
+    liftIO $ putStrLn "TEST: create custom audience"
+    let params = (Subtype, Subtype_ "CUSTOM") -- TODO: enumerated Subtype_ doesn't work despite apparently being the same in JSON serialisation.
+          :*: (Description, Description_ "custom audience for fb test - description")
+          :*: (Name, Name_ "fb test custom audience")
+          :*: Nil
+    -- let params = (Subtype, Subtype_ CUSTOM) :*: Nil
+  
+    liftIO $ print $ toJSON params
+    ret <- setCustomAudience acc params tok
+    let customAudienceId = either (\e -> error $ "setCustomAudience returned: " ++ show e)
+                                  P.id ret
+    liftIO $ print ("ret", ret)
+    liftIO $ print ("custom audience id", customAudienceId)
+    return customAudienceId

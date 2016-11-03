@@ -1,2 +1,13 @@
 Entity,InteractionMode,FieldName,FieldType,Description,Required,InResp
+Custom Audience,Reading,id,numeric string,,,
 Custom Audience,Reading,account_id,numeric string,,,
+Custom Audience,Reading,approximate_count,integer,,,
+Custom Audience,Reading,data_source,CustomAudienceDataSource,,,
+Custom Audience,Reading,delivery_status,CustomAudienceStatus,,,
+Custom Audience,Reading,description,string,,,
+Custom Audience,Creating,description,string,,,
+Custom Audience,Reading,lookalike_audience_ids,list<numeric string>,,,
+Custom Audience,Reading,name,string,,,
+Custom Audience,Creating,name,string,,,
+Custom Audience,Reading,subtype,string,,,
+Custom Audience,Creating,subtype,string,,,

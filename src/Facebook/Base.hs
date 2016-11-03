@@ -194,6 +194,8 @@ fbhttpHelper manager req = do
   let req' = req { H.checkStatus = \_ _ _ -> Nothing }
 #if DEBUG
   _ <- liftIO $ printf "fbhttp doing request\n\tmethod: %s\n\tsecure: %s\n\thost: %s\n\tport: %s\n\tpath: %s\n\tqueryString: %s\n\trequestHeaders: %s\n" (show $ H.method req') (show $ H.secure req') (show $ H.host req') (show $ H.port req') (show $ H.path req') (show $ H.queryString req') (show $ H.requestHeaders req')
+
+  _ <- liftIO $ print req
 #endif
   response <- H.http req' manager
   let status  = H.responseStatus    response

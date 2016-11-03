@@ -60,6 +60,7 @@ library
     Facebook.Object.Marketing.AdSet
     Facebook.Object.Marketing.AdImage
     Facebook.Object.Marketing.AdVideo
+    Facebook.Object.Marketing.CustomAudience
     Facebook.Object.Marketing.ImageCrop
     Facebook.Object.Marketing.Insights
     Facebook.Object.Marketing.Utility
