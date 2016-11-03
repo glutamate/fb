@@ -115,7 +115,7 @@ main = do
 
     testGetAdCampaigns acc tok
 
-    adsetRet <- testCreateAdSet pageId campaign acc tok
+    adsetRet <- testCreateAdSet (read $ T.unpack pageId) campaign acc tok
 
     creativeRet <- testCreateCreative formId fbUrl videoId thumb igId pageId acc tok
 
@@ -171,15 +171,23 @@ testGetAdCampaigns acc tok = do
     -- test account already? That isn't necessarily the
     -- case with a plain test user?
     Pager adCamps _ _ <- getAdCampaign acc (Name ::: Nil) tok
-    liftIO $ print "Ad campaigns"
+    liftIO $ do
+      putStrLn "Ad campaigns"
+      putStrLn $ "There are " ++ (show $ length adCamps) ++ " campaigns in this page"
     liftIO $ print adCamps
     when (length adCamps == 0) $ error "Test failure: adCamps == []"
-    let adCampId = (id $ head adCamps)
-    --let adCampId = Id_ "6044657233872"
-    Pager adSets _ _ <- getAdSet adCampId (ConfiguredStatus ::: EffectiveStatus ::: DailyBudget ::: Nil) tok
-    liftIO $ print "AdSets"
-    liftIO $ print adSets
+    forM adCamps $ \x -> do
+      let adCampId = id x
+      Pager adSets _ _ <- getAdSet adCampId (ConfiguredStatus ::: EffectiveStatus ::: DailyBudget ::: Nil) tok
+      liftIO $ print "AdSets for this campaign: "
+      liftIO $ print adSets
+    -- error "BENC STOP"
     return ()
+
+-- ^^^^
+-- TODO: walk ad campaigns and get the AdSets for all campaigns,
+-- rather than the first,
+-- and see if any have promoted_objects that are pages?
 
 testCreateCampaign acc tok = do
     liftIO $ putStrLn "TEST: Create campaign"
@@ -200,16 +208,20 @@ testCreateAdSet page campaign acc tok = do
     let location = TargetLocation ["US", "GB"]
     let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
     let target = TargetingSpecs location (Just demo) Nothing (Just [Facebook]) Nothing Nothing -- $ Just (zip (repeat Int.AdInterest) ids)
+    let promoted_object = PromotedObject_ (AdPromotedObject { apo_page_id = (Just page) })
+    liftIO $ putStr $ "Promoted object JSON: " ++ (show . toJSON) promoted_object
     let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "Test AdSet Video API")
                 :*: (CampaignId, CampaignId_ $ campaignId campaign) :*: (Targeting, Targeting_ target)
                 :*: (OptimizationGoal, OptimizationGoal_ LEAD_GENERATION)
                 :*: (BillingEvent, BillingEvent_ IMPRESSIONS_) :*: (DailyBudget, DailyBudget_ 500)
-                -- :*: (PromotedObject, PromotedObject_ page)
+                :*: (PromotedObject, promoted_object) what happens if we do this without?
                 :*: Nil
+    liftIO $ putStrLn "encoded adset:"
+    liftIO $ putStrLn $ show $ encode adset
     liftIO $ print ("creating adset", (acc, adset, tok))
     adsetRet' <- setAdSet acc adset tok
     liftIO $ print ("adset ret", adsetRet')
-    let adsetRet = either (error . show) P.id adsetRet'
+    let !adsetRet = either (error . show) P.id adsetRet'
     return adsetRet
 
 testCreateCreative form_id fbUrl videoId thumb igId pageId acc tok = do

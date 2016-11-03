@@ -93,7 +93,7 @@ Ad Set,Creating,is_autobid,boolean,If autobid is set. Either bid_amount or is_au
 Ad Set,Reading,start_time,datetime,Start time,,
 Ad Set,Reading,frequency_cap_reset_period,unsigned int32,Frequency cap reset period,,
 Ad Set,Reading,bid_info,"map<string, unsigned int32>",,,
-Ad Set,Updating,promoted_object,Object,"The object this ad set is promoting across all its ads.
+Ad Set,Updating,promoted_object,AdPromotedObject,"The object this ad set is promoting across all its ads.
        Required with certain campaign objectives.CONVERSIONS
        pixel_id (Conversion pixel ID)
        pixel_id (Facebook pixel ID) and custom_event_type
@@ -116,7 +116,7 @@ Ad Set,Reading,optimization_goal,OptGoal,Which optimization goal this ad set is 
 Ad Set,Reading,billing_event,BillingEvent,The billing event that this adset is using:APP_INSTALLS: Pay when people install your app.CLICKS: Pay when people click anywhere in the ad. IMPRESSIONS: Pay when the ads are shown to people.LINK_CLICKS: Pay when people click on the link of the ad.OFFER_CLAIMS: Pay when people claim the offer.PAGE_LIKES: Pay when people like your page.POST_ENGAGEMENT: Pay when people engage with your post.VIDEO_VIEWS: Pay when people watch videos.,,
 Ad Set,Reading,bid_amount,integer,Bid amount for this ad set,,
 Ad Set,Reading,adlabels,list<AdLabel>,Ad Labels associated with this ad set,,
-Ad Set,Creating,promoted_object,Object,"The object this ad set is promoting across all its ads.
+Ad Set,Creating,promoted_object,AdPromotedObject,"The object this ad set is promoting across all its ads.
        Required with certain campaign objectives.CONVERSIONS
        pixel_id (Conversion pixel ID)
        pixel_id (Facebook pixel ID) and custom_event_type

@@ -25,6 +25,7 @@ data TargetingSpecs = TargetingSpecs
   , publisher_platforms :: Maybe [PublisherPlatform]
   , facebook_positions :: Maybe [FacebookPosition]
   , interests :: Maybe [(TargetingType,Interest)]
+-- TODO: custom audiences
   } deriving (Show, Eq, Generic)
 
 instance ToJSON TargetingSpecs where

@@ -470,6 +470,21 @@ instance FromJSON LookalikeSpecADT where
 instance ToBS LookalikeSpecADT where
   toBS = toBS . toJSON
 
+-- TODO: this object has plenty of options
+-- but for now, only page ID is usable
+-- as promoted object.
+data AdPromotedObject = AdPromotedObject {
+    apo_page_id :: Maybe Integer
+ } deriving (Show, Generic)
+
+instance ToJSON AdPromotedObject where
+  toJSON = genericToJSON defaultOptions { fieldLabelModifier = drop $ length ("apo_" :: String)}
+
+instance FromJSON AdPromotedObject where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop $ length ("apo_" :: String)}
+
+instance ToBS AdPromotedObject
+
 
 instance ToBS Text where
   toBS = TE.encodeUtf8
@@ -550,6 +565,15 @@ instance Field OptimizationGoal where
   fieldLabel = OptimizationGoal
 unOptimizationGoal_ :: OptimizationGoal_ -> OptGoal
 unOptimizationGoal_ (OptimizationGoal_ x) = x
+
+data PromotedObject = PromotedObject
+newtype PromotedObject_ = PromotedObject_ AdPromotedObject deriving (Show, Generic)
+instance Field PromotedObject where
+  type FieldValue PromotedObject = PromotedObject_
+  fieldName _ = "promoted_object"
+  fieldLabel = PromotedObject
+unPromotedObject_ :: PromotedObject_ -> AdPromotedObject
+unPromotedObject_ (PromotedObject_ x) = x
 
 data BidAmount = BidAmount
 newtype BidAmount_ = BidAmount_ Integer deriving (Show, Generic)
@@ -1104,6 +1128,8 @@ instance A.FromJSON ExecutionOptions_
 instance A.ToJSON ExecutionOptions_
 instance A.FromJSON OptimizationGoal_
 instance A.ToJSON OptimizationGoal_
+instance A.FromJSON PromotedObject_
+instance A.ToJSON PromotedObject_
 instance A.FromJSON BidAmount_
 instance A.ToJSON BidAmount_
 instance A.FromJSON DailyImps_
@@ -1245,6 +1271,9 @@ instance ToBS ExecutionOptions_ where
 
 instance ToBS OptimizationGoal_ where
   toBS (OptimizationGoal_ a) = toBS a
+
+instance ToBS PromotedObject_ where
+  toBS (PromotedObject_ a) = toBS a
 
 instance ToBS BidAmount_ where
   toBS (BidAmount_ a) = toBS a
@@ -1433,6 +1462,7 @@ account_id r = r `Rec.get` AccountId
 id r = r `Rec.get` Id
 execution_options r = r `Rec.get` ExecutionOptions
 optimization_goal r = r `Rec.get` OptimizationGoal
+promoted_object r = r `Rec.get` PromotedObject
 bid_amount r = r `Rec.get` BidAmount
 daily_imps r = r `Rec.get` DailyImps
 end_minute r = r `Rec.get` EndMinute

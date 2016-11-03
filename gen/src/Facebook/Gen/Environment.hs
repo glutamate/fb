@@ -42,6 +42,7 @@ typesMap =
                 , ("ISO 4217 Currency Code", "Money") -- ???
                 , ("map<string, int32>", "Map.Map Text Int")
                 , ("AdsPixel", "AdsPixel")
+                , ("AdPromotedObject", "AdPromotedObject")
                 , ("ConfigureStatus", "ConfigureStatusADT")
                 , ("CustomAudienceDataSource", "CustomAudienceDataSource")
                 , ("CustomAudienceStatus", "CustomAudienceStatus")
@@ -91,7 +92,7 @@ buildEnv csvs = do
                               ++
                               ["adlabels"] -- Campaign
                               ++
-                              ["adset_schedule", "object_type", "promoted_object", "campaign",
+                              ["adset_schedule", "object_type", "campaign",
                               "product_ad_behavior", "rf_prediction_id", "pacing_type"]
                               ++ ["copy_from", "bytes", "zipbytes"] -- AdImage Create
                               ++ ["capabilities", "tos_accepted", "line_numbers", "bid_info"]

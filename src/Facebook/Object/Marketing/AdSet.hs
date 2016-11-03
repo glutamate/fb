@@ -147,6 +147,7 @@ instance IsAdSetGetField BillingEvent
 instance IsAdSetGetField OptimizationGoal
 instance IsAdSetGetField LifetimeImps
 instance IsAdSetGetField BudgetRemaining
+instance IsAdSetGetField PromotedObject
 instance IsAdSetGetField DailyBudget
 instance IsAdSetGetField FrequencyCapResetPeriod
 instance IsAdSetGetField StartTime
@@ -181,6 +182,7 @@ class IsAdSetSetField r
 instance (IsAdSetSetField h, IsAdSetSetField t) => IsAdSetSetField (h :*: t)
 instance IsAdSetSetField Nil
 instance IsAdSetSetField ExecutionOptions
+instance IsAdSetSetField PromotedObject
 instance IsAdSetSetField OptimizationGoal
 instance IsAdSetSetField BidAmount
 instance IsAdSetSetField IsAutobid
@@ -239,6 +241,7 @@ instance (IsAdSetUpdField h, IsAdSetUpdField t) => IsAdSetUpdField (h :*: t)
 instance IsAdSetUpdField Nil
 instance IsAdSetUpdField ExecutionOptions
 instance IsAdSetUpdField OptimizationGoal
+instance IsAdSetUpdField PromotedObject
 instance IsAdSetUpdField BidAmount
 instance IsAdSetUpdField DailyImps
 instance IsAdSetUpdField EndMinute

@@ -190,6 +190,7 @@ instance IsAdCampaignSetField SpendCap
 instance IsAdCampaignSetField Name
 instance IsAdCampaignSetField PageId
 instance IsAdCampaignSetField Objective
+instance IsAdCampaignSetField PromotedObject
 data CreateCampaignId = CreateCampaignId {
   campaignId :: Text
   } deriving Show

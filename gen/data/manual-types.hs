@@ -430,3 +430,18 @@ instance FromJSON LookalikeSpecADT where
 instance ToBS LookalikeSpecADT where
   toBS = toBS . toJSON
 
+-- TODO: this object has plenty of options
+-- but for now, only page ID is usable
+-- as promoted object.
+data AdPromotedObject = AdPromotedObject {
+    apo_page_id :: Maybe Integer
+ } deriving (Show, Generic)
+
+instance ToJSON AdPromotedObject where
+  toJSON = genericToJSON defaultOptions { fieldLabelModifier = drop $ length ("apo_" :: String)}
+
+instance FromJSON AdPromotedObject where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop $ length ("apo_" :: String)}
+
+instance ToBS AdPromotedObject
+
