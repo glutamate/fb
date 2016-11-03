@@ -128,6 +128,10 @@ main = do
 
     testSetAd "custom audience" custom_audience_adset creativeRet acc tok
 
+    ny_state_adset <- testCreateAdSetForNewYorkState campaign acc tok
+
+    testSetAd "New York state" ny_state_adset creativeRet acc tok
+
     liftIO $ putStrLn "Test suite finished without failure."
 
 testGetUser tok = do
@@ -200,9 +204,32 @@ testCreateAdSet campaign acc tok = do
 
     liftIO $ putStrLn "TEST: create adset"
 
-    let location = TargetLocation ["US", "GB"]
+    let location = TargetLocation (Just ["US", "GB"]) Nothing
     let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
     let target = TargetingSpecs location (Just demo) Nothing (Just [Facebook]) Nothing Nothing Nothing -- $ Just (zip (repeat Int.AdInterest) ids)
+    let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "fb test adset")
+                :*: (CampaignId, CampaignId_ $ campaignId campaign) :*: (Targeting, Targeting_ target)
+                :*: (OptimizationGoal, OptimizationGoal_ POST_ENGAGEMENT)
+                :*: (BillingEvent, BillingEvent_ IMPRESSIONS_) :*: (DailyBudget, DailyBudget_ 500) :*: Nil
+    liftIO $ print ("creating adset", (acc, adset, tok))
+    adsetRet' <- setAdSet acc adset tok
+    liftIO $ print ("adset ret", adsetRet')
+    let adsetRet = either (error . show) P.id adsetRet'
+    return adsetRet
+
+testCreateAdSetForNewYorkState campaign acc tok = do
+
+    liftIO $ putStrLn "TEST: create adset for new york state"
+
+    let location = TargetLocation Nothing (Just ["3875"]) -- this value manually retrieved from search API
+    let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
+    let target = TargetingSpecs location (Just demo) Nothing (Just [Facebook]) Nothing Nothing Nothing -- $ Just (zip (repeat Int.AdInterest) ids)
+
+    liftIO $ do
+      putStrLn "target Haskell structure = "
+      print $ toJSON target
+      print $ encode target
+
     let adset = (IsAutobid, IsAutobid_ True) :*: (AdS.Status, AdS.Status_ PAUSED_) :*: (Name, Name_ "fb test adset")
                 :*: (CampaignId, CampaignId_ $ campaignId campaign) :*: (Targeting, Targeting_ target)
                 :*: (OptimizationGoal, OptimizationGoal_ POST_ENGAGEMENT)
@@ -217,7 +244,7 @@ testCreateAdSetForCustomAudience audience campaign acc tok = do
 
     liftIO $ putStrLn "TEST: create adset for custom audience"
 
-    let location = TargetLocation ["US", "GB"]
+    let location = TargetLocation (Just ["US", "GB"]) Nothing
     let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
     -- TODO: these Just [] idioms could be replaced with [], avoiding
     -- and avoiding the Maybe; treat Nothing = []

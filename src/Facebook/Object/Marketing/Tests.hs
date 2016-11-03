@@ -62,7 +62,7 @@ testAdCreation fbAccId igId fbUserId fbToken fbPageId igTargetId creds = do
     ret' <- setAdCampaign fbId campaign tok
     let ret = either (error . show) P.id ret'
     let campaign = ret
-    let location = TargetLocation ["US", "GB"]
+    let location = TargetLocation (Just ["US", "GB"]) Nothing
     let demo = Demography Female (Just $ mkAge 20) $ Just $ mkAge 35
     -- let target = TargetingSpecs location (Just demo) (Just [InstagramStream]) Nothing
     let target = TargetingSpecs location (Just demo) Nothing (Just [Instagram]) Nothing Nothing Nothing

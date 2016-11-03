@@ -5,6 +5,7 @@ module Facebook.Object.Marketing.TargetingSpecs.Location where
 import Data.Text (Text, unpack, pack)
 import Data.Aeson
 import Data.Aeson.Types
+import Data.String
 import Facebook.Records
 import GHC.Generics
 import qualified Data.ByteString.Char8 as B
@@ -22,8 +23,8 @@ instance FromJSON LocationTypes
 instance ToJSON LocationTypes
 
 data TargetLocation = TargetLocation
-  { countries :: [Text]
-  --, regions :: Maybe [Text]
+  { countries :: Maybe [Text]
+  , regions :: Maybe [KeyText]
   --, cities :: Maybe [Text]
   --, zips :: Maybe [Text]
   --, custom_locations :: Maybe [Text]
@@ -36,3 +37,19 @@ instance ToJSON TargetLocation where
 
 instance FromJSON TargetLocation where
     parseJSON = genericParseJSON defaultOptions { omitNothingFields = True }
+
+
+data KeyText = KeyText Text
+  deriving (Show, Eq)
+
+instance ToJSON KeyText where
+    toJSON (KeyText t) = object [
+        "key" .= t
+      ]
+
+instance FromJSON KeyText where
+    parseJSON (Object o) = KeyText <$> (o .: "key")
+
+instance IsString KeyText where
+    fromString s = KeyText (fromString s)
+
