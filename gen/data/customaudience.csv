@@ -1,0 +1,2 @@
+Entity,InteractionMode,FieldName,FieldType,Description,Required,InResp
+Custom Audience,Reading,account_id,numeric string,,,
