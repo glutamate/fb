@@ -52,10 +52,10 @@ instance IsAdLabelGetField UpdatedTime
 type AdLabelGet fl r = (A.FromJSON r, IsAdLabelGetField r, FieldListToRec fl r)
 type AdLabelGetRet r = Name :*: Id :*: r -- Default fields
 getAdLabel :: (R.MonadResource m, MonadBaseControl IO m, AdLabelGet fl r) =>
-	Id_    -- ^ Ad Account Id
-	-> fl     -- ^ Arguments to be passed to Facebook.
-	-> Maybe UserAccessToken -- ^ Optional user access token.
-	-> FacebookT anyAuth m (AdLabelGetRet r)
+  Id_    -- ^ Ad Account Id
+  -> fl     -- ^ Arguments to be passed to Facebook.
+  -> Maybe UserAccessToken -- ^ Optional user access token.
+  -> FacebookT anyAuth m (AdLabelGetRet r)
 getAdLabel (Id_ id) fl mtoken = getObject ("/v2.7/" <> id <> "") [("fields", textListToBS $ fieldNameList $ Name ::: Id ::: fl)] mtoken
 
 
@@ -68,10 +68,10 @@ instance IsAdLabelSetField Name
 
 type AdLabelSet r = (Has Id r, Has Name r, A.FromJSON r, IsAdLabelSetField r, ToForm r)
 setAdLabel :: (R.MonadResource m, MonadBaseControl IO m, AdLabelSet r) =>
-	Id_    -- ^ Ad Account Id
-	-> r     -- ^ Arguments to be passed to Facebook.
-	-> Maybe UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m r
+  Id_    -- ^ Ad Account Id
+  -> r     -- ^ Arguments to be passed to Facebook.
+  -> Maybe UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m r
 setAdLabel (Id_ id) r mtoken = postForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 
 
@@ -91,10 +91,10 @@ instance IsAdLabelUpdField Name
 
 type AdLabelUpd r = (Has Id r, Has Id r, Has Id r, Has Id r, Has Id r, Has Name r, A.FromJSON r, IsAdLabelUpdField r, ToForm r)
 updAdLabel :: (R.MonadResource m, MonadBaseControl IO m, AdLabelUpd r) =>
-	Id_    -- ^ Ad Account Id
-	-> r     -- ^ Arguments to be passed to Facebook.
-	-> Maybe UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m r
+  Id_    -- ^ Ad Account Id
+  -> r     -- ^ Arguments to be passed to Facebook.
+  -> Maybe UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m r
 updAdLabel (Id_ id) r mtoken = postForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 
 
@@ -113,9 +113,9 @@ instance IsAdLabelDelField Id
 
 type AdLabelDel r = (Has Id r, Has Id r, Has Id r, Has Id r, Has Id r, A.FromJSON r, IsAdLabelDelField r, ToForm r)
 delAdLabel :: (R.MonadResource m, MonadBaseControl IO m, AdLabelDel r) =>
-	Id_    -- ^ Ad Account Id
-	-> r     -- ^ Arguments to be passed to Facebook.
-	-> Maybe UserAccessToken -- ^ Optional user access token.
-	-> FacebookT Auth m r
+  Id_    -- ^ Ad Account Id
+  -> r     -- ^ Arguments to be passed to Facebook.
+  -> Maybe UserAccessToken -- ^ Optional user access token.
+  -> FacebookT Auth m r
 delAdLabel (Id_ id) r mtoken = deleteForm ("/v2.7/" <> id <> "") (toForm r) mtoken
 
