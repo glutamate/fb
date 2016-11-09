@@ -39,7 +39,7 @@ typesMap =
                 , ("list<numeric string>", "Vector Text")
                 , ("list<numeric string or integer>", "Vector Text")
                 , ("list<ExecOption>", "Vector ExecOption")
-                , ("ISO 4217 Currency Code", "Money") -- ???
+                , ("ISO 4217 Currency Code", "Text")
                 , ("map<string, int32>", "Map.Map Text Int")
                 , ("ConfigureStatus", "ConfigureStatusADT")
                 , ("CustomAudienceDataSource", "CustomAudienceDataSource")

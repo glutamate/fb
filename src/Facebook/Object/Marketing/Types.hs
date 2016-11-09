@@ -52,23 +52,6 @@ import qualified Data.Text.Encoding as TE
 import Facebook.Object.Marketing.Utility hiding (toBS)
 import Facebook.Object.Marketing.TargetingSpecs
 import Text.Read (readMaybe)
-newtype Money = Money {getMoneyInPennies :: Int} deriving (Eq, Ord, Show, Read, Typeable, Generic, Num)
-
-instance FromJSON Money where
-  parseJSON (String val) =
-    case readMaybe $ unpack val of
-      Just x -> return $ Money x
-      Nothing -> fail $ "Money parser string: "++show (unpack val)
-    where
-      textToBSL :: Text -> BSL.ByteString
-      textToBSL = BSL.fromStrict . TE.encodeUtf8
-  parseJSON n@(Number _) = do
-    x <- parseJSON n
-    return $ Money x
-  parseJSON v = fail $ "Money parser value: "++show v
-
-instance ToJSON Money where
-  toJSON (Money cents) = String $ pack $ show cents
 
 data FbNumeric = FbStringNumeric Text
     | FbIntegerNumeric Int
