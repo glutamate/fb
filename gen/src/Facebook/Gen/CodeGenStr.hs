@@ -285,8 +285,8 @@ genEntity ent@(Entity nameEnt) map types =
                     else V.filter (\fi -> not $ V.elem fi types) x
         filtered = filter fis
         dataDecl = dataAndFieldInstances $ removeNameTypeDups filtered
-        getter = myConcat $ V.map getterFct $ removeNameDups filtered
-        getterFct fi = getterField fi
+        getter = myConcat $ V.map getterFunction $ removeNameDups filtered
+        getterFunction fi = getterField fi
         bsInstances = genToBsInstances $ removeNameDups filtered
     in (path, top <> dataDecl <> bsInstances <> getter <> Prelude.foldl append "" (
             Map.elems $ Map.mapWithKey (\mode fis -> genMode ent mode fis) map))
@@ -296,7 +296,7 @@ genMode _ Types _ = T.empty -- Types.hs doesn't include any functions (except re
 genMode ent@(Entity nameEnt) mode unfiltered = -- source code for one entity(/mode ?)
     let doc = "\n-- Entity:" <> nameEnt <> ", mode:" <> T.pack (show mode)
         retDef = getRetDef ent mode
-        m = genFcts mode ent unfiltered
+        m = genFunctions mode ent unfiltered
         isInstances = genClassWitnesses ent mode unfiltered
     in doc <> isInstances <> retDef <> m <>
         if nameEnt == "AdAccount" && mode == Reading -- special cases
@@ -326,9 +326,9 @@ genClassWitnesses :: Entity -> InteractionMode -> Vector FieldInfo -> Text
 genClassWitnesses _ Types _ = T.empty
 genClassWitnesses ent mode fis =
     let isOfClass = isFieldClass ent mode
-        isOfInstances = myConcat $ V.map (\fi -> instanceFct fi) fis
+        isOfInstances = myConcat $ V.map (\fi -> instanceFunction fi) fis
         nilIsOfInstance = isFieldClassInstanceText (entityToIsField ent mode) "Nil" -- ugly hack
-        instanceFct field = isFieldClassInstance ent mode field
+        instanceFunction field = isFieldClassInstance ent mode field
     in isOfClass <> nilIsOfInstance <> isOfInstances
 
 genReqFields :: Vector FieldInfo -> Vector Text
@@ -341,18 +341,18 @@ modeStr Updating = "Upd"
 modeStr Creating = "Set"
 modeStr Types = error "FIXME"
 
-genFcts :: InteractionMode -> Entity -> V.Vector FieldInfo -> Text
-genFcts mode@Reading ent fis =
+genFunctions :: InteractionMode -> Entity -> V.Vector FieldInfo -> Text
+genFunctions mode@Reading ent fis =
   let constr = genConstraint mode V.empty ent
       retConstr = genRetConstraint mode ent fis <> " -- Default fields"
-      fctType = genFctType ent mode
-      fct = genFct ent mode $ genDefFields fis
-  in constr <> "\n" <> retConstr <> "\n" <> fctType <> "\n" <> fct
-genFcts mode ent fis =
+      functionType = genFunctionType ent mode
+      function = genFunction ent mode $ genDefFields fis
+  in constr <> "\n" <> retConstr <> "\n" <> functionType <> "\n" <> function
+genFunctions mode ent fis =
     let constr = genConstraint mode fis ent
-        fctType = genFctType ent mode
-        fct = genFct ent mode "" -- quick and dirty
-    in constr <> "\n" <> fctType <> "\n" <> fct
+        functionType = genFunctionType ent mode
+        function = genFunction ent mode "" -- quick and dirty
+    in constr <> "\n" <> functionType <> "\n" <> function
 
 genDefFields :: V.Vector FieldInfo -> Text
 genDefFields fis =
@@ -538,19 +538,19 @@ genFBPageIdToIgId =
             \-> FacebookT anyAuth m (Pager IgIdDetails)\n\
     \getIgId token (FBPageId pageId) = getObject (\"/v2.7/\" <> pageId <> \"/instagram_accounts\") [(\"fields\", textListToBS $ fieldNameList $ Id ::: Nil)] $ Just token\n"
 
-genFctName :: Entity -> InteractionMode -> Text
-genFctName _ Types = ""
-genFctName (Entity ent) Reading = "get" <> ent
-genFctName (Entity ent) Deleting = "del" <> ent
-genFctName (Entity ent) Updating = "upd" <> ent
-genFctName (Entity ent) Creating = "set" <> ent
+genFunctionName :: Entity -> InteractionMode -> Text
+genFunctionName _ Types = ""
+genFunctionName (Entity ent) Reading = "get" <> ent
+genFunctionName (Entity ent) Deleting = "del" <> ent
+genFunctionName (Entity ent) Updating = "upd" <> ent
+genFunctionName (Entity ent) Creating = "set" <> ent
 
 getArgName :: InteractionMode -> Text
 getArgName Reading = "fl"
 getArgName _ = "r"
 
-genFctType :: Entity -> InteractionMode -> Text
-genFctType ent mode =
+genFunctionType :: Entity -> InteractionMode -> Text
+genFunctionType ent mode =
   let retType = if mode == Reading
                   then "(" <> genRetConstraintName mode ent <> " r)"
                   else case Map.lookup (ent, mode) entityModeRetType of
@@ -562,7 +562,7 @@ genFctType ent mode =
       maybeToken = if Set.member (ent, mode) isTokenNecessarySet
                       then ""
                       else "Maybe"
-      fctName = genFctName ent mode
+      functionName = genFunctionName ent mode
       className = genClassName ent mode
       auth = if mode == Reading
               then "anyAuth"
@@ -575,15 +575,15 @@ genFctType ent mode =
                   Just x -> x
                   Nothing -> "Id_"
   in
-  fctName <> " :: (R.MonadResource m, MonadBaseControl IO m, " <> className <> " " <> param <> ") =>\n  "
+  functionName <> " :: (R.MonadResource m, MonadBaseControl IO m, " <> className <> " " <> param <> ") =>\n  "
           <> idConstr <> "    -- ^ Ad Account Id\n  \
           \-> " <> argName <> "     -- ^ Arguments to be passed to Facebook.\n  \
           \-> " <> maybeToken <> " UserAccessToken -- ^ Optional user access token.\n  \
           \-> FacebookT " <> auth <> " m " <> pager'
 
-genFct :: Entity -> InteractionMode -> Text -> Text
-genFct ent mode defFields =
-    let fctName = genFctName ent mode
+genFunction :: Entity -> InteractionMode -> Text -> Text
+genFunction ent mode defFields =
+    let functionName = genFunctionName ent mode
         url  = Map.findWithDefault "" (ent,mode) entityUrlPostfixMap
         maybeToken = if Set.member (ent, mode) isTokenNecessarySet && mode == Reading
                         then "$ Just "
@@ -597,7 +597,7 @@ genFct ent mode defFields =
         idUrl = if Set.member (ent, mode) entityModeIdNotInURL
                     then ""
                     else " <> id"
-    in fctName <> " (" <> idConstr <> " id) " <> argName <> " mtoken = " <> httpMethod <> " (\"/v2.7/\"" <> idUrl <> " <> \"" <> url
+    in functionName <> " (" <> idConstr <> " id) " <> argName <> " mtoken = " <> httpMethod <> " (\"/v2.7/\"" <> idUrl <> " <> \"" <> url
        <> "\") " <> args defFields <> maybeToken <> "mtoken\n\n"
 
 modeToArgs Types _ = ""
