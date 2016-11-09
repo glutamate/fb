@@ -10,6 +10,7 @@ import qualified Data.Text.IO as T
 import qualified Data.Map.Strict as Map
 import Data.Monoid
 import Control.Exception.Base (assert)
+import Control.Monad (when)
 
 import Facebook.Gen.Csv
 import Facebook.Gen.Environment
@@ -25,7 +26,8 @@ main = do
   inps <- V.mapM BS.readFile csvFiles
   let csvs = V.map (decode HasHeader) inps :: V.Vector (Either String (V.Vector CsvLine))
   let l = V.toList csvs
-  assert (V.length csvs == Prelude.length l) $ return ()
+  when (V.length csvs /= Prelude.length l) $ error $ "parsed output is not the same length as unparsed input"
+  when (Prelude.length (lefts l) /= 0) $ error $ "Some CSVs did not parse: " ++ show (lefts l)
   putStrLn "Generating source code ..."
   let env = buildEnv $ V.fromList $ rights l
   V.mapM_ saveFile $ genFiles env
