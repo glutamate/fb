@@ -253,13 +253,13 @@ hackCreative =
     \creativeToCreative (CreateAdCreativeId id) = AdCreativeADT id\n"
 
 genFiles :: Env -> Vector (FilePath, Text)
-genFiles (Env env) =
-    let (typesMap, rest) = Map.partitionWithKey (\k _ -> k == Entity "Types") env
+genFiles env@(Env env_map) =
+    let (typesMap, rest) = Map.partitionWithKey (\k _ -> k == Entity "Types") env_map
     in if Map.null typesMap -- there won't be a Types module
-        then genCode (Env env) V.empty
+        then genCode env V.empty
         else let typesCode = genTypes typesMap
                  typesFieldInfos = (typesMap Map.! (Entity "Types")) Map.! Types
-             in genCode (Env env) typesFieldInfos
+             in genCode env typesFieldInfos
 
 genCode :: Env -> Vector FieldInfo -> Vector (FilePath, Text)
 genCode (Env env) types =
