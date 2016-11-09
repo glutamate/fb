@@ -19,7 +19,6 @@ library
                     ,  Facebook.Gen.Environment
                     ,  Facebook.Gen.Types
                     ,  Facebook.Gen.CodeGenStr
-                    ,  Facebook.Gen.CodeGenStrTypes
   build-depends:       base >= 4.7 && < 5
                     ,  cassava
                     ,  containers

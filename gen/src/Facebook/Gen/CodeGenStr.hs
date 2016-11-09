@@ -14,7 +14,6 @@ import System.IO.Unsafe (unsafePerformIO)
 
 import Facebook.Gen.Environment
 import Facebook.Gen.Types
-import Facebook.Gen.CodeGenStrTypes
 
 import Debug.Trace
 
@@ -383,7 +382,7 @@ header modName = "module " <> modName <> " where\n\n"
 
 concatNewline xs = V.foldl' append "" $ V.map (\x -> x <> "\n") xs
 
-genImports (Entity "Types")  = concatNewline imports <> (pack $ unsafePerformIO $ readFile "data/manual-types.hs") -- manualTypesImport -- <> oldTypesImport <> oldTypes <> newTypes
+genImports (Entity "Types")  = concatNewline imports <> (pack $ unsafePerformIO $ readFile "data/manual-types.hs")
 genImports _ = concatNewline imports
 genLangExts = concatNewline $ V.map (\x -> "{-# LANGUAGE " <> x <> " #-}") langExts
 
