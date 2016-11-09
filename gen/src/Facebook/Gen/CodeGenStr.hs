@@ -140,11 +140,6 @@ imgCreate = "data SetImgs = SetImgs { -- as seen when using curl\n\
                     \    SetImg <$> v .: \"hash\"\n\
                            \        <*> v .: \"url\"\n"
 
-imgDelete =  "data Success = Success {\n\
-              \  success :: Bool\n\
-              \  } deriving (Show, Generic)\n\
-              \instance FromJSON Success"
-
 campaignCreate =
     "data CreateCampaignId = CreateCampaignId {\n\
      \  campaignId :: Text\n\
