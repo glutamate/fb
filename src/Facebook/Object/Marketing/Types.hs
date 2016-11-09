@@ -75,10 +75,7 @@ instance Show ConfigureStatusADT where
    show DELETED_ = "DELETED"
    show ARCHIVED_ = "ARCHIVED"
 instance ToJSON ConfigureStatusADT where
-  toJSON ACTIVE_ = String "ACTIVE"
-  toJSON PAUSED_ = String "PAUSED"
-  toJSON DELETED_ = String "DELETED"
-  toJSON ARCHIVED_ = String "ARCHIVED"
+   toJSON = toJSON . show
 instance FromJSON ConfigureStatusADT where
   parseJSON (String "ACTIVE") = pure ACTIVE_
   parseJSON (String "PAUSED") = pure PAUSED_
