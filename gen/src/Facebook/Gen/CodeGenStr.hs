@@ -118,7 +118,7 @@ idTypeMap =
                   ((Entity "AdSet", Updating), "CreateAdSetId"),
                   ((Entity "AdSet", Deleting), "CreateAdSetId")]
 
--- Does the generated function return a Pager?
+-- | explicit return types for specific operations
 entityModeRetDefs :: Map.Map (Entity, InteractionMode) Text
 entityModeRetDefs =
     Map.fromList [((Entity "AdImage", Creating), imgCreate),
