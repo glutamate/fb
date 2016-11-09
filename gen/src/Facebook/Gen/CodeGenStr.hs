@@ -1,6 +1,6 @@
 module Facebook.Gen.CodeGenStr
-    --(genFiles)
-where
+ (genFiles)
+ where
 
 import Data.Monoid ((<>))
 import Data.Text

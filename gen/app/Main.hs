@@ -15,7 +15,7 @@ import Control.Monad (when)
 import Facebook.Gen.Csv
 import Facebook.Gen.Environment
 import Facebook.Gen.Types
-import Facebook.Gen.CodeGenStr
+import Facebook.Gen.CodeGenStr (genFiles)
 
 csvFiles = V.fromList ["data/adaccount.csv", "data/adcampaign.csv", "data/adset.csv",
                        "data/adimage.csv", "data/adcreative.csv", "data/ad.csv", "data/adlabel.csv",
