@@ -85,8 +85,10 @@ postForm :: (R.MonadResource m, MonadBaseControl IO m, A.FromJSON a) =>
            -> AccessToken anyKind -- ^ Access token
            -> FacebookT Auth m (Either FacebookException a)
 postForm a b c = do
+#if DEBUG
   liftIO $ print "postForm"
   liftIO $ print (a,b)
+#endif
   methodForm HT.methodPost a b c
 
 postFormVideo :: (R.MonadResource m, MonadBaseControl IO m, A.FromJSON a) =>
