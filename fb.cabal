@@ -147,6 +147,7 @@ library
 
 executable facebook-marketing-test
   main-is:             MarketingTests.hs
+  hs-source-dirs: marketing-test
   default-language:    Haskell2010
   buildable: True
   build-depends:     base >=4.6 && <5
