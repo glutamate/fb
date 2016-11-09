@@ -18,9 +18,14 @@ data Nil = Nil
 
 infixr 5 :*:
 
+-- | Combines a field name and appropriately
+--   typed value, with arbitrary other stuff
+--   - though usually this will be a sequence
+--   of :*: terminated by Nil
 data f :*: b where
   (:*:) :: Field f => (f, FieldValue f) -> b -> f :*: b
 
+-- | Fields as used in the graph API
 class Field a where
   type FieldValue a
   fieldName :: a -> Text
@@ -31,7 +36,7 @@ instance forall a b. (Show (FieldValue a), Show b) => Show (a :*: b) where
 instance Show Nil where
     show _ = ""
 
--- in order to feed getObject in Facebook/Graph.hs
+-- | in order to feed getObject in Facebook/Graph.hs
 class ToBS a where
     toBS :: a -> BS.ByteString
     default toBS :: Show a => a -> BS.ByteString
@@ -53,7 +58,7 @@ instance (ToBS a, Field f) => ToBS (f :*: a) where
 fieldToByteString :: Field f => f -> BS.ByteString
 fieldToByteString f = encodeUtf8 $ fieldName f
 
--- in order to post as parameters
+-- | in order to post as parameters
 class ToForm a where
   toForm :: a -> [Part]
 
@@ -105,10 +110,10 @@ toJSONRec ((f, v) :*: rest) =
     in case toJSON rest of -- will always be Object since we are representing records
         Object hmap -> toJSON $ Map.union curMap hmap
 
--- List-level concatenation of Fields
 
 infixr 5 :::
 
+-- | List-level concatenation of Fields
 data f ::: b where
   (:::) :: Field f => f -> b -> f ::: b
 
