@@ -255,11 +255,10 @@ hackCreative =
 genFiles :: Env -> Vector (FilePath, Text)
 genFiles env@(Env env_map) =
     let (typesMap, rest) = Map.partitionWithKey (\k _ -> k == Entity "Types") env_map
-    in if Map.null typesMap -- there won't be a Types module
-        then genCode env V.empty
-        else let typesCode = genTypes typesMap
-                 typesFieldInfos = (typesMap Map.! (Entity "Types")) Map.! Types
-             in genCode env typesFieldInfos
+        typesInfo = if Map.null typesMap -- there won't be a Types module
+          then V.empty
+          else (typesMap Map.! (Entity "Types")) Map.! Types
+    in genCode env typesInfo
 
 genCode :: Env -> Vector FieldInfo -> Vector (FilePath, Text)
 genCode (Env env) types =
