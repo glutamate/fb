@@ -17,8 +17,6 @@ import Prelude
 import Facebook.Gen.Csv
 import Facebook.Gen.Types
 
-import Debug.Trace
-
 -- mapping from FB types to Haskell types
 typesMap :: Map.Map Text Text
 typesMap =
@@ -99,7 +97,7 @@ buildEnv csvs = do
                               ++ ["custom_event_type"]
                               ++ ["type", "dynamic_ad_voice", "annotations", "info_fields"]
                               ++ ["account"]
-    let csvs'' = V.filter (\(CsvLine _ _ (FieldInfo name _ _ _ _)) -> not $ V.elem name ignore) (join csvs :: Vector CsvLine)
+    let csvs'' = V.filter (\(CsvLine _ _ (FieldInfo n _ _ _ _)) -> not $ V.elem n ignore) (join csvs :: Vector CsvLine)
     let envs = V.map buildEnvCsv csvs''
     let merged = merge envs
     unify merged
@@ -112,8 +110,8 @@ merge envs = go Map.empty $ envsToMaps envs
         go acc maps
             | V.null maps = Env acc
             | otherwise =
-                let map = V.head maps
-                in go (merge2 acc map) $ V.tail maps
+                let m = V.head maps
+                in go (merge2 acc m) $ V.tail maps
         merge2 acc entToModeMap
             | length (Map.keys entToModeMap) == 1 -- since every line in the CSV file is turned into an Env
                 = let key = head $ Map.keys entToModeMap
@@ -177,18 +175,18 @@ uni dups = V.fromList $ go dups []
 
 -- returns all duplicate FieldInfos
 findDups :: V.Vector FieldInfo -> [V.Vector FieldInfo]
-findDups fis = go fis []
+findDups fis' = go fis' []
     where
         go fis acc
             | V.null fis = acc
             | otherwise =
                 let fi = V.head fis
-                    tail = V.tail fis
-                    dupInds = V.findIndices (==fi) tail
+                    t = V.tail fis
+                    dupInds = V.findIndices (==fi) t
                 in if V.null dupInds
-                    then go tail acc
-                    else let dups = V.cons fi $ V.map (\idx -> unsafeIndex tail idx) dupInds
-                             tail' = V.ifilter (\idx _ -> not $ V.elem idx dupInds) tail
+                    then go t acc
+                    else let dups = V.cons fi $ V.map (\idx -> unsafeIndex t idx) dupInds
+                             tail' = V.ifilter (\idx _ -> not $ V.elem idx dupInds) t
                          in go tail' $ dups:acc
 
 removeNameTypeDups :: V.Vector FieldInfo -> V.Vector FieldInfo
@@ -198,18 +196,17 @@ removeNameDups :: V.Vector FieldInfo -> V.Vector FieldInfo
 removeNameDups fi = removeDups fi (\cur e -> e == cur)
 
 removeDups :: V.Vector FieldInfo -> (FieldInfo -> FieldInfo -> Bool) -> V.Vector FieldInfo
-removeDups fis pred = V.reverse $ V.fromList $ go fis []
+removeDups fis' predicate = V.reverse $ V.fromList $ go fis' []
     where
         go fis acc
             | V.null fis = acc
             | otherwise =
                 let fi = V.head fis
-                    tail = V.tail fis
-                    dupInds = V.findIndices (pred fi) tail
+                    t = V.tail fis
+                    dupInds = V.findIndices (predicate fi) t
                 in if V.null dupInds
-                    then go tail $ fi:acc
-                    else let dups = V.cons fi $ V.map (\idx -> unsafeIndex tail idx) dupInds
-                             tail' = V.ifilter (\idx _ -> not $ V.elem idx dupInds) tail
+                    then go t $ fi:acc
+                    else let tail' = V.ifilter (\idx _ -> not $ V.elem idx dupInds) t
                          in go tail' $ fi:acc
 buildEnvCsv :: CsvLine -> Env
 buildEnvCsv (CsvLine (Entity ent) mode info) =

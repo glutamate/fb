@@ -4,19 +4,16 @@ import Data.Csv
 import qualified Data.ByteString.Lazy as BS
 import qualified Data.Vector as V
 import Data.Either
-import Data.Text
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import qualified Data.Map.Strict as Map
 import Data.Monoid
-import Control.Exception.Base (assert)
 import Control.Monad (when)
 
 import Facebook.Gen.Csv
 import Facebook.Gen.Environment
-import Facebook.Gen.Types
 import Facebook.Gen.CodeGenStr (genFiles)
 
+csvFiles :: V.Vector String
 csvFiles = V.fromList ["data/adaccount.csv", "data/adcampaign.csv", "data/adset.csv",
                        "data/adimage.csv", "data/adcreative.csv", "data/ad.csv", "data/adlabel.csv",
                        "data/customaudience.csv", "data/adspixel.csv"]
@@ -32,7 +29,7 @@ main = do
   let env = buildEnv $ V.fromList $ rights l
   V.mapM_ saveFile $ genFiles env
 
-saveFile :: (FilePath, Text) -> IO ()
+saveFile :: (FilePath, T.Text) -> IO ()
 saveFile (path, data_) = do
   putStrLn $ "Saving " ++ path
   T.writeFile ("../src/" <> path) data_

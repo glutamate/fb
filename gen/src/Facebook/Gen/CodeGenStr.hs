@@ -3,6 +3,7 @@ module Facebook.Gen.CodeGenStr
  where
 
 import Data.Monoid ((<>))
+import Data.String
 import Data.Text
 import qualified Data.Text as T
 import Data.Vector hiding (singleton)
@@ -15,10 +16,10 @@ import System.IO.Unsafe (unsafePerformIO)
 import Facebook.Gen.Environment
 import Facebook.Gen.Types
 
-import Debug.Trace
-
+typesImport :: Text
 typesImport = "import Facebook.Object.Marketing.Types"
 
+typeFileImports :: Vector Text
 typeFileImports =
     V.fromList ["import Facebook.Records hiding (get)",
                 "import qualified Facebook.Records as Rec",
@@ -32,6 +33,7 @@ typeFileImports =
                                 \import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)\n\
                 \#endif"]
 
+nodeFileImports :: Vector Text
 nodeFileImports =
     V.fromList ["import Facebook.Records hiding (get)",
                 "import qualified Facebook.Records as Rec",
@@ -65,10 +67,13 @@ nodeFileImports =
                                 \import System.Locale\n\
                                 \import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)\n\
                 \#endif"]
+
+langExts :: Vector Text
 langExts = V.fromList ["DeriveDataTypeable", "DeriveGeneric", "FlexibleContexts", "OverloadedStrings",
                        "ConstraintKinds", "CPP"]
 
 -- What to add after /id to the URL
+entityUrlPostfixMap :: Map.Map (Entity, InteractionMode) Text
 entityUrlPostfixMap =
     Map.fromList [((Entity "AdCampaign", Reading), "/campaigns"),
                   ((Entity "AdCampaign", Creating), "/campaigns"),
@@ -87,6 +92,7 @@ entityUrlPostfixMap =
                  ]
 
 -- Does the generated function return a Pager?
+entityModePagerSet :: Set.Set (Entity, InteractionMode)
 entityModePagerSet =
     Set.fromList [(Entity "AdCampaign", Reading),
                   (Entity "Insights", Reading),
@@ -97,10 +103,12 @@ entityModePagerSet =
                   (Entity "CustomAudience", Reading),
                   (Entity "AdsPixel", Reading)]
 
+entityModeIdNotInURL :: Set.Set (Entity, InteractionMode)
 entityModeIdNotInURL  =
     Set.fromList [(Entity "AdCreative", Deleting)]
 
 -- function return type
+entityModeRetType :: Map.Map (Entity, InteractionMode) Text
 entityModeRetType = -- FIXME!
     Map.fromList [((Entity "AdImage", Creating), "(Either FacebookException SetImgs)"),
                   ((Entity "AdImage", Deleting), "(Either FacebookException Success)"),
@@ -122,6 +130,7 @@ entityModeRetType = -- FIXME!
                   ((Entity "AdCampaign", Creating), "(Either FacebookException CreateCampaignId)"),
                   ((Entity "CustomAudience", Creating), "(Either FacebookException CreateCustomAudienceId)")]
 
+idTypeMap :: Map.Map (Entity, InteractionMode) Text
 idTypeMap =
     Map.fromList [((Entity "AdCampaign", Deleting), "CreateCampaignId"),
                   ((Entity "AdCampaign", Updating), "CreateCampaignId"),
@@ -141,6 +150,7 @@ entityModeRetDefs =
                   ((Entity "AdSet", Creating), adsetCreate),
                   ((Entity "CustomAudience", Creating), customAudienceCreate)]
 
+imgCreate :: Text
 imgCreate = "data SetImgs = SetImgs { -- as seen when using curl\n\
                 \  images  :: Map.Map Text SetImg\n\
                 \  } deriving (Show, Generic)\n\
@@ -153,6 +163,7 @@ imgCreate = "data SetImgs = SetImgs { -- as seen when using curl\n\
                     \    SetImg <$> v .: \"hash\"\n\
                            \        <*> v .: \"url\"\n"
 
+campaignCreate :: Text
 campaignCreate =
     "data CreateCampaignId = CreateCampaignId {\n\
      \  campaignId :: Text\n\
@@ -168,6 +179,7 @@ campaignCreate =
 -- custom audience)
 -- Other types do this too but unclear to me if
 -- that makes sense?
+customAudienceCreate :: Text
 customAudienceCreate =
     "data CreateCustomAudienceId = CreateCustomAudienceId {\n\
      \  customAudienceId :: Text\n\
@@ -176,6 +188,7 @@ customAudienceCreate =
      \    parseJSON (Object v) =\n\
      \       CreateCustomAudienceId <$> v .: \"id\"\n"
 
+adsetCreate :: Text
 adsetCreate =
     "data CreateAdSetId = CreateAdSetId {\n\
      \  adsetId :: Text\n\
@@ -185,6 +198,7 @@ adsetCreate =
      \       CreateAdSetId <$> v .: \"id\"\n"
      <> hackSet
 
+adcreativeCreate :: Text
 adcreativeCreate =
     "data CreateAdCreativeId = CreateAdCreativeId {\n\
      \  adcreativeId :: Text\n\
@@ -194,6 +208,7 @@ adcreativeCreate =
      \       CreateAdCreativeId <$> v .: \"id\"\n"
      <> hackCreative
 
+adCreate :: Text
 adCreate =
     "data CreateAdId = CreateAdId {\n\
      \  adId :: Text\n\
@@ -203,6 +218,7 @@ adCreate =
      \       CreateAdId <$> v .: \"id\"\n"
 
 -- Doees the API call need a token?
+isTokenNecessarySet :: Set.Set (Entity, InteractionMode)
 isTokenNecessarySet =
     Set.fromList [(Entity "AdCampaign", Reading),
                   (Entity "AdCampaign", Creating),
@@ -229,7 +245,10 @@ isTokenNecessarySet =
                   (Entity "CustomAudience", Reading),
                   (Entity "CustomAudience", Creating)]
 
+modPrefix :: Text
 modPrefix = "Facebook.Object.Marketing."
+
+modNameToPath :: Text -> Text
 modNameToPath = replace "." "/"
 
 hackSet :: Text
@@ -247,42 +266,36 @@ hackCreative =
 
 genFiles :: Env -> Vector (FilePath, Text)
 genFiles env@(Env env_map) =
-    let (typesMap, rest) = Map.partitionWithKey (\k _ -> k == Entity "Types") env_map
-        typesInfo = if Map.null typesMap -- there won't be a Types module
+    let (typesMap', _) = Map.partitionWithKey (\k _ -> k == Entity "Types") env_map
+        typesInfo = if Map.null typesMap' -- there won't be a Types module
           then V.empty
-          else (typesMap Map.! (Entity "Types")) Map.! Types
+          else (typesMap' Map.! (Entity "Types")) Map.! Types
     in genCode env typesInfo
 
 genCode :: Env -> Vector FieldInfo -> Vector (FilePath, Text)
 genCode (Env env) types =
     V.fromList $ Map.elems $ Map.mapWithKey (\k a -> genEntity k a types) env
 
-genTypes :: EntityModeMap -> (FilePath, Text)
-genTypes entMap =
-  let typesEnt = Prelude.head $ Map.keys entMap
-      typesCode = genEntity typesEnt Map.empty V.empty
-  in typesCode
-
 genEntity :: Entity -> ModeFieldInfoMap -> V.Vector FieldInfo -> (FilePath, Text)
-genEntity ent@(Entity nameEnt) map types =
+genEntity ent@(Entity nameEnt) m types =
     let modName = modPrefix <> nameEnt
         path = T.unpack $ modNameToPath modName <> ".hs"
-        head = header modName
-        top = genLangExts <> head <> genImports ent <>
+        h = header modName
+        top = genLangExts <> h <> genImports ent <>
                 if nameEnt == "Types"
                     then ""
                     else typesImport <> "\n"
-        fis = collectFieldInfosMode map
-        filter x = if nameEnt == "Types"
-                    then types
-                    else V.filter (\fi -> not $ V.elem fi types) x
-        filtered = filter fis
+        fis = collectFieldInfosMode m
+        f x = if nameEnt == "Types"
+              then types
+              else V.filter (\fi -> not $ V.elem fi types) x
+        filtered = f fis
         dataDecl = dataAndFieldInstances $ removeNameTypeDups filtered
         getter = myConcat $ V.map getterFunction $ removeNameDups filtered
         getterFunction fi = getterField fi
         bsInstances = genToBsInstances $ removeNameDups filtered
     in (path, top <> dataDecl <> bsInstances <> getter <> Prelude.foldl append "" (
-            Map.elems $ Map.mapWithKey (\mode fis -> genMode ent mode fis) map))
+            Map.elems $ Map.mapWithKey (genMode ent) m))
 
 genMode :: Entity -> InteractionMode -> V.Vector FieldInfo -> Text
 genMode _ Types _ = T.empty -- Types.hs doesn't include any functions (except record getters)
@@ -364,13 +377,19 @@ genRetConstraint Reading ent fis =
       defs = V.foldr' append "r" $ V.map (\req -> req <> " :*: ") ds
       synName = genRetConstraintName Reading ent
   in "type " <> synName <> " r = " <> defs
+genRetConstraint _ _ _ = error "genRetConstraint called in invalid context"
 
+header :: (IsString m, Monoid m) => m -> m
 header modName = "module " <> modName <> " where\n\n"
 
+concatNewline :: Vector Text -> Text
 concatNewline xs = V.foldl' append "" $ V.map (\x -> x <> "\n") xs
 
+genImports :: Entity -> Text
 genImports (Entity "Types")  = concatNewline typeFileImports <> (pack $ unsafePerformIO $ readFile "data/manual-types.hs")
 genImports _ = concatNewline nodeFileImports
+
+genLangExts :: Text
 genLangExts = concatNewline $ V.map (\x -> "{-# LANGUAGE " <> x <> " #-}") langExts
 
 genConstraint :: InteractionMode -> Vector FieldInfo -> Entity -> Text
@@ -378,7 +397,7 @@ genConstraint Types _ _ = ""
 genConstraint mode fis ent = genConstraintLabel mode fis ent
 
 genConstraintLabel :: InteractionMode -> Vector FieldInfo -> Entity -> Text
-genConstraintLabel mode fis ent@(Entity entity) =
+genConstraintLabel mode fis ent@(Entity _) =
     let reqs  = genReqFields fis
         reqsHas = V.foldl' append "" $ V.map (\req -> "Has " <> req <> " r, ") reqs
         arg = if mode == Reading
@@ -400,7 +419,7 @@ dataAndFieldInstances fis =
         else -- this usually happens because Reading mode returns strings while Creating expects unsigned int32
             let dups' = V.concat dups
                 unique = V.filter (\fi -> not $ List.elem fi dups') fis -- check
-                a@(maxs, mins) = (List.map List.maximum dups, --FIXME... let's hope we only have to convert to one type...
+                (maxs, mins) = (List.map List.maximum dups, --FIXME... let's hope we only have to convert to one type...
                                 List.map List.minimum dups)
                 dataDecls = myConcat $ V.map dataAndFieldInstance unique
                 new = myConcat $ V.map newtypeInstances unique
@@ -415,20 +434,19 @@ genJsonNewtype fis =
 
 typesToJsonInstances :: (Text, Text, Text) -> Text
 typesToJsonInstances (nt, "Int", "Text") =
-    let create = "pure $ " <> nt <> " num"
+    let create' = "pure $ " <> nt <> " num"
     in "instance A.FromJSON " <> nt <> " where\n\
         \  parseJSON (Number x) =\n\
         \   case toBoundedInteger x of\n\
-        \     Just num -> " <> create <> "\n" <>
+        \     Just num -> " <> create' <> "\n" <>
         "     Nothing -> error \"parseJSON toBoundedInteger failed\"\n\
         \  parseJSON (String str) =\n\
         \   case decimal str of\n\
         \     Left err -> error err\n\
-        \     Right (num, _) -> " <> create <> "\n" <> -- FIXME
+        \     Right (num, _) -> " <> create' <> "\n" <> -- FIXME
         "instance A.ToJSON " <> nt <> "\n"
 typesToJsonInstances (nt, "AdCreativeADT", "Text") =
-    let create = "pure $ " <> nt <> " creativeId"
-    in "instance A.FromJSON " <> nt <> " where\n\
+       "instance A.FromJSON " <> nt <> " where\n\
         \  parseJSON (Object v) = " <> nt <> " <$> AdCreativeADT <$>\n\
         \   v .: \"id\" <|> v .: \"creative_id\"\n" <>
         "instance A.ToJSON " <> nt <> "\n"
@@ -595,6 +613,9 @@ genFunction ent mode defFields =
     in functionName <> " (" <> idConstr <> " id) " <> argName <> " mtoken = " <> httpMethod <> " (\"/v2.7/\"" <> idUrl <> " <> \"" <> url
        <> "\") " <> args defFields <> maybeToken <> "mtoken\n\n"
 
+modeToArgs
+  :: (Data.String.IsString a, Monoid a)
+  => InteractionMode -> a -> a
 modeToArgs Types _ = ""
 modeToArgs Reading defFields = "[(\"fields\", textListToBS $ fieldNameList $ " <> defFields <> "fl)] "
 modeToArgs Creating _ = "(toForm r) "
@@ -606,6 +627,7 @@ modeToMethod Reading = "getObject"
 modeToMethod Creating = "postForm"
 modeToMethod Updating = "postForm"
 modeToMethod Deleting = "deleteForm"
+modeToMethod Types = error "modeToMethod cannot be called on Types"
 
 -- turns foo_bar into FooBar
 fieldToAdt :: FieldInfo -> Text
@@ -619,10 +641,10 @@ fieldToAdt (FieldInfo str _ _ _ _)
     where
         dropUnderscore = T.dropWhile (=='_')
         charToUpper = toUpper . singleton
-        toCamelCase acc str
-            | T.null str = acc
+        toCamelCase acc s
+            | T.null s = acc
             | otherwise =
-                let (a, b) = breakOn "_" str
+                let (a, b) = breakOn "_" s
                     b' = dropUnderscore b
                     first =  charToUpper $ T.head b'
                 in if T.null b'

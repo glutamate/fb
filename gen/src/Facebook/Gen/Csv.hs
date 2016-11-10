@@ -2,12 +2,8 @@
 module Facebook.Gen.Csv
 where
 
-import Control.Applicative (pure)
 import Control.Monad (mzero)
 import Data.Csv
-import Data.Text hiding (length)
-import qualified Data.Text as T
-import Control.Applicative
 import qualified Data.Vector as V
 
 import Facebook.Gen.Types
@@ -25,9 +21,9 @@ instance FromRecord CsvLine where
                 mode = v .! 1
                 fn = v .! 2
                 fntype = v .! 3
-                desc = v .! 4
+                d = v .! 4
                 req = v .! 5
                 rsp = v .! 6
-                fieldInfo = FieldInfo <$> fn <*> fntype <*> desc <*> req <*> rsp
-            in CsvLine <$> ent <*> mode <*> fieldInfo
+                finf = FieldInfo <$> fn <*> fntype <*> d <*> req <*> rsp
+            in CsvLine <$> ent <*> mode <*> finf
         | otherwise = mzero
