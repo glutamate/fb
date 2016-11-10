@@ -1,5 +1,13 @@
 {-# LANGUAGE FlexibleContexts, TypeFamilies #-}
 module Facebook.Gen.Environment
+  ( buildEnv
+  , collectFieldInfosMode
+  , findDups
+  , removeNameDups
+  , removeNameTypeDups
+  , Env (..)
+  , ModeFieldInfoMap
+  )
 where
 
 import Control.Monad
@@ -140,10 +148,6 @@ updateModeMap acc modeMap
 -- mergeFieldInfo :: V n Fi -> V 1 Fi -> V (n+1) Fi
 mergeFieldInfo :: Vector FieldInfo -> Vector FieldInfo -> Vector FieldInfo
 mergeFieldInfo fis fiV = fiV V.++ fis
-
-delFromEnv :: Env -> V.Vector FieldInfo -> Env
-delFromEnv (Env env) del = Env $
-    Map.map (\mode -> Map.map (\fis -> V.filter (\fi -> not $ V.elem fi del) fis) mode) env
 
 unify :: Env -> Env
 unify env =
