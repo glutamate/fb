@@ -152,16 +152,16 @@ entityModeRetDefs =
 
 imgCreate :: Text
 imgCreate = "data SetImgs = SetImgs { -- as seen when using curl\n\
-                \  images  :: Map.Map Text SetImg\n\
-                \  } deriving (Show, Generic)\n\
+            \  images  :: Map.Map Text SetImg\n\
+            \  } deriving (Show, Generic)\n\
             \instance FromJSON SetImgs\n\
             \data SetImg = SetImg {\n\
-                \  hash, url_ :: Text\n\
+            \  hash, url_ :: Text\n\
             \  } deriving Show\n\
             \instance FromJSON SetImg where\n\
-                \  parseJSON (Object v) =\n\
-                    \    SetImg <$> v .: \"hash\"\n\
-                           \        <*> v .: \"url\"\n"
+            \  parseJSON (Object v) =\n\
+            \    SetImg <$> v .: \"hash\"\n\
+            \        <*> v .: \"url\"\n"
 
 campaignCreate :: Text
 campaignCreate =
