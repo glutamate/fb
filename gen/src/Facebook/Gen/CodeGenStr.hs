@@ -23,14 +23,9 @@ typeFileImports =
     V.fromList ["import Facebook.Records hiding (get)",
                 "import qualified Facebook.Records as Rec",
                 "import qualified Data.Aeson as A",
-                "import Data.Time.Format",
                 "import Data.Aeson hiding (Value)",
                 "import Data.Text (Text)",
-                "import qualified Data.Text.Encoding as TE",
                 "import Data.Vector (Vector)",
-                "import qualified Data.Vector as V",
-                "import qualified Data.ByteString as BS",
-                "import qualified Data.ByteString.Char8 as B8",
                 "#if MIN_VERSION_time(1,5,0)\n\
                                 \import Data.Time.Clock\n\
                 \#else\n\
@@ -46,12 +41,12 @@ nodeFileImports =
                 "import Facebook.Graph",
                 "import Facebook.Base (FacebookException(..))",
                 "import qualified Data.Aeson as A",
-                "import Data.Time.Format",
+                -- "import Data.Time.Format",
                 "import Data.Aeson hiding (Value)",
-                "import Control.Applicative",
+                "import Control.Applicative ( (<|>) )",
                 "import Data.Text (Text)",
                 "import Data.Text.Read (decimal)",
-                "import Data.Scientific (toBoundedInteger)",
+                 "import Data.Scientific (toBoundedInteger)",
                 "import qualified Data.Text.Encoding as TE",
                 "import GHC.Generics (Generic)",
                 "import qualified Data.Map.Strict as Map",
@@ -237,26 +232,6 @@ isTokenNecessarySet =
 modPrefix = "Facebook.Object.Marketing."
 modNameToPath = replace "." "/"
 
--- needed for POST
-toBsInstances :: Text
-toBsInstances = -- FIXME, look at old SimpleType class for instances
-  "\ninstance ToBS Text where\n\
-  \  toBS = TE.encodeUtf8\n\
-  \instance ToBS Char where\n\
-  \  toBS = B8.singleton\n\
-  \instance ToBS Integer\n\
-  \instance ToBS Int\n\
-  \instance ToBS Bool where\n\
-  \  toBS True = toBS (\"true\" :: String)\n\
-  \  toBS False = toBS (\"false\" :: String)\n\
-  \--instance ToBS Value where\n\
-  \--  toBS = BSL.toStrict . encode\n\
-  \instance ToBS Float\n\
-  \instance ToBS a => ToBS (Vector a) where\n\
-  \  toBS xs = V.foldl' BS.append BS.empty $ V.map toBS xs\n\
-  \instance ToBS UTCTime where\n\
-  \  toBS t = B8.pack $ formatTime defaultTimeLocale rfc822DateFormat t\n"
-
 hackSet :: Text
 hackSet =
     "\nadsetIdToInt :: CreateAdSetId -> Int\n\
@@ -295,7 +270,7 @@ genEntity ent@(Entity nameEnt) map types =
         head = header modName
         top = genLangExts <> head <> genImports ent <>
                 if nameEnt == "Types"
-                    then toBsInstances
+                    then ""
                     else typesImport <> "\n"
         fis = collectFieldInfosMode map
         filter x = if nameEnt == "Types"

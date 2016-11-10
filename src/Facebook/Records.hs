@@ -11,10 +11,12 @@ import qualified Data.ByteString.Lazy as BL
 import Data.Text hiding (foldr)
 import Network.HTTP.Client.MultipartFormData
 import Data.Text.Encoding
+import qualified Data.Vector as V
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.HashMap.Strict as Map
 import Prelude hiding (take, length)
+import Data.Time
 
 data Nil = Nil
 
@@ -59,6 +61,23 @@ instance (ToBS a, Field f) => ToBS (f :*: a) where
 
 instance ToBS Value where
     toBS = BL.toStrict . A.encode
+
+instance ToBS Text where
+    toBS = encodeUtf8
+instance ToBS Char where
+    toBS = B8.singleton
+instance ToBS Integer
+instance ToBS Int
+instance ToBS Bool where
+    toBS True = toBS ("true" :: String)
+    toBS False = toBS ("false" :: String)
+instance ToBS Float
+instance ToBS a => ToBS (V.Vector a) where
+    toBS xs = V.foldl' BS.append BS.empty $ V.map toBS xs
+instance ToBS UTCTime where
+    toBS t = B8.pack $ formatTime defaultTimeLocale rfc822DateFormat t
+
+
 
 
 fieldToByteString :: Field f => f -> BS.ByteString

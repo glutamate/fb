@@ -14,9 +14,8 @@ import Facebook.Monad
 import Facebook.Graph
 import Facebook.Base (FacebookException(..))
 import qualified Data.Aeson as A
-import Data.Time.Format
 import Data.Aeson hiding (Value)
-import Control.Applicative
+import Control.Applicative ( (<|>) )
 import Data.Text (Text)
 import Data.Text.Read (decimal)
 import Data.Scientific (toBoundedInteger)

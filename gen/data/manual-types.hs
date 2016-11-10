@@ -31,6 +31,7 @@ instance FromJSON ConfigureStatusADT where
   parseJSON (String "PAUSED") = pure PAUSED_
   parseJSON (String "DELETED") = pure DELETED_
   parseJSON (String "ARCHIVED") = pure ARCHIVED_
+  parseJSON v = typeMismatch "ConfigureStatusADT" v
 instance ToBS ConfigureStatusADT
 data EffectiveStatusADT = ACTIVE | PAUSED | DELETED | ARCHIVED | PENDING_REVIEW | DISAPPROVED | PREAPPROVED | PENDING_BILLING_INFO | CAMPAIGN_PAUSED | ADSET_PAUSED deriving (Show, Generic)
 instance FromJSON EffectiveStatusADT
@@ -61,6 +62,8 @@ instance Show RunStatusADT where
 instance FromJSON RunStatusADT where
   parseJSON (String "ACTIVE") = pure RS_ACTIVE
   parseJSON (String "DELETED") = pure RS_DELETED
+  parseJSON (String _) = fail "Unknown enum value parsing RunStatusADT"
+  parseJSON v = typeMismatch "RunStatusADT" v
 instance ToBS RunStatusADT
 data ObjectiveADT = OBJ_BRAND_AWARENESS | OBJ_CANVAS_APP_ENGAGEMENT | OBJ_CANVAS_APP_INSTALLS | OBJ_CONVERSIONS | OBJ_EVENT_RESPONSES | OBJ_EXTERNAL | OBJ_LEAD_GENERATION | OBJ_LINK_CLICKS | OBJ_LOCAL_AWARENESS | OBJ_MOBILE_APP_ENGAGEMENT | OBJ_MOBILE_APP_INSTALLS | OBJ_OFFER_CLAIMS | OBJ_PAGE_LIKES | OBJ_POST_ENGAGEMENT | OBJ_PRODUCT_CATALOG_SALES | OBJ_VIDEO_VIEWS | OBJ_NONE
 instance Show ObjectiveADT where
@@ -102,6 +105,8 @@ instance FromJSON ObjectiveADT where
   parseJSON (String "PRODUCT_CATALOG_SALES") = pure OBJ_PRODUCT_CATALOG_SALES
   parseJSON (String "NONE") = pure OBJ_NONE
   parseJSON (String "VIDEO_VIEWS") = pure OBJ_VIDEO_VIEWS
+  parseJSON (String _) = fail "Uknown enumeration value parsing ObjectiveADT"
+  parseJSON v = typeMismatch "ObjectiveADT" v
 data BuyingTypeADT = AUCTION | RESERVED deriving (Show, Generic)
 instance FromJSON BuyingTypeADT
 instance ToJSON BuyingTypeADT
@@ -132,6 +137,8 @@ instance FromJSON BillingEventADT where
   parseJSON (String "PAGE_LIKES") = pure PAGE_LIKES_
   parseJSON (String "POST_ENGAGEMENT") = pure POST_ENGAGEMENT_
   parseJSON (String "VIDEO_VIEWS") = pure VIDEO_VIEWS_
+  parseJSON (String _) = fail "Unknown enumeration value parsing BillingEventADT"
+  parseJSON v = typeMismatch "BillingEventADT" v
 data ObjectStorySpecADT = ObjectStorySpecADT {
     linkData  :: AdCreativeLinkData,
     storyPageId  :: FBPageId,
@@ -153,6 +160,9 @@ instance ToJSON ObjectStorySpecADT where
     object [ "link_data" .= ld,
              "page_id" .= i, 
              "instagram_actor_id" .= ig] 
+  toJSON (ObjectStorySpecVideoLink vidData (FBPageId i) Nothing) =
+    object [ "video_data" .= vidData,
+             "page_id" .= i]
   toJSON (ObjectStorySpecVideoLink vidData (FBPageId i) (Just (IgId ig))) =
     object [ "video_data" .= vidData,
              "page_id" .= i,
@@ -163,6 +173,7 @@ instance FromJSON ObjectStorySpecADT where
    case typ of
      Nothing -> parseObjectStorySpecADT v
      Just _  -> parseObjectStorySpecVideoLink v
+  parseJSON v = typeMismatch "ObjectStorySpecADT" v
 
 parseObjectStorySpecADT :: Object -> Parser ObjectStorySpecADT
 parseObjectStorySpecADT v =   ObjectStorySpecADT <$> v .: "link_data"
@@ -189,7 +200,7 @@ data AdCreativeLinkData = AdCreativeLinkData {
     link :: Text }
   deriving (Show, Generic)
 instance ToJSON AdCreativeLinkData where
-  toJSON (AdCreativeLinkData c i l m (Just _)) =
+  toJSON (AdCreativeLinkData c i l m  _) =
     object [ "caption" .= c,
              "image_hash" .= i,
              "link" .= l,
@@ -207,6 +218,7 @@ instance FromJSON AdCreativeLinkData where
    case typ of
      Nothing -> parseAdCreativeLinkData v
      Just _  -> parseCreativeCarouselData v
+  parseJSON v = typeMismatch "AdCreativeLinkData" v
 
 parseAdCreativeLinkData :: Object -> Parser AdCreativeLinkData
 parseAdCreativeLinkData v =
@@ -242,6 +254,7 @@ instance FromJSON AdCreativeVideoData where
                         <*> v .: "description"
                         <*> v .: "image_url"
                         <*> v .: "video_id"
+  parseJSON v = typeMismatch "AdCreativeVideoData" v
 type CarouselChildren = [CarouselChild]
 data CarouselChild = CarouselChild {
     name_car_child :: Text,
@@ -255,12 +268,17 @@ instance ToJSON CarouselChild where
              "image_hash" .= i,
              "link" .= l,
              "description" .= d]
+  toJSON (CarouselChild n i l Nothing) =
+    object [ "name" .= n,
+             "image_hash" .= i,
+             "link" .= l]
 instance FromJSON CarouselChild where
   parseJSON (Object v) =
    CarouselChild <$> v .: "name"
                  <*> v .: "image_hash"
                  <*> v .: "link"
                  <*> v .:? "description"
+  parseJSON v = typeMismatch "CarouselChild" v
 instance ToBS CarouselChild where
   toBS a = toBS $ toJSON a
 data AdCreativeADT = AdCreativeADT {
@@ -297,6 +315,7 @@ data SuccessId = SuccessId {
 instance FromJSON SuccessId where 
   parseJSON (Object v) =
       SuccessId <$> v .: "id"
+  parseJSON v = typeMismatch "SuccessId" v
 
 
 data CustomAudienceDataSource = CustomAudienceDataSource {
@@ -315,7 +334,7 @@ instance FromJSON CustomAudienceDataSource where
     CustomAudienceDataSource <$> v .: "type"
                              <*> v .: "sub_type"
                              <*> v .: "creation_params"
-  parseJSON _ = error $ "could not parse non-Object as a CustomAudienceDataSource"
+  parseJSON v = typeMismatch "could not parse non-Object as a CustomAudienceDataSource" v
 
 instance ToBS CustomAudienceDataSource
   where toBS = error "NOTIMPL: Custom audience data source cannot be converted to a ByteString in this implementation."
@@ -364,4 +383,3 @@ instance FromJSON LookalikeSpecADT where
 
 instance ToBS LookalikeSpecADT where
   toBS = toBS . toJSON
-
