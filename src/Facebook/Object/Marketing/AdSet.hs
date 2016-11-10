@@ -222,7 +222,6 @@ data CreateAdSetId = CreateAdSetId {
 instance FromJSON CreateAdSetId where
     parseJSON (Object v) =
        CreateAdSetId <$> v .: "id"
-
 adsetIdToInt :: CreateAdSetId -> Int
 adsetIdToInt (CreateAdSetId id) =
       case decimal id of

@@ -195,8 +195,12 @@ adsetCreate =
      \  } deriving Show\n\
      \instance FromJSON CreateAdSetId where\n\
      \    parseJSON (Object v) =\n\
-     \       CreateAdSetId <$> v .: \"id\"\n"
-     <> hackSet
+     \       CreateAdSetId <$> v .: \"id\"\n\
+     \adsetIdToInt :: CreateAdSetId -> Int\n\
+     \adsetIdToInt (CreateAdSetId id) =\n\
+     \      case decimal id of\n\
+     \        Right (num, _) -> num\n\
+     \        Left err -> error $ \"Could not convert CreateAdSetId to Int:\" ++ show err\n"
 
 adcreativeCreate :: Text
 adcreativeCreate =
@@ -205,8 +209,9 @@ adcreativeCreate =
      \  } deriving Show\n\
      \instance FromJSON CreateAdCreativeId where\n\
      \    parseJSON (Object v) =\n\
-     \       CreateAdCreativeId <$> v .: \"id\"\n"
-     <> hackCreative
+     \       CreateAdCreativeId <$> v .: \"id\"\n\
+     \creativeToCreative :: CreateAdCreativeId -> AdCreativeADT\n\
+     \creativeToCreative (CreateAdCreativeId id) = AdCreativeADT id\n"
 
 adCreate :: Text
 adCreate =
@@ -250,19 +255,6 @@ modPrefix = "Facebook.Object.Marketing."
 
 modNameToPath :: Text -> Text
 modNameToPath = replace "." "/"
-
-hackSet :: Text
-hackSet =
-    "\nadsetIdToInt :: CreateAdSetId -> Int\n\
-    \adsetIdToInt (CreateAdSetId id) =\n\
-    \      case decimal id of\n\
-    \        Right (num, _) -> num\n\
-    \        Left err -> error $ \"Could not convert CreateAdSetId to Int:\" ++ show err\n"
-
-hackCreative :: Text
-hackCreative =
-    "creativeToCreative :: CreateAdCreativeId -> AdCreativeADT\n\
-    \creativeToCreative (CreateAdCreativeId id) = AdCreativeADT id\n"
 
 genFiles :: Env -> Vector (FilePath, Text)
 genFiles env@(Env env_map) =
