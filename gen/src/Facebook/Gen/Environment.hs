@@ -10,15 +10,14 @@ module Facebook.Gen.Environment
   )
 where
 
-import Control.Monad
+import Control.Monad (join)
 import Control.Lens hiding (coerce)
 import qualified Data.Map.Strict as Map
-import Data.Vector hiding (map, length, head, tail, (++), concat)
 import qualified Data.Vector as V
 import Data.Text hiding (map, length, head, tail, concat)
 import qualified Data.Text as T
-import Data.Coerce
-import Data.Maybe
+import Data.Coerce (coerce)
+import Data.Maybe (fromJust)
 import qualified Prelude as P
 import Prelude
 
@@ -83,7 +82,7 @@ typesMap =
 
 
 -- | Fields that will be ignored even though defined in CSV
-ignoreFields :: Vector Text
+ignoreFields :: V.Vector Text
 ignoreFields = V.fromList $ [
   "rf_spec", "account_groups", "agency_client_declaration", "funding_source_details",
   "owner_business", "business", "failed_delivery_checks", "permitted_roles", "access_type", "end_advertiser",
@@ -100,18 +99,18 @@ ignoreFields = V.fromList $ [
   "account"
   ]
 
-type ModeFieldInfoMap = Map.Map InteractionMode (Vector FieldInfo)
+type ModeFieldInfoMap = Map.Map InteractionMode (V.Vector FieldInfo)
 type EntityModeMap = Map.Map Entity ModeFieldInfoMap
 newtype Env = Env EntityModeMap deriving Show
 
-envsToMaps :: Vector Env -> Vector EntityModeMap
+envsToMaps :: V.Vector Env -> V.Vector EntityModeMap
 envsToMaps = coerce
 
-buildEnv :: Vector (Vector CsvLine) -> Env
+buildEnv :: V.Vector (V.Vector CsvLine) -> Env
 buildEnv csvs = do
     --let csvs' = join csvs :: Vector CsvLine
 
-    let csvs'' = V.filter (\(CsvLine _ _ (FieldInfo n _ _ _ _)) -> not $ V.elem n ignoreFields) (join csvs :: Vector CsvLine)
+    let csvs'' = V.filter (\(CsvLine _ _ (FieldInfo n _ _ _ _)) -> not $ V.elem n ignoreFields) (join csvs :: V.Vector CsvLine)
     let envs = V.map buildEnvCsv csvs''
     let merged = merge envs
     unify merged
@@ -146,7 +145,7 @@ updateModeMap acc modeMap
     | otherwise = error "updateModeMap"
 
 -- mergeFieldInfo :: V n Fi -> V 1 Fi -> V (n+1) Fi
-mergeFieldInfo :: Vector FieldInfo -> Vector FieldInfo -> Vector FieldInfo
+mergeFieldInfo :: V.Vector FieldInfo -> V.Vector FieldInfo -> V.Vector FieldInfo
 mergeFieldInfo fis fiV = fiV V.++ fis
 
 unify :: Env -> Env
@@ -167,7 +166,7 @@ collectFieldInfosMode :: ModeFieldInfoMap -> V.Vector FieldInfo
 collectFieldInfosMode mode =
     P.foldl mergeFieldInfo V.empty $ Map.elems mode
 
-addTypesEnv :: Env -> Vector FieldInfo -> Env
+addTypesEnv :: Env -> V.Vector FieldInfo -> Env
 addTypesEnv (Env env) types = Env $
     Map.insert (Entity "Types") (Map.insert Types types Map.empty) env
 
@@ -195,7 +194,7 @@ findDups fis' = go fis' []
                     dupInds = V.findIndices (==fi) t
                 in if V.null dupInds
                     then go t acc
-                    else let dups = V.cons fi $ V.map (\idx -> unsafeIndex t idx) dupInds
+                    else let dups = V.cons fi $ V.map (\idx -> V.unsafeIndex t idx) dupInds
                              tail' = V.ifilter (\idx _ -> not $ V.elem idx dupInds) t
                          in go tail' $ dups:acc
 
