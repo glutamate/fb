@@ -24,14 +24,6 @@ dropOption pre = defaultOptions
 parseJSONWithPrefix pre = genericParseJSON (dropOption pre)
 toJSONWithPrefix pre = genericToJSON (dropOption pre)
 
-
-pascalOption = defaultOptions {fieldLabelModifier =  toTile . camelTo '_'}
-  where toTile (x:xs) = toUpper x : xs
-        toTile xs = xs
-
-parseJSONPascal val = genericParseJSON pascalOption val
-toJSONPascal x = genericToJSON pascalOption x
-
 toBS :: Value -> ByteString
 toBS = TE.encodeUtf8 . TL.toStrict . TLB.toLazyText . AE.fromValue
 

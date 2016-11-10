@@ -515,7 +515,9 @@ getterField :: FieldInfo -> Text
 getterField fi =
     let fieldName = name fi
         adtName = fieldToAdt fi
-    in "\n" <> fieldName <> " r = r `Rec.get` " <> adtName
+    in  "\n" <> fieldName <> " :: Has " <> adtName <> " r => r -> " <> adtName <> "_"
+     <> "\n" <> fieldName <> " r = r `Rec.get` " <> adtName
+
 
 adAccIdDetails :: Text
 adAccIdDetails = "type AdAccountIdDetails = Id :*: AccountId :*: Nil\n"
