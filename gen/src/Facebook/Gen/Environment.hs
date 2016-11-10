@@ -72,6 +72,26 @@ typesMap =
                 , ("Object", "A.Value") -- ???
                 , ("videoId", "VideoId")
                 ]
+
+
+-- | Fields that will be ignored even though defined in CSV
+ignoreFields :: Vector Text
+ignoreFields = V.fromList $ [
+  "rf_spec", "account_groups", "agency_client_declaration", "funding_source_details",
+  "owner_business", "business", "failed_delivery_checks", "permitted_roles", "access_type", "end_advertiser",
+  "currency",
+  "adlabels",
+  "adset_schedule", "object_type", "promoted_object", "campaign",
+  "product_ad_behavior", "rf_prediction_id", "pacing_type",
+  "copy_from", "bytes", "zipbytes",
+  "capabilities", "tos_accepted", "line_numbers", "bid_info",
+  "image_crops", "applink_treatment", "tracking_specs",
+  "adset", "conversion_specs", "ad_review_feedback",
+  "custom_event_type",
+  "type", "dynamic_ad_voice", "annotations", "info_fields",
+  "account"
+  ]
+
 type ModeFieldInfoMap = Map.Map InteractionMode (Vector FieldInfo)
 type EntityModeMap = Map.Map Entity ModeFieldInfoMap
 newtype Env = Env EntityModeMap deriving Show
@@ -82,22 +102,8 @@ envsToMaps = coerce
 buildEnv :: Vector (Vector CsvLine) -> Env
 buildEnv csvs = do
     --let csvs' = join csvs :: Vector CsvLine
-    let ignore = V.fromList $ ["rf_spec", "account_groups", "agency_client_declaration", "funding_source_details",
-                              "owner_business", "business", "failed_delivery_checks", "permitted_roles", "access_type", "end_advertiser",
-                              "currency"] -- Ad AccountA
-                              ++
-                              ["adlabels"] -- Campaign
-                              ++
-                              ["adset_schedule", "object_type", "promoted_object", "campaign",
-                              "product_ad_behavior", "rf_prediction_id", "pacing_type"]
-                              ++ ["copy_from", "bytes", "zipbytes"] -- AdImage Create
-                              ++ ["capabilities", "tos_accepted", "line_numbers", "bid_info"]
-                              ++ ["image_crops", "applink_treatment", "tracking_specs",
-                                  "adset", "conversion_specs", "ad_review_feedback"]
-                              ++ ["custom_event_type"]
-                              ++ ["type", "dynamic_ad_voice", "annotations", "info_fields"]
-                              ++ ["account"]
-    let csvs'' = V.filter (\(CsvLine _ _ (FieldInfo n _ _ _ _)) -> not $ V.elem n ignore) (join csvs :: Vector CsvLine)
+
+    let csvs'' = V.filter (\(CsvLine _ _ (FieldInfo n _ _ _ _)) -> not $ V.elem n ignoreFields) (join csvs :: Vector CsvLine)
     let envs = V.map buildEnvCsv csvs''
     let merged = merge envs
     unify merged
