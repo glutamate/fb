@@ -19,7 +19,25 @@ import Debug.Trace
 
 typesImport = "import Facebook.Object.Marketing.Types"
 
-imports =
+typeFileImports =
+    V.fromList ["import Facebook.Records hiding (get)",
+                "import qualified Facebook.Records as Rec",
+                "import qualified Data.Aeson as A",
+                "import Data.Time.Format",
+                "import Data.Aeson hiding (Value)",
+                "import Data.Text (Text)",
+                "import qualified Data.Text.Encoding as TE",
+                "import Data.Vector (Vector)",
+                "import qualified Data.Vector as V",
+                "import qualified Data.ByteString as BS",
+                "import qualified Data.ByteString.Char8 as B8",
+                "#if MIN_VERSION_time(1,5,0)\n\
+                                \import Data.Time.Clock\n\
+                \#else\n\
+                                \import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)\n\
+                \#endif"]
+
+nodeFileImports =
     V.fromList ["import Facebook.Records hiding (get)",
                 "import qualified Facebook.Records as Rec",
                 "import Facebook.Types hiding (Id)",
@@ -376,8 +394,8 @@ header modName = "module " <> modName <> " where\n\n"
 
 concatNewline xs = V.foldl' append "" $ V.map (\x -> x <> "\n") xs
 
-genImports (Entity "Types")  = concatNewline imports <> (pack $ unsafePerformIO $ readFile "data/manual-types.hs")
-genImports _ = concatNewline imports
+genImports (Entity "Types")  = concatNewline typeFileImports <> (pack $ unsafePerformIO $ readFile "data/manual-types.hs")
+genImports _ = concatNewline nodeFileImports
 genLangExts = concatNewline $ V.map (\x -> "{-# LANGUAGE " <> x <> " #-}") langExts
 
 genConstraint :: InteractionMode -> Vector FieldInfo -> Entity -> Text

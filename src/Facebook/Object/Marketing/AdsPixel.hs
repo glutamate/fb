@@ -54,6 +54,7 @@ instance A.ToJSON Code_
 instance ToBS Code_ where
   toBS (Code_ a) = toBS a
 
+code :: Has Code r => r -> Code_
 code r = r `Rec.get` Code
 -- Entity:AdsPixel, mode:Reading
 class IsAdsPixelGetField r

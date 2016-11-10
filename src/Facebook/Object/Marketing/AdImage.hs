@@ -180,15 +180,25 @@ instance ToBS OriginalWidth_ where
 instance ToBS Width_ where
   toBS (Width_ a) = toBS a
 
+filename :: Has Filename r => r -> Filename_
 filename r = r `Rec.get` Filename
+creatives :: Has Creatives r => r -> Creatives_
 creatives r = r `Rec.get` Creatives
+height :: Has Height r => r -> Height_
 height r = r `Rec.get` Height
+permalink_url :: Has PermalinkUrl r => r -> PermalinkUrl_
 permalink_url r = r `Rec.get` PermalinkUrl
+url_128 :: Has Url128 r => r -> Url128_
 url_128 r = r `Rec.get` Url128
+original_height :: Has OriginalHeight r => r -> OriginalHeight_
 original_height r = r `Rec.get` OriginalHeight
+url :: Has Url r => r -> Url_
 url r = r `Rec.get` Url
+status :: Has Status r => r -> Status_
 status r = r `Rec.get` Status
+original_width :: Has OriginalWidth r => r -> OriginalWidth_
 original_width r = r `Rec.get` OriginalWidth
+width :: Has Width r => r -> Width_
 width r = r `Rec.get` Width
 -- Entity:AdImage, mode:Reading
 class IsAdImageGetField r

@@ -8,7 +8,6 @@ module Facebook.Pager
     ) where
 
 
-import Control.Applicative
 import Control.Monad (mzero)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Control (MonadBaseControl)

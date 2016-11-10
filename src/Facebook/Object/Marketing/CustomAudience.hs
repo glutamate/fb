@@ -180,15 +180,25 @@ instance ToBS DataSource_ where
 instance ToBS ApproximateCount_ where
   toBS (ApproximateCount_ a) = toBS a
 
+prefill :: Has Prefill r => r -> Prefill_
 prefill r = r `Rec.get` Prefill
+pixel_id :: Has PixelId r => r -> PixelId_
 pixel_id r = r `Rec.get` PixelId
+retention_days :: Has RetentionDays r => r -> RetentionDays_
 retention_days r = r `Rec.get` RetentionDays
+rule :: Has Rule r => r -> Rule_
 rule r = r `Rec.get` Rule
+lookalike_spec :: Has LookalikeSpec r => r -> LookalikeSpec_
 lookalike_spec r = r `Rec.get` LookalikeSpec
+origin_audience_id :: Has OriginAudienceId r => r -> OriginAudienceId_
 origin_audience_id r = r `Rec.get` OriginAudienceId
+lookalike_audience_ids :: Has LookalikeAudienceIds r => r -> LookalikeAudienceIds_
 lookalike_audience_ids r = r `Rec.get` LookalikeAudienceIds
+delivery_status :: Has DeliveryStatus r => r -> DeliveryStatus_
 delivery_status r = r `Rec.get` DeliveryStatus
+data_source :: Has DataSource r => r -> DataSource_
 data_source r = r `Rec.get` DataSource
+approximate_count :: Has ApproximateCount r => r -> ApproximateCount_
 approximate_count r = r `Rec.get` ApproximateCount
 -- Entity:CustomAudience, mode:Reading
 class IsCustomAudienceGetField r

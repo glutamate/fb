@@ -2,14 +2,13 @@
 
 module Facebook.Object.Marketing.TargetingSpecs.Location where
 
-import Data.Text (Text, unpack, pack)
+import Data.Text (Text)
 import Data.Aeson
 import Data.Aeson.Types
 import Data.String
-import Facebook.Records
 import GHC.Generics
-import qualified Data.ByteString.Char8 as B
-import Facebook.Graph
+
+import Facebook.Records
 
 -- | Location
 --   See https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#location
@@ -38,6 +37,8 @@ instance ToJSON TargetLocation where
 instance FromJSON TargetLocation where
     parseJSON = genericParseJSON defaultOptions { omitNothingFields = True }
 
+instance ToBS TargetLocation where
+    toBS = toBS . toJSON
 
 data KeyText = KeyText Text
   deriving (Show, Eq)
@@ -49,6 +50,7 @@ instance ToJSON KeyText where
 
 instance FromJSON KeyText where
     parseJSON (Object o) = KeyText <$> (o .: "key")
+    parseJSON _ = fail "Could not parse non-Object to key-wrapped text"
 
 instance IsString KeyText where
     fromString s = KeyText (fromString s)

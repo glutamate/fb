@@ -2,21 +2,14 @@
 
 module Facebook.Object.Marketing.AdUser where
 
-import Control.Applicative
 import Control.Monad (mzero)
-import Control.Monad.Trans.Control (MonadBaseControl)
-import Data.Text (Text)
 import Data.Typeable (Typeable)
 import GHC.Generics
 
-import qualified Control.Monad.Trans.Resource as R
 import qualified Data.Aeson as A
 
 
 import Facebook.Types
-import Facebook.Monad
-import Facebook.Graph
-import Facebook.Pager
 
 data Permission =  AcccountAdmin | AdManagerRead | AdManagerWrite |
                    BillingRead |BillingWrite | Reports

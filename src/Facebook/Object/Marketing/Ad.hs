@@ -112,10 +112,15 @@ instance ToBS BidType_ where
 instance ToBS LastUpdatedByAppId_ where
   toBS (LastUpdatedByAppId_ a) = toBS a
 
+status :: Has Status r => r -> Status_
 status r = r `Rec.get` Status
+creative :: Has Creative r => r -> Creative_
 creative r = r `Rec.get` Creative
+date_format :: Has DateFormat r => r -> DateFormat_
 date_format r = r `Rec.get` DateFormat
+bid_type :: Has BidType r => r -> BidType_
 bid_type r = r `Rec.get` BidType
+last_updated_by_app_id :: Has LastUpdatedByAppId r => r -> LastUpdatedByAppId_
 last_updated_by_app_id r = r `Rec.get` LastUpdatedByAppId
 -- Entity:Ad, mode:Reading
 class IsAdGetField r

@@ -2,12 +2,10 @@
 
 module Facebook.Object.Marketing.TargetingSpecs.Placement where
 
-import Data.Text (Text, unpack, pack)
 import Data.Aeson
 import Data.Aeson.Types
 import GHC.Generics (Generic)
 import Data.Char
-import Control.Applicative (pure)
 
 -- API v2.7 introduced the following placement options:
 
@@ -20,6 +18,7 @@ instance ToJSON DevicePlatform where
 instance FromJSON DevicePlatform where
     parseJSON (String "mobile") = pure Mobile
     parseJSON (String "desktop") = pure Desktop
+    parseJSON v = typeMismatch "DevicePlatform" v
 
 data PublisherPlatform = Facebook | Instagram | AudienceNetwork
   deriving (Show, Eq, Generic)
@@ -33,6 +32,7 @@ instance FromJSON PublisherPlatform where
     parseJSON (String "facebook") = pure Facebook
     parseJSON (String "instagram") = pure Instagram
     parseJSON (String "audience_network") = pure AudienceNetwork
+    parseJSON v = typeMismatch "PublisherPlatform" v
 
 -- it is unclear if there is also instagram_positions and if so
 -- what the values can be
@@ -46,6 +46,7 @@ instance ToJSON FacebookPosition where
 instance FromJSON FacebookPosition where
     parseJSON (String "feed") = pure Feed
     parseJSON (String "right_hand_column") = pure RightHandColumn
+    parseJSON v = typeMismatch "FacebookPosition" v
 
 {-
 device_platforms, - mobile, desktop - any number of.

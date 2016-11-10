@@ -1,11 +1,13 @@
 {-# LANGUAGE ScopedTypeVariables, TypeOperators, GADTs, InstanceSigs, OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts, OverlappingInstances, UndecidableInstances, FunctionalDependencies #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances, FunctionalDependencies #-}
 {-# LANGUAGE DefaultSignatures #-}
 
 module Facebook.Records where
 
 import Data.Aeson hiding (encode, decode)
+import qualified Data.Aeson as A
 import Data.Aeson.Types
+import qualified Data.ByteString.Lazy as BL
 import Data.Text hiding (foldr)
 import Network.HTTP.Client.MultipartFormData
 import Data.Text.Encoding
@@ -55,6 +57,10 @@ instance (ToBS a, Field f) => ToBS (f :*: a) where
             then fieldToByteString f
             else fieldToByteString f `BS.append` "," `BS.append` str
 
+instance ToBS Value where
+    toBS = BL.toStrict . A.encode
+
+
 fieldToByteString :: Field f => f -> BS.ByteString
 fieldToByteString f = encodeUtf8 $ fieldName f
 
@@ -67,8 +73,7 @@ instance ToForm Nil where
 
 instance (ToForm a, Field f, ToBS (FieldValue f)) => ToForm (f :*: a) where
   toForm ((f, val) :*: rest) =
-    let paramName = fieldToByteString f
-        fName = fieldName f
+    let fName = fieldName f
         val' = toBS val
         part "filename" = partFile fName $ B8.unpack val'
         part "video_file_chunk" = partFile fName $ B8.unpack val'
@@ -84,18 +89,18 @@ instance (FromJSON a, Field f, FromJSON (FieldValue f)) => FromJSON (f :*: a) wh
 parseJSONRec :: forall f a. (FromJSON a, Field f, FromJSON (FieldValue f)) => Value -> Parser (f:*:a)
 parseJSONRec o@(Object v) = do
     let flabel = fieldLabel :: f
-    v <- v .: fieldName flabel
+    v' <- v .: fieldName flabel
     rest <- parseJSON o
-    return $ (flabel, v) :*: rest
+    return $ (flabel, v') :*: rest
 parseJSONRec _ = fail "Parameter to parseJSONRec not of type Object"
 
 class Field f => Has f r where
   get :: r -> f -> FieldValue f
 
-instance Field f => Has f (f :*: a) where
-  get ((_, v) :*: _) f = v
+instance {-# OVERLAPS #-} Field f => Has f (f :*: a) where
+  get ((_, v) :*: _) _ = v
 
-instance (Field f, Has f r) => Has f (g :*: r) where
+instance {-# OVERLAPS #-} (Field f, Has f r) => Has f (g :*: r) where
   get (_ :*: r) f = get r f
 
 instance ToJSON Nil where
@@ -109,7 +114,7 @@ toJSONRec ((f, v) :*: rest) =
     let curMap = Map.singleton (fieldName f) $ toJSON v
     in case toJSON rest of -- will always be Object since we are representing records
         Object hmap -> toJSON $ Map.union curMap hmap
-
+        _ -> error "toJSONRec: toJSON did not produce an Object"
 
 infixr 5 :::
 

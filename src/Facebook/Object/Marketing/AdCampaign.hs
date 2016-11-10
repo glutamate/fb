@@ -138,12 +138,19 @@ instance ToBS CanUseSpendCap_ where
 instance ToBS StopTime_ where
   toBS (StopTime_ a) = toBS a
 
+object_count :: Has ObjectCount r => r -> ObjectCount_
 object_count r = r `Rec.get` ObjectCount
+delete_strategy :: Has DeleteStrategy r => r -> DeleteStrategy_
 delete_strategy r = r `Rec.get` DeleteStrategy
+before_date :: Has BeforeDate r => r -> BeforeDate_
 before_date r = r `Rec.get` BeforeDate
+status :: Has Status r => r -> Status_
 status r = r `Rec.get` Status
+pixel_id :: Has PixelId r => r -> PixelId_
 pixel_id r = r `Rec.get` PixelId
+can_use_spend_cap :: Has CanUseSpendCap r => r -> CanUseSpendCap_
 can_use_spend_cap r = r `Rec.get` CanUseSpendCap
+stop_time :: Has StopTime r => r -> StopTime_
 stop_time r = r `Rec.get` StopTime
 -- Entity:AdCampaign, mode:Reading
 class IsAdCampaignGetField r

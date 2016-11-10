@@ -25,7 +25,8 @@ import Control.Monad.Trans.Class (MonadTrans)
 import Control.Monad.Trans.Control (MonadBaseControl)
 import qualified Control.Monad.Trans.Resource as R
 import qualified Data.Aeson as A
-import qualified Data.Attoparsec.Char8 as AT
+import qualified Data.Aeson.Types as A
+import qualified Data.Attoparsec.ByteString.Char8 as AT
 import qualified Data.ByteString as B
 import qualified Data.Conduit as C
 import qualified Data.Conduit.Attoparsec as C
@@ -173,6 +174,19 @@ instance A.FromJSON FacebookException where
                                   <*> v' A..:? "error_user_msg"
                                   <*> v' A..:? "fbtrace_id"
     parseJSON _ = mzero
+
+instance A.FromJSON a => A.FromJSON (Either FacebookException a) where
+    parseJSON json@(A.Object v) = do
+        val <- v A..:? "error" :: A.Parser (Maybe A.Value)
+        case val of
+            Nothing -> do
+                rec <- A.parseJSON json
+                pure $ Right rec
+            Just _ -> do
+                rec <- A.parseJSON json
+                pure $ Left rec
+    parseJSON _ = fail "could not parse a non-Object to Either FacebookException a"
+
 
 instance E.Exception FacebookException where
 

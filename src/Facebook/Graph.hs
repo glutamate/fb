@@ -16,9 +16,9 @@ module Facebook.Graph
     , Tag(..)
     ) where
 
-import Control.Monad.IO.Class
-import Control.Applicative
-import qualified Control.Exception.Lifted as E
+-- import Control.Monad.IO.Class
+-- import Control.Applicative
+-- import qualified Control.Exception.Lifted as E
 import Control.Monad (mzero)
 import Control.Monad.Trans.Control (MonadBaseControl)
 import Data.ByteString.Char8 (ByteString)
@@ -26,7 +26,7 @@ import Data.Int (Int8, Int16, Int32, Int64)
 import Data.List (intersperse)
 import Data.Text (Text)
 import Data.Typeable (Typeable)
-import Data.Word (Word, Word8, Word16, Word32, Word64)
+import Data.Word (Word8, Word16, Word32, Word64)
 #if MIN_VERSION_time(1,5,0)
 import Data.Time (defaultTimeLocale)
 #else
@@ -35,8 +35,7 @@ import System.Locale (defaultTimeLocale)
 
 import qualified Control.Monad.Trans.Resource as R
 import qualified Data.Aeson as A
-import qualified Data.Aeson.Types as A
-import qualified Data.Aeson.Encode as AE (fromValue)
+import qualified Data.Aeson.Encode as AE (encodeToTextBuilder)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as TL
@@ -56,7 +55,8 @@ import Facebook.Records
 
 -- import Debug.Trace
 
-trace a b = b
+trace :: String -> a -> a
+trace _ b = b
 
 -- | Make a raw @GET@ request to Facebook's Graph API.
 getObjectRec :: (R.MonadResource m, MonadBaseControl IO m, A.FromJSON rec, ToBS rec) =>
@@ -105,18 +105,6 @@ deleteForm :: (R.MonadResource m, MonadBaseControl IO m, A.FromJSON a) =>
              -> AccessToken anyKind -- ^ Access token
              -> FacebookT Auth m (Either FacebookException a)
 deleteForm = methodForm HT.methodDelete
-
-
-instance A.FromJSON a => A.FromJSON (Either FacebookException a) where
-    parseJSON json@(A.Object v) = do
-        val <- v A..:? "error" :: A.Parser (Maybe A.Value)
-        case val of
-            Nothing -> do
-                rec <- A.parseJSON json
-                pure $ Right rec
-            Just _ -> do
-                rec <- A.parseJSON json
-                pure $ Left rec
 
 -- | Make a raw @POST@ request to Facebook's Graph API.
 methodForm :: (R.MonadResource m, MonadBaseControl IO m, A.FromJSON a) =>
@@ -358,8 +346,8 @@ instance SimpleType GeoCoordinates where
   encodeFbParam c =
     let obj  = A.object [ "latitude"  A..= latitude  c
                         , "longitude" A..= longitude c]
-        toBS = TE.encodeUtf8 . TL.toStrict . TLB.toLazyText . AE.fromValue
-    in toBS obj
+        encodeBS = TE.encodeUtf8 . TL.toStrict . TLB.toLazyText . AE.encodeToTextBuilder
+    in encodeBS obj
 
 
 -- | A tag (i.e. \"I'll /tag/ you on my post\").

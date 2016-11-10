@@ -6,13 +6,13 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Aeson
 import Data.Aeson.Types
-import Data.Maybe
+-- import Data.Maybe
 import GHC.Generics (Generic)
-import Control.Monad
-import Control.Applicative (pure, liftA)
+-- import Control.Monad
+-- import Control.Applicative (pure, liftA)
 
 import Facebook
-import Facebook.Graph
+-- import Facebook.Graph
 import qualified Control.Monad.Trans.Resource as R
 import Control.Monad.Trans.Control (MonadBaseControl)
 
@@ -32,6 +32,7 @@ instance ToJSON TargetingType where
 instance FromJSON TargetingType where
   parseJSON (String "adinterest") = return AdInterest
   parseJSON (String "income") = return Income
+  parseJSON _ = fail "cannot parse TargetingType from JSON"
 
 
 data QueryResult = QueryResult {
@@ -56,14 +57,14 @@ instance ToJSON QueryResults where
 instance ToJSON QueryResult
 instance FromJSON QueryResult where
   parseJSON (Object v) = do
-    id <- v .: "id"
-    name <- v .: "name"
-    audience <- v .: "audience_size"
-    path <- v .: "path"
-    desc <- v .:? "description"
-    cat <- v .:? "disambiguation_category"
-    topic <- v .:? "topic"
-    return $ QueryResult id name audience path desc cat topic
+    id' <- v .: "id"
+    name' <- v .: "name"
+    audience' <- v .: "audience_size"
+    path' <- v .: "path"
+    desc' <- v .:? "description"
+    cat' <- v .:? "disambiguation_category"
+    topic' <- v .:? "topic"
+    return $ QueryResult id' name' audience' path' desc' cat' topic'
   parseJSON x = fail $ show x
 
 queryInterest :: (R.MonadResource m, MonadBaseControl IO m)
@@ -78,4 +79,4 @@ queryTargeting AdInterest query tok =
 queryTargeting Income query tok =
   case query of
     "" -> getObject "/v2.7/search" [("type", "adTargetingCategory"), ("class", "income")] $ Just tok
-    q  -> getObject "/v2.7/search" [("type", "adTargetingCategory"), ("class", "income"), ("q", T.encodeUtf8 query)] $ Just tok
+    _  -> getObject "/v2.7/search" [("type", "adTargetingCategory"), ("class", "income"), ("q", T.encodeUtf8 query)] $ Just tok

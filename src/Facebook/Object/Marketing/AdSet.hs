@@ -132,11 +132,17 @@ instance ToBS FrequencyCapResetPeriod_ where
 instance ToBS FrequencyCap_ where
   toBS (FrequencyCap_ a) = toBS a
 
+pixel_id :: Has PixelId r => r -> PixelId_
 pixel_id r = r `Rec.get` PixelId
+daily_budget :: Has DailyBudget r => r -> DailyBudget_
 daily_budget r = r `Rec.get` DailyBudget
+status :: Has Status r => r -> Status_
 status r = r `Rec.get` Status
+budget_remaining :: Has BudgetRemaining r => r -> BudgetRemaining_
 budget_remaining r = r `Rec.get` BudgetRemaining
+frequency_cap_reset_period :: Has FrequencyCapResetPeriod r => r -> FrequencyCapResetPeriod_
 frequency_cap_reset_period r = r `Rec.get` FrequencyCapResetPeriod
+frequency_cap :: Has FrequencyCap r => r -> FrequencyCap_
 frequency_cap r = r `Rec.get` FrequencyCap
 -- Entity:AdSet, mode:Reading
 class IsAdSetGetField r

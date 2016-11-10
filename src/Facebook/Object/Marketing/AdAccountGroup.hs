@@ -2,22 +2,14 @@
 
 module Facebook.Object.Marketing.AdAccountGroup where
 
-import Control.Applicative
 import Control.Monad (mzero)
-import Control.Monad.Trans.Control (MonadBaseControl)
 import Data.Text (Text)
-import Data.Typeable (Typeable)
 import GHC.Generics
 
-import qualified Control.Monad.Trans.Resource as R
 import qualified Data.Aeson as A
 import Data.Aeson.Types
 
 import Facebook.Types
-import Facebook.Monad
-import Facebook.Graph
-import Facebook.Pager
-import Facebook.Object.Marketing.AdUser (AdUser)
 
 import Facebook.Object.Marketing.Utility
 
@@ -39,7 +31,6 @@ instance A.FromJSON AdAccountGroupStatus where
       1 -> return Active
       2 -> return Deleted
       _ -> mzero
-  parseJSON _ = mzero
 
 instance A.ToJSON AdAccountGroupStatus where
   toJSON Active = Number 1

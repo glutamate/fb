@@ -2,14 +2,11 @@
 
 module Facebook.Object.Marketing.TargetingSpecs.Demographies where
 
-import Data.Text (Text, unpack, pack)
 import Data.Aeson
-import Data.Aeson.Types
+import Data.Aeson.Types (typeMismatch)
 import Data.Maybe
 import qualified Data.Vector as V
 import GHC.Generics (Generic)
-import Control.Monad
-import Control.Applicative (pure)
 
 -- | Demographics and events
 --   See https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#demographics
@@ -28,6 +25,8 @@ instance FromJSON Gender where
         case val of
             Number 1.0 -> pure Male
             Number 2.0 -> pure Female
+            _ -> fail "Unrecognized gender number parsing Gender"
+    parseJSON v = typeMismatch "Gender" v
 
 newtype TargetUserAge = TargetUserAge Int deriving (Show, Eq, Ord, Generic)
 instance ToJSON TargetUserAge

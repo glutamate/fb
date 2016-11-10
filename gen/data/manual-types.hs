@@ -1,17 +1,7 @@
-import Data.String (fromString)
-import Data.Text (Text, pack, unpack)
-import Data.Typeable (Typeable)
 import GHC.Generics
-import Data.Aeson
 import Data.Aeson.Types
-import Control.Applicative
-import Control.Monad
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy as BSL
-import qualified Data.Text.Encoding as TE
 import Facebook.Object.Marketing.Utility hiding (toBS)
 import Facebook.Object.Marketing.TargetingSpecs
-import Text.Read (readMaybe)
 
 data FbNumeric = FbStringNumeric Text
     | FbIntegerNumeric Int
@@ -156,16 +146,16 @@ instance FromJSON FBPageId
 newtype IgId = IgId Text deriving (Show, Generic)
 instance FromJSON IgId
 instance ToJSON ObjectStorySpecADT where
-  toJSON (ObjectStorySpecADT ld (FBPageId pi) Nothing) =
+  toJSON (ObjectStorySpecADT ld (FBPageId i) Nothing) =
     object [ "link_data" .= ld,
-             "page_id" .= pi] 
-  toJSON (ObjectStorySpecADT ld (FBPageId pi) (Just (IgId ig))) =
+             "page_id" .= i] 
+  toJSON (ObjectStorySpecADT ld (FBPageId i) (Just (IgId ig))) =
     object [ "link_data" .= ld,
-             "page_id" .= pi, 
+             "page_id" .= i, 
              "instagram_actor_id" .= ig] 
-  toJSON (ObjectStorySpecVideoLink vidData (FBPageId pi) (Just (IgId ig))) =
+  toJSON (ObjectStorySpecVideoLink vidData (FBPageId i) (Just (IgId ig))) =
     object [ "video_data" .= vidData,
-             "page_id" .= pi,
+             "page_id" .= i,
              "instagram_actor_id" .= ig]
 instance FromJSON ObjectStorySpecADT where
   parseJSON (Object v) = do
@@ -173,9 +163,13 @@ instance FromJSON ObjectStorySpecADT where
    case typ of
      Nothing -> parseObjectStorySpecADT v
      Just _  -> parseObjectStorySpecVideoLink v
+
+parseObjectStorySpecADT :: Object -> Parser ObjectStorySpecADT
 parseObjectStorySpecADT v =   ObjectStorySpecADT <$> v .: "link_data"
                       <*> v .: "page_id"
                       <*> v .:? "instagram_actor_id"
+
+parseObjectStorySpecVideoLink :: Object -> Parser ObjectStorySpecADT
 parseObjectStorySpecVideoLink v =   ObjectStorySpecVideoLink <$> v .: "video_data"
                       <*> v .: "page_id"
                       <*> v .:? "instagram_actor_id"
@@ -195,7 +189,7 @@ data AdCreativeLinkData = AdCreativeLinkData {
     link :: Text }
   deriving (Show, Generic)
 instance ToJSON AdCreativeLinkData where
-  toJSON (AdCreativeLinkData c i l m (Just cta)) =
+  toJSON (AdCreativeLinkData c i l m (Just _)) =
     object [ "caption" .= c,
              "image_hash" .= i,
              "link" .= l,
@@ -214,6 +208,7 @@ instance FromJSON AdCreativeLinkData where
      Nothing -> parseAdCreativeLinkData v
      Just _  -> parseCreativeCarouselData v
 
+parseAdCreativeLinkData :: Object -> Parser AdCreativeLinkData
 parseAdCreativeLinkData v =
    AdCreativeLinkData <$> v .: "caption"
                       <*> v .: "image_hash"
@@ -221,6 +216,7 @@ parseAdCreativeLinkData v =
                       <*> v .: "message"
                       <*> v .:? "call_to_action"
 
+parseCreativeCarouselData :: Object -> Parser AdCreativeLinkData
 parseCreativeCarouselData v =
    CreativeCarouselData <$> v .: "caption"
                         <*> v .: "message"

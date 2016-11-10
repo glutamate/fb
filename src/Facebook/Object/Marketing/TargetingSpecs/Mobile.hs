@@ -3,7 +3,7 @@
 module Facebook.Object.Marketing.TargetingSpecs.Mobile where
 
 import GHC.Generics
-import Data.Text (Text, unpack, pack)
+import Data.Text (Text)
 import Data.Aeson
 --import Facebook.Object.Marketing.Types
 
@@ -22,10 +22,11 @@ data MobileTargeting = MobileTargetting
 
 instance ToJSON MobileTargeting
 
+mobOSToText :: MobileOS -> Text
 mobOSToText (IOS IOS_Any) = "iOS"
-mobOSToText (IOS version) = error "Not implemented"
+mobOSToText (IOS _) = error "Not implemented"
 mobOSToText (Android Android_Any) = "Android"
-mobOSToText (Android version) =  error "Not implemented"
+mobOSToText (Android _) =  error "Not implemented"
 
 instance ToJSON MobileOS where
   toJSON = String . mobOSToText

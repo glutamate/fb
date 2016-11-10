@@ -8,67 +8,24 @@ module Facebook.Object.Marketing.Types where
 
 import Facebook.Records hiding (get)
 import qualified Facebook.Records as Rec
-import Facebook.Types hiding (Id)
-import Facebook.Pager
-import Facebook.Monad
-import Facebook.Graph
-import Facebook.Base (FacebookException(..))
 import qualified Data.Aeson as A
 import Data.Time.Format
 import Data.Aeson hiding (Value)
-import Control.Applicative
 import Data.Text (Text)
-import Data.Text.Read (decimal)
-import Data.Scientific (toBoundedInteger)
 import qualified Data.Text.Encoding as TE
-import GHC.Generics (Generic)
-import qualified Data.Map.Strict as Map
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
-import qualified Data.ByteString.Builder as BSB
-import qualified Data.ByteString.Lazy as BSL
-import qualified Control.Monad.Trans.Resource as R
-import Control.Monad.Trans.Control (MonadBaseControl)
 #if MIN_VERSION_time(1,5,0)
-import System.Locale hiding (defaultTimeLocale, rfc822DateFormat)
 import Data.Time.Clock
 #else
-import System.Locale
 import Data.Time.Clock hiding (defaultTimeLocale, rfc822DateFormat)
 #endif
-import Data.String (fromString)
-import Data.Text (Text, pack, unpack)
-import Data.Typeable (Typeable)
 import GHC.Generics
-import Data.Aeson
 import Data.Aeson.Types
-import Control.Applicative
-import Control.Monad
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy as BSL
-import qualified Data.Text.Encoding as TE
 import Facebook.Object.Marketing.Utility hiding (toBS)
 import Facebook.Object.Marketing.TargetingSpecs
-import Text.Read (readMaybe)
-newtype Money = Money {getMoneyInPennies :: Int} deriving (Eq, Ord, Show, Read, Typeable, Generic, Num)
-
-instance FromJSON Money where
-  parseJSON (String val) =
-    case readMaybe $ unpack val of
-      Just x -> return $ Money x
-      Nothing -> fail $ "Money parser string: "++show (unpack val)
-    where
-      textToBSL :: Text -> BSL.ByteString
-      textToBSL = BSL.fromStrict . TE.encodeUtf8
-  parseJSON n@(Number _) = do
-    x <- parseJSON n
-    return $ Money x
-  parseJSON v = fail $ "Money parser value: "++show v
-
-instance ToJSON Money where
-  toJSON (Money cents) = String $ pack $ show cents
 
 data FbNumeric = FbStringNumeric Text
     | FbIntegerNumeric Int
@@ -213,16 +170,16 @@ instance FromJSON FBPageId
 newtype IgId = IgId Text deriving (Show, Generic)
 instance FromJSON IgId
 instance ToJSON ObjectStorySpecADT where
-  toJSON (ObjectStorySpecADT ld (FBPageId pi) Nothing) =
+  toJSON (ObjectStorySpecADT ld (FBPageId i) Nothing) =
     object [ "link_data" .= ld,
-             "page_id" .= pi] 
-  toJSON (ObjectStorySpecADT ld (FBPageId pi) (Just (IgId ig))) =
+             "page_id" .= i] 
+  toJSON (ObjectStorySpecADT ld (FBPageId i) (Just (IgId ig))) =
     object [ "link_data" .= ld,
-             "page_id" .= pi, 
+             "page_id" .= i, 
              "instagram_actor_id" .= ig] 
-  toJSON (ObjectStorySpecVideoLink vidData (FBPageId pi) (Just (IgId ig))) =
+  toJSON (ObjectStorySpecVideoLink vidData (FBPageId i) (Just (IgId ig))) =
     object [ "video_data" .= vidData,
-             "page_id" .= pi,
+             "page_id" .= i,
              "instagram_actor_id" .= ig]
 instance FromJSON ObjectStorySpecADT where
   parseJSON (Object v) = do
@@ -230,9 +187,13 @@ instance FromJSON ObjectStorySpecADT where
    case typ of
      Nothing -> parseObjectStorySpecADT v
      Just _  -> parseObjectStorySpecVideoLink v
+
+parseObjectStorySpecADT :: Object -> Parser ObjectStorySpecADT
 parseObjectStorySpecADT v =   ObjectStorySpecADT <$> v .: "link_data"
                       <*> v .: "page_id"
                       <*> v .:? "instagram_actor_id"
+
+parseObjectStorySpecVideoLink :: Object -> Parser ObjectStorySpecADT
 parseObjectStorySpecVideoLink v =   ObjectStorySpecVideoLink <$> v .: "video_data"
                       <*> v .: "page_id"
                       <*> v .:? "instagram_actor_id"
@@ -252,7 +213,7 @@ data AdCreativeLinkData = AdCreativeLinkData {
     link :: Text }
   deriving (Show, Generic)
 instance ToJSON AdCreativeLinkData where
-  toJSON (AdCreativeLinkData c i l m (Just cta)) =
+  toJSON (AdCreativeLinkData c i l m (Just _)) =
     object [ "caption" .= c,
              "image_hash" .= i,
              "link" .= l,
@@ -271,6 +232,7 @@ instance FromJSON AdCreativeLinkData where
      Nothing -> parseAdCreativeLinkData v
      Just _  -> parseCreativeCarouselData v
 
+parseAdCreativeLinkData :: Object -> Parser AdCreativeLinkData
 parseAdCreativeLinkData v =
    AdCreativeLinkData <$> v .: "caption"
                       <*> v .: "image_hash"
@@ -278,6 +240,7 @@ parseAdCreativeLinkData v =
                       <*> v .: "message"
                       <*> v .:? "call_to_action"
 
+parseCreativeCarouselData :: Object -> Parser AdCreativeLinkData
 parseCreativeCarouselData v =
    CreativeCarouselData <$> v .: "caption"
                         <*> v .: "message"
@@ -1382,70 +1345,137 @@ instance ToBS CampaignGroupId_ where
 instance ToBS AdsetId_ where
   toBS (AdsetId_ a) = toBS a
 
+subtype :: Has Subtype r => r -> Subtype_
 subtype r = r `Rec.get` Subtype
+name :: Has Name r => r -> Name_
 name r = r `Rec.get` Name
+description :: Has Description r => r -> Description_
 description r = r `Rec.get` Description
+account_id :: Has AccountId r => r -> AccountId_
 account_id r = r `Rec.get` AccountId
+id :: Has Id r => r -> Id_
 id r = r `Rec.get` Id
+execution_options :: Has ExecutionOptions r => r -> ExecutionOptions_
 execution_options r = r `Rec.get` ExecutionOptions
+optimization_goal :: Has OptimizationGoal r => r -> OptimizationGoal_
 optimization_goal r = r `Rec.get` OptimizationGoal
+bid_amount :: Has BidAmount r => r -> BidAmount_
 bid_amount r = r `Rec.get` BidAmount
+daily_imps :: Has DailyImps r => r -> DailyImps_
 daily_imps r = r `Rec.get` DailyImps
+end_minute :: Has EndMinute r => r -> EndMinute_
 end_minute r = r `Rec.get` EndMinute
+application_id :: Has ApplicationId r => r -> ApplicationId_
 application_id r = r `Rec.get` ApplicationId
+billing_event :: Has BillingEvent r => r -> BillingEvent_
 billing_event r = r `Rec.get` BillingEvent
+is_autobid :: Has IsAutobid r => r -> IsAutobid_
 is_autobid r = r `Rec.get` IsAutobid
+start_minute :: Has StartMinute r => r -> StartMinute_
 start_minute r = r `Rec.get` StartMinute
+days :: Has Days r => r -> Days_
 days r = r `Rec.get` Days
+end_time :: Has EndTime r => r -> EndTime_
 end_time r = r `Rec.get` EndTime
+lifetime_imps :: Has LifetimeImps r => r -> LifetimeImps_
 lifetime_imps r = r `Rec.get` LifetimeImps
+offer_id :: Has OfferId r => r -> OfferId_
 offer_id r = r `Rec.get` OfferId
+lifetime_budget :: Has LifetimeBudget r => r -> LifetimeBudget_
 lifetime_budget r = r `Rec.get` LifetimeBudget
+redownload :: Has Redownload r => r -> Redownload_
 redownload r = r `Rec.get` Redownload
+object_store_url :: Has ObjectStoreUrl r => r -> ObjectStoreUrl_
 object_store_url r = r `Rec.get` ObjectStoreUrl
+product_set_id :: Has ProductSetId r => r -> ProductSetId_
 product_set_id r = r `Rec.get` ProductSetId
+lifetime_frequency_cap :: Has LifetimeFrequencyCap r => r -> LifetimeFrequencyCap_
 lifetime_frequency_cap r = r `Rec.get` LifetimeFrequencyCap
+product_catalog_id :: Has ProductCatalogId r => r -> ProductCatalogId_
 product_catalog_id r = r `Rec.get` ProductCatalogId
+start_time :: Has StartTime r => r -> StartTime_
 start_time r = r `Rec.get` StartTime
+creative_sequence :: Has CreativeSequence r => r -> CreativeSequence_
 creative_sequence r = r `Rec.get` CreativeSequence
+targeting :: Has Targeting r => r -> Targeting_
 targeting r = r `Rec.get` Targeting
+time_stop :: Has TimeStop r => r -> TimeStop_
 time_stop r = r `Rec.get` TimeStop
+time_start :: Has TimeStart r => r -> TimeStart_
 time_start r = r `Rec.get` TimeStart
+page_id :: Has PageId r => r -> PageId_
 page_id r = r `Rec.get` PageId
+campaign_id :: Has CampaignId r => r -> CampaignId_
 campaign_id r = r `Rec.get` CampaignId
+rtb_flag :: Has RtbFlag r => r -> RtbFlag_
 rtb_flag r = r `Rec.get` RtbFlag
+configured_status :: Has ConfiguredStatus r => r -> ConfiguredStatus_
 configured_status r = r `Rec.get` ConfiguredStatus
+effective_status :: Has EffectiveStatus r => r -> EffectiveStatus_
 effective_status r = r `Rec.get` EffectiveStatus
+created_time :: Has CreatedTime r => r -> CreatedTime_
 created_time r = r `Rec.get` CreatedTime
+updated_time :: Has UpdatedTime r => r -> UpdatedTime_
 updated_time r = r `Rec.get` UpdatedTime
+hash :: Has Hash r => r -> Hash_
 hash r = r `Rec.get` Hash
+run_status :: Has RunStatus r => r -> RunStatus_
 run_status r = r `Rec.get` RunStatus
+actor_image_url :: Has ActorImageUrl r => r -> ActorImageUrl_
 actor_image_url r = r `Rec.get` ActorImageUrl
+actor_image_hash :: Has ActorImageHash r => r -> ActorImageHash_
 actor_image_hash r = r `Rec.get` ActorImageHash
+link_og_id :: Has LinkOgId r => r -> LinkOgId_
 link_og_id r = r `Rec.get` LinkOgId
+actor_name :: Has ActorName r => r -> ActorName_
 actor_name r = r `Rec.get` ActorName
+object_id :: Has ObjectId r => r -> ObjectId_
 object_id r = r `Rec.get` ObjectId
+instagram_actor_id :: Has InstagramActorId r => r -> InstagramActorId_
 instagram_actor_id r = r `Rec.get` InstagramActorId
+actor_id :: Has ActorId r => r -> ActorId_
 actor_id r = r `Rec.get` ActorId
+thumbnail_url :: Has ThumbnailUrl r => r -> ThumbnailUrl_
 thumbnail_url r = r `Rec.get` ThumbnailUrl
+template_url :: Has TemplateUrl r => r -> TemplateUrl_
 template_url r = r `Rec.get` TemplateUrl
+link_url :: Has LinkUrl r => r -> LinkUrl_
 link_url r = r `Rec.get` LinkUrl
+object_story_spec :: Has ObjectStorySpec r => r -> ObjectStorySpec_
 object_story_spec r = r `Rec.get` ObjectStorySpec
+object_story_id :: Has ObjectStoryId r => r -> ObjectStoryId_
 object_story_id r = r `Rec.get` ObjectStoryId
+url_tags :: Has UrlTags r => r -> UrlTags_
 url_tags r = r `Rec.get` UrlTags
+image_hash :: Has ImageHash r => r -> ImageHash_
 image_hash r = r `Rec.get` ImageHash
+title :: Has Title r => r -> Title_
 title r = r `Rec.get` Title
+object_url :: Has ObjectUrl r => r -> ObjectUrl_
 object_url r = r `Rec.get` ObjectUrl
+body :: Has Body r => r -> Body_
 body r = r `Rec.get` Body
+image_url :: Has ImageUrl r => r -> ImageUrl_
 image_url r = r `Rec.get` ImageUrl
+spend_cap :: Has SpendCap r => r -> SpendCap_
 spend_cap r = r `Rec.get` SpendCap
+objective :: Has Objective r => r -> Objective_
 objective r = r `Rec.get` Objective
+buying_type :: Has BuyingType r => r -> BuyingType_
 buying_type r = r `Rec.get` BuyingType
+adaccounts :: Has Adaccounts r => r -> Adaccounts_
 adaccounts r = r `Rec.get` Adaccounts
+timezone_id :: Has TimezoneId r => r -> TimezoneId_
 timezone_id r = r `Rec.get` TimezoneId
+is_notifications_enabled :: Has IsNotificationsEnabled r => r -> IsNotificationsEnabled_
 is_notifications_enabled r = r `Rec.get` IsNotificationsEnabled
+partner :: Has Partner r => r -> Partner_
 partner r = r `Rec.get` Partner
+media_agency :: Has MediaAgency r => r -> MediaAgency_
 media_agency r = r `Rec.get` MediaAgency
+display_sequence :: Has DisplaySequence r => r -> DisplaySequence_
 display_sequence r = r `Rec.get` DisplaySequence
+campaign_group_id :: Has CampaignGroupId r => r -> CampaignGroupId_
 campaign_group_id r = r `Rec.get` CampaignGroupId
+adset_id :: Has AdsetId r => r -> AdsetId_
 adset_id r = r `Rec.get` AdsetId
