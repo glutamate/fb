@@ -160,7 +160,7 @@ instance IsInsightField Country
 instance IsInsightField Nil
 
 type InsightsConst fl r = (A.FromJSON r, IsInsightField r, FieldListToRec fl r)
-type InsightsRet r = DateStart :*: DateStop :*: Impressions :*: TotalActions :*: CallToActionClicks :*: Spend :*: r
+type InsightsRet r = DateStart :*: DateStop :*: Impressions :*: TotalActions :*: Clicks :*: Spend :*: r
 -- see restrictions on breakdown factor combination: https://developers.facebook.com/docs/marketing-api/insights/breakdowns/v2.7
 getInsightsBreak :: (R.MonadResource m, MonadBaseControl IO m, InsightsConst fl r)  =>
                      Id_
@@ -169,7 +169,7 @@ getInsightsBreak :: (R.MonadResource m, MonadBaseControl IO m, InsightsConst fl 
                   -> FacebookT Auth m (Pager (InsightsRet r))
 getInsightsBreak (Id_ id_) fl tok =
   getObject ("/v2.7/" <> id_ <> "/insights")
-    [("fields", "impressions,total_actions,call_to_action_clicks,spend"), ("date_preset", "lifetime"), ("breakdowns", textListToBS $ fieldNameList fl)] (Just tok)
+    [("fields", "impressions,total_actions,clicks,spend"), ("date_preset", "lifetime"), ("breakdowns", textListToBS $ fieldNameList fl)] (Just tok)
 
 
 data Action a = Action { action_action_type :: Text,
