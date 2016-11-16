@@ -14,6 +14,8 @@ import qualified Data.ByteString.Char8 as B8
 import qualified Data.HashMap.Strict as Map
 import Prelude hiding (take, length)
 
+import Data.Maybe (fromJust)
+
 data Nil = Nil
 
 infixr 5 :*:
@@ -30,6 +32,8 @@ class Field a where
   type FieldValue a
   fieldName :: a -> Text
   fieldLabel :: a
+  defaultValue :: a -> Maybe (FieldValue a)
+  defaultValue _ = Nothing
 
 instance forall a b. (Show (FieldValue a), Show b) => Show (a :*: b) where
     show ((f, v) :*: rest) = (unpack $ fieldName f) ++ ": " ++ show v ++ "\n" ++ show rest
@@ -84,10 +88,15 @@ instance (FromJSON a, Field f, FromJSON (FieldValue f)) => FromJSON (f :*: a) wh
 parseJSONRec :: forall f a. (FromJSON a, Field f, FromJSON (FieldValue f)) => Value -> Parser (f:*:a)
 parseJSONRec o@(Object v) = do
     let flabel = fieldLabel :: f
-    v <- v .: fieldName flabel
+    vl <- case getDefVal flabel of
+           Nothing -> v .: fieldName flabel
+           Just defval -> v .:? fieldName flabel .!= defval
     rest <- parseJSON o
-    return $ (flabel, v) :*: rest
+    return $ (flabel, vl) :*: rest
 parseJSONRec _ = fail "Parameter to parseJSONRec not of type Object"
+
+getDefVal :: Field a => a -> Maybe (FieldValue a)
+getDefVal x = defaultValue x
 
 class Field f => Has f r where
   get :: r -> f -> FieldValue f

@@ -113,6 +113,7 @@ instance Field TotalActions where
   type FieldValue TotalActions = TotalActions_
   fieldName _ = "total_actions"
   fieldLabel = TotalActions
+  defaultValue _ = Just (TotalActions_ 0)
 instance A.FromJSON TotalActions_ where
   parseJSON (A.String num) = do
     let int = read $ T.unpack num
@@ -134,17 +135,11 @@ unClicks_ :: Clicks_ -> Integer
 unClicks_ (Clicks_ x) = x
 
 data CallToActionClicks = CallToActionClicks
-newtype CallToActionClicks_ = CallToActionClicks_ Integer deriving (Show, Generic)
 instance Field CallToActionClicks where
-  type FieldValue CallToActionClicks = CallToActionClicks_
+  type FieldValue CallToActionClicks = Integer
   fieldName _ = "call_to_action_clicks"
   fieldLabel = CallToActionClicks
-instance A.FromJSON CallToActionClicks_ where
-  parseJSON (A.String num) = do
-    let int = read $ T.unpack num
-    pure $ CallToActionClicks_ int
-unCallToActionClicks_ :: CallToActionClicks_ -> Integer
-unCallToActionClicks_ (CallToActionClicks_ x) = x
+  defaultValue _ = Just 0
 
 
 data Spend = Spend
